@@ -1,0 +1,12 @@
+{
+    "python.autoComplete.extraPaths": [
+        "/home/quintinumi/git_package_src/wpr_simulation/devel/lib/python3/dist-packages",
+        "/home/quintinumi/git_package_src/ws_livox/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ],
+    "python.analysis.extraPaths": [
+        "/home/quintinumi/git_package_src/wpr_simulation/devel/lib/python3/dist-packages",
+        "/home/quintinumi/git_package_src/ws_livox/devel/lib/python3/dist-packages",
+        "/opt/ros/noetic/lib/python3/dist-packages"
+    ]
+}
