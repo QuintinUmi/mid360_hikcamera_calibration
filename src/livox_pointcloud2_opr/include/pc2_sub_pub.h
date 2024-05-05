@@ -14,7 +14,8 @@ namespace livox_pc2_opr
     {
 
     public:
-        PointCloud2_SubPub(ros::NodeHandle *rosHandle);
+        PointCloud2_SubPub();
+        PointCloud2_SubPub(ros::NodeHandle rosHandle, std::string pointcloud2_topic);
         ~PointCloud2_SubPub();
         void publish();
 

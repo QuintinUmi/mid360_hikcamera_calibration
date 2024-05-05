@@ -9,9 +9,18 @@
 
 namespace livox_pc2_opr
 {
-    PointCloud2_SubPub::PointCloud2_SubPub(ros::NodeHandle *rosHandle) 
+    PointCloud2_SubPub::PointCloud2_SubPub()
     {
-        this->rosHandle = *rosHandle;
+        this->rosHandle = ros::NodeHandle();
+        this->pointcloud2_topic = "/livox/lidar";
+        init_subscribers();
+        init_publishers(); 
+    }
+    PointCloud2_SubPub::PointCloud2_SubPub(ros::NodeHandle rosHandle, std::string pointcloud2_topic)
+    {
+        this->pointcloud2_topic = pointcloud2_topic;
+        this->rosHandle = rosHandle;
+        
         init_subscribers();
         init_publishers();    
     }
@@ -22,7 +31,7 @@ namespace livox_pc2_opr
 
     void PointCloud2_SubPub::init_subscribers()
     {
-        pc2Sub = rosHandle.subscribe(pointcloud2_topic, 10, &PointCloud2_SubPub::Pc2SubCallBack, this);
+        pc2Sub = rosHandle.subscribe<sensor_msgs::PointCloud2>(pointcloud2_topic, 10, &PointCloud2_SubPub::Pc2SubCallBack, this);
     }
 
     void PointCloud2_SubPub::init_publishers()
@@ -32,10 +41,12 @@ namespace livox_pc2_opr
 
     
 
-    void PointCloud2_SubPub::Pc2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &tempCloud)
+    void PointCloud2_SubPub::Pc2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &rcvCloud)
     {
-        pcl::fromROSMsg(*tempCloud, *receivedPointCloud);
-
+        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud (new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::fromROSMsg(*rcvCloud, *tempCloud);
+        // memccpy(&this->receivedPointCloud, tempCloud, 1);
+        std::cout << "height: " << receivedPointCloud->height << " | width:" << receivedPointCloud->width << std::endl;
         // ROS_INFO("received %ld points", receivedPointCloud->points.size());
 
     }

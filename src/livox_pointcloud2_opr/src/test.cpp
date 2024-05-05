@@ -11,9 +11,23 @@ int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "pc2_sub_pub_test");
     ros::NodeHandle rosHandle;
+    
+    livox_pc2_opr::PointCloud2_SubPub pc(rosHandle, std::string("/livox/lidar"));
 
-    livox_pc2_opr::PointCloud2_SubPub pc(&rosHandle);
-    std::cout << "height: " << pc.receivedPointCloud->height << " | width:" << pc.receivedPointCloud->width << std::endl;
+    int loopRate = 20;
+    ros::Rate loop_rate(loopRate);
+    
+    // ros::spin();
+
+    while(ros::ok()){
+    
+        ros::spinOnce();
+
+        
+
+        loop_rate.sleep();
+    }
+    // std::cout << "height: " << pc.receivedPointCloud->height << " | width:" << pc.receivedPointCloud->width << std::endl;
 
     return 0;
 }
