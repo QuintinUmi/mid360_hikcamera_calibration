@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(mid360_ros_driver)
+project(livox_pointcloud2_opr)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -12,13 +12,20 @@ find_package(catkin REQUIRED COMPONENTS
   livox_ros_driver
   message_generation
   nav_msgs
+  pcl_conversions
   pcl_ros
   roscpp
   rospy
   sensor_msgs
   std_msgs
   tf
+  rviz
 )
+
+find_package(Eigen3 REQUIRED)
+find_package(OpenCV 4 REQUIRED)
+find_package(yaml-cpp REQUIRED)
+find_package(aruco REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -109,12 +116,12 @@ find_package(catkin REQUIRED COMPONENTS
 ## LIBRARIES: libraries you create in this project that dependent projects also need
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
-catkin_package(
+# catkin_package(
 #  INCLUDE_DIRS include
-#  LIBRARIES mid360_ros_driver
+#  LIBRARIES livox_pointcloud2_opr
 #  CATKIN_DEPENDS geometry_msgs livox_ros_driver message_generation nav_msgs pcl_ros roscpp rospy sensor_msgs std_msgs tf
 #  DEPENDS system_lib
-)
+# )
 
 ###########
 ## Build ##
@@ -123,24 +130,31 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-# include
+  include
   ${catkin_INCLUDE_DIRS}
+  ./include/
+  /usr/local/include/
 )
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/mid360_ros_driver.cpp
-# )
+add_library(livox_pointcloud2_tool_lib
+  include include/pc2_sub_pub.h
+  lib/livox_pointcloud2_tool.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-# add_dependencies(${PROJECT_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(livox_pointcloud2_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+target_link_libraries(livox_pointcloud2_tool_lib
+  ${catkin_LIBRARIES}
+)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/mid360_ros_driver_node.cpp)
+add_executable(test_node src/test.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -153,9 +167,10 @@ include_directories(
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES}
-# )
+target_link_libraries(test_node
+  ${catkin_LIBRARIES}
+  livox_pointcloud2_tool_lib
+)
 
 #############
 ## Install ##
@@ -204,7 +219,7 @@ include_directories(
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_mid360_ros_driver.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/livox_pointcloud2_opr.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
