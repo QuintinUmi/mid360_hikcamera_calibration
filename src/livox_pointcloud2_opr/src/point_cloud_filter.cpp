@@ -5,8 +5,13 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
+#include <dynamic_reconfigure/server.h>
+#include <livox_pointcloud2_opr/PointcloudFilterConfig.h>
+
 #include "point_cloud_subscriber_publisher.h"
 #include "point_cloud_process.h"
+#include "dynamic_reconfigure.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -17,11 +22,12 @@ int main(int argc, char *argv[])
 
     livox_pc2_opr::PointCloud2Proc pcProc;
 
+    livox_pc2_opr::PointcloudFilterReconfigure filterRecfg;
+    livox_pc2_opr::RQTConfig rqtCfg;
+
     int loopRate = 20;
     ros::Rate loop_rate(loopRate);
     
-    // ros::spin();
-
     pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud(new pcl::PointCloud<pcl::PointXYZI>);
 
     while(ros::ok()){
@@ -35,21 +41,15 @@ int main(int argc, char *argv[])
             loop_rate.sleep();
             continue;
         }
+
+        rqtCfg.FilterConfig =  filterRecfg.get_configure();
         
         pcProc.setCloud(pcSP.get_pointcloud());
-        pcProc.filter(Eigen::Vector4f(1.0, 1.0, 1.0, 1.0), Eigen::Vector4f(1.0, 1.0, 1.0, 1.0));
+        // pcProc.filter(Eigen::Vector4f(0.0f, 0.0f, 0.0f, 1.0f), Eigen::Vector4f(100.0f, 100.0f, 100.0f, 1.0f));
+        pcProc.filter(Eigen::Vector4f(rqtCfg.FilterConfig.x_min, rqtCfg.FilterConfig.y_min, rqtCfg.FilterConfig.z_min, 1.0f), 
+                    Eigen::Vector4f(rqtCfg.FilterConfig.x_max, rqtCfg.FilterConfig.y_max, rqtCfg.FilterConfig.z_max, 1.0f));
         // std::cout << pcSP.get_pointcloud()->header.frame_id << std::endl;
-
-        
-        // pubCloud->points.emplace_back(pcSP.get_pointcloud()->points[0]);
-        // pubCloud->points.emplace_back(pcSP.get_pointcloud()->points[1]);
-        // pubCloud->points.emplace_back(pcSP.get_pointcloud()->points[2]);
-        // pubCloud->header.frame_id = pcSP.get_pointcloud()->header.frame_id;
-        // pubCloud->header.stamp = pcSP.get_pointcloud()->header.stamp;
-        // pcSP.publish(pubCloud);
-        // pubCloud->points.pop_back();
-        // pubCloud->points.pop_back();
-        // pubCloud->points.pop_back();
+        pcSP.publish(pcProc.get_processed_pointcloud());
 
         loop_rate.sleep();
     }

@@ -6,6 +6,7 @@
         "limitSymbolsToIncludedHeaders": false
       },
       "includePath": [
+        "/home/quintinumi/project/ws_mid360_hikcamera_calibration/devel/include/**",
         "/home/quintinumi/git_package_src/wpr_simulation/devel/include/**",
         "/opt/ros/noetic/include/**",
         "/home/quintinumi/git_package_src/ws_livox/devel/include/**",
