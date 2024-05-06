@@ -135,18 +135,29 @@ include_directories(
 )
 
 ## Declare a C++ library
-add_library(livox_pointcloud2_tool_lib
-  include include/pc2_sub_pub.h
-  lib/livox_pointcloud2_tool.cpp
+add_library(point_cloud_subscriber_publisher_lib
+  include include/point_cloud_subscriber_publisher.h
+  lib/point_cloud_subscriber_publisher.cpp
+)
+
+add_library(point_cloud_process_lib
+  include include/point_cloud_subscriber_publisher.h
+  include include/point_cloud_process.h
+  lib/point_cloud_process.cpp
 )
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
-add_dependencies(livox_pointcloud2_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(livox_pointcloud2_tool_lib
+target_link_libraries(point_cloud_subscriber_publisher_lib
   ${catkin_LIBRARIES}
+)
+target_link_libraries(point_cloud_process_lib
+  ${catkin_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
 )
 
 ## Declare a C++ executable
@@ -167,7 +178,8 @@ add_executable(test1 src/test.cpp)
 ## Specify libraries to link a library or executable target against
 target_link_libraries(test1
   ${catkin_LIBRARIES}
-  livox_pointcloud2_tool_lib
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
 )
 
 #############
