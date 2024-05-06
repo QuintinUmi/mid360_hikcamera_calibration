@@ -18,12 +18,17 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
   std_msgs
   tf
+  dynamic_reconfigure
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(aruco REQUIRED)
+
+generate_dynamic_reconfigure_options(
+  cfg/PointcloudFilter.cfg
+)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -117,7 +122,7 @@ find_package(aruco REQUIRED)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES livox_pointcloud2_opr
- CATKIN_DEPENDS geometry_msgs livox_ros_driver  nav_msgs pcl_conversions pcl_ros roscpp rospy sensor_msgs std_msgs tf
+ CATKIN_DEPENDS geometry_msgs livox_ros_driver  nav_msgs pcl_conversions pcl_ros roscpp rospy sensor_msgs std_msgs tf dynamic_reconfigure
  DEPENDS system_lib
 )
 
@@ -146,11 +151,18 @@ add_library(point_cloud_process_lib
   lib/point_cloud_process.cpp
 )
 
+add_library(dynamic_reconfigure_lib
+  include include/dynamic_reconfigure.h
+  lib/dynamic_reconfigure.cpp
+)
+
+
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
 ## either from message generation or dynamic reconfigure
 add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(point_cloud_subscriber_publisher_lib
   ${catkin_LIBRARIES}
@@ -159,11 +171,14 @@ target_link_libraries(point_cloud_process_lib
   ${catkin_LIBRARIES}
   point_cloud_subscriber_publisher_lib
 )
+target_link_libraries(dynamic_reconfigure_lib
+  ${catkin_LIBRARIES}
+)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-add_executable(test1 src/test.cpp)
+add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -176,10 +191,11 @@ add_executable(test1 src/test.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(test1
+target_link_libraries(point_cloud_filter
   ${catkin_LIBRARIES}
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
+  dynamic_reconfigure_lib
 )
 
 #############
