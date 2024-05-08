@@ -8,7 +8,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <livox_pointcloud2_opr/PointcloudFilterConfig.h>
 
-#include "dynamic_reconfigure.h"
+#include "livox_pc2_opr/dynamic_reconfigure.h"
 
 using namespace livox_pc2_opr;
 
@@ -32,7 +32,7 @@ void PointcloudFilterReconfigure::FilterReconfigure_CallBack(livox_pointcloud2_o
     this->filterCfg.z_max = pcFilterConfig.z_max;
 }
 
-RQTConfig::_FilterConfig PointcloudFilterReconfigure::get_configure()
+RQTConfig::FilterConfig_ PointcloudFilterReconfigure::get_configure()
 {
     return this->filterCfg;
 }

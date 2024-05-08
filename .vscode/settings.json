@@ -58,6 +58,14 @@
         "__tree": "cpp",
         "__verbose_abort": "cpp",
         "ios": "cpp",
-        "locale": "cpp"
+        "locale": "cpp",
+        "fstream": "cpp",
+        "deque": "cpp",
+        "forward_list": "cpp",
+        "unordered_set": "cpp",
+        "hash_map": "cpp",
+        "hash_set": "cpp",
+        "system_error": "cpp",
+        "__hash_table": "cpp"
     }
 }
