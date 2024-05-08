@@ -66,6 +66,22 @@
         "hash_map": "cpp",
         "hash_set": "cpp",
         "system_error": "cpp",
-        "__hash_table": "cpp"
+        "__hash_table": "cpp",
+        "cwctype": "cpp",
+        "complex": "cpp",
+        "strstream": "cpp",
+        "bit": "cpp",
+        "cctype": "cpp",
+        "chrono": "cpp",
+        "clocale": "cpp",
+        "condition_variable": "cpp",
+        "ctime": "cpp",
+        "iomanip": "cpp",
+        "mutex": "cpp",
+        "numeric": "cpp",
+        "thread": "cpp",
+        "typeindex": "cpp",
+        "variant": "cpp",
+        "__locale": "cpp"
     }
 }

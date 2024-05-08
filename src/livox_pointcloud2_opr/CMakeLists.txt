@@ -161,6 +161,10 @@ add_library(recorder_lib
   lib/recorder.cpp
 )
 
+add_library(pcd_saver_lib
+  include include/livox_pc2_opr/pcd_saver.h
+  lib/pcd_saver.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -169,6 +173,7 @@ add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED
 add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(pcd_saver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(point_cloud_subscriber_publisher_lib
   ${catkin_LIBRARIES}
@@ -183,12 +188,16 @@ target_link_libraries(dynamic_reconfigure_lib
 target_link_libraries(recorder_lib
   ${catkin_LIBRARIES}
 )
+target_link_libraries(pcd_saver_lib
+  ${catkin_LIBRARIES}
+)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(test1 src/test.cpp)
 add_executable(point_cloud_filter src/point_cloud_filter.cpp)
+add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -207,8 +216,16 @@ target_link_libraries(test1
   point_cloud_process_lib
   dynamic_reconfigure_lib
   recorder_lib
+  pcd_saver_lib
 )
 target_link_libraries(point_cloud_filter
+  ${catkin_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  recorder_lib
+)
+target_link_libraries(rosbag_record_example
   ${catkin_LIBRARIES}
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib

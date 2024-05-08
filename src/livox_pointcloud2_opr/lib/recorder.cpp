@@ -81,7 +81,7 @@ namespace livox_pc2_opr
                 this->savePath = this->savePath + std::string("/");
             }
             
-            saveFilePath = this->savePath + this->ros_time_to_local(ros::Time::now());
+            saveFilePath = this->savePath + this->ros_time_to_local(ros::Time::now()) + std::string(".bag");
         }
         else
         {

@@ -15,7 +15,7 @@ namespace livox_pc2_opr
         this->subscribe_topic = std::string("/livox/lidar");
         this->publish_topic = std::string("/livox/lidar_proc");
 
-        this->receivedPointCloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->receivedPCLPointCloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         init_subscribers();
         init_publishers(); 
@@ -26,7 +26,7 @@ namespace livox_pc2_opr
         this->subscribe_topic = subscribe_topic;
         this->publish_topic = publish_topic;
         
-        this->receivedPointCloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->receivedPCLPointCloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         init_subscribers();
         init_publishers();    
@@ -52,21 +52,21 @@ namespace livox_pc2_opr
     {
         pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::fromROSMsg(*rcvCloud, *tempCloud);
-        pcl::copyPointCloud(*tempCloud, *this->receivedPointCloud);
-        // this->receivedPointCloud->points[receivedPointCloud->points.size()-1] = this->receivedPointCloud->points[receivedPointCloud->points.size()-2];
+        pcl::copyPointCloud(*tempCloud, *this->receivedPCLPointCloud);
+        // this->receivedPCLPointCloud->points[receivedPCLPointCloud->points.size()-1] = this->receivedPCLPointCloud->points[receivedPCLPointCloud->points.size()-2];
         
-        // std::cout << this->receivedPointCloud->points.size() << std::endl;
-        // memccpy(&this->receivedPointCloud, tempCloud, 1);
+        // std::cout << this->receivedPCLPointCloud->points.size() << std::endl;
+        // memccpy(&this->receivedPCLPointCloud, tempCloud, 1);
         // pcl::copyPointCloud()
-        // std::cout << "height: " << receivedPointCloud->height << " | width:" << receivedPointCloud->width << std::endl;
-        // ROS_INFO("received %ld points", receivedPointCloud->points.size());
+        // std::cout << "height: " << receivedPCLPointCloud->height << " | width:" << receivedPCLPointCloud->width << std::endl;
+        // ROS_INFO("received %ld points", receivedPCLPointCloud->points.size());
 
     }
 
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloudSubscriberPublisher::get_pointcloud()
     {
-        return this->receivedPointCloud;
+        return this->receivedPCLPointCloud;
     }
 
 
