@@ -17,7 +17,7 @@ namespace livox_pc2_opr
 {
     struct RQTConfig
     {
-        struct _FilterConfig
+        struct FilterConfig_
         {
             float x_min; 
             float x_max;
@@ -40,13 +40,13 @@ namespace livox_pc2_opr
         public:
             PointcloudFilterReconfigure();
 
-            RQTConfig::_FilterConfig get_configure();
+            RQTConfig::FilterConfig_ get_configure();
 
         private:
             void FilterReconfigure_CallBack(livox_pointcloud2_opr::PointcloudFilterConfig &pcFilterConfig, uint32_t level);
 
         private:
-            RQTConfig::_FilterConfig filterCfg;
+            RQTConfig::FilterConfig_ filterCfg;
             dynamic_reconfigure::Server<livox_pointcloud2_opr::PointcloudFilterConfig> server;
             dynamic_reconfigure::Server<livox_pointcloud2_opr::PointcloudFilterConfig>::CallbackType f;
             

@@ -5,7 +5,7 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
-#include "point_cloud_subscriber_publisher.h"
+#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
 
 namespace livox_pc2_opr
 {
@@ -53,6 +53,7 @@ namespace livox_pc2_opr
         pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::fromROSMsg(*rcvCloud, *tempCloud);
         pcl::copyPointCloud(*tempCloud, *this->receivedPointCloud);
+        // this->receivedPointCloud->points[receivedPointCloud->points.size()-1] = this->receivedPointCloud->points[receivedPointCloud->points.size()-2];
         
         // std::cout << this->receivedPointCloud->points.size() << std::endl;
         // memccpy(&this->receivedPointCloud, tempCloud, 1);

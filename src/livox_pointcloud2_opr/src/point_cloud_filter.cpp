@@ -8,9 +8,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <livox_pointcloud2_opr/PointcloudFilterConfig.h>
 
-#include "point_cloud_subscriber_publisher.h"
-#include "point_cloud_process.h"
-#include "dynamic_reconfigure.h"
+#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
+#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_pc2_opr/dynamic_reconfigure.h"
 
 
 int main(int argc, char *argv[])

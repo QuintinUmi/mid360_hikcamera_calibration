@@ -8,7 +8,7 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
-#include "point_cloud_subscriber_publisher.h"
+#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
 
 namespace livox_pc2_opr
 {

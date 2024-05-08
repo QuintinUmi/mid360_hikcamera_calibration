@@ -5,8 +5,14 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
-#include "point_cloud_subscriber_publisher.h"
-#include "point_cloud_process.h"
+#include <dynamic_reconfigure/server.h>
+#include <livox_pointcloud2_opr/PointcloudFilterConfig.h>
+
+#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
+#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_pc2_opr/dynamic_reconfigure.h"
+#include "livox_pc2_opr/recorder.h"
+
 
 int main(int argc, char *argv[])
 {
@@ -17,42 +23,40 @@ int main(int argc, char *argv[])
 
     livox_pc2_opr::PointCloud2Proc pcProc;
 
+    livox_pc2_opr::PointcloudFilterReconfigure filterRecfg;
+    livox_pc2_opr::RQTConfig rqtCfg;
+
     int loopRate = 20;
     ros::Rate loop_rate(loopRate);
     
-    // ros::spin();
-
     pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud(new pcl::PointCloud<pcl::PointXYZI>);
 
-    while(ros::ok()){
+
+    livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
+
+    rcd.start_recording();
     
-        ros::spinOnce();
 
-        // std::cout << pcSP.get_pointcloud() << std::endl;
-        if(!pcSP.get_pointcloud() || pcSP.get_pointcloud()->points.size() == 0){
-            // std::cout << pcSP.get_pointcloud()->points.size() << std::endl;
-            printf("Waiting for Pointcloud Received\n");
-            loop_rate.sleep();
-            continue;
-        }
-        
-        pcProc.setCloud(pcSP.get_pointcloud());
-        pcProc.filter(Eigen::Vector4f(1.0, 1.0, 1.0, 1.0), Eigen::Vector4f(1.0, 1.0, 1.0, 1.0));
-        // std::cout << pcSP.get_pointcloud()->header.frame_id << std::endl;
+    ros::spin();
 
-        
-        // pubCloud->points.emplace_back(pcSP.get_pointcloud()->points[0]);
-        // pubCloud->points.emplace_back(pcSP.get_pointcloud()->points[1]);
-        // pubCloud->points.emplace_back(pcSP.get_pointcloud()->points[2]);
-        // pubCloud->header.frame_id = pcSP.get_pointcloud()->header.frame_id;
-        // pubCloud->header.stamp = pcSP.get_pointcloud()->header.stamp;
-        // pcSP.publish(pubCloud);
-        // pubCloud->points.pop_back();
-        // pubCloud->points.pop_back();
-        // pubCloud->points.pop_back();
+    // printf("%d\n", boost::iequals(std::string(".BAD"), std::string(".bag")));
+    // std::cout << std::string("ss.BAD").substr(std::string("ss.BAD").length() - 4) << std::endl;
+    // ros::Time now = ros::Time::now();
+    // // std::stringstream timeStream;
+    // // timeStream  << (&now);
+    // // std::cout << timeStream.str() << std::endl;
+    // const std::time_t time_c = now.sec; 
+    // std::tm* tm = std::localtime(&time_c); 
+    // std::stringstream ss;
+    // ss << std::put_time(tm, "%Y%m%d%H%M%S");
+    // std::cout << ss.str() << std::endl;
 
-        loop_rate.sleep();
-    }
+    // livox_pc2_opr::Recorder recorder();
+
+    // while(ros::ok()){
+    
+    //     ros::spinOnce();
+    // }
     // std::cout << "height: " << pc.receivedPointCloud->height << " | width:" << pc.receivedPointCloud->width << std::endl;
 
     return 0;
