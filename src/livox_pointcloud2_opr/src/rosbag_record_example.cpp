@@ -10,7 +10,7 @@
 
 int main(int argc, char *argv[])
 {
-    ros::init(argc, argv, "pc2_sub_pub_test");
+    ros::init(argc, argv, "rosbag_record_example");
     ros::NodeHandle rosHandle;
 
 

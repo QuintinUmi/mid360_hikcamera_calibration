@@ -1,5 +1,7 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <std_msgs/String.h>
+#include <std_msgs/Int8.h>
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_types.h>
 #include <pcl/PCLPointCloud2.h>
@@ -12,6 +14,22 @@
 #include "livox_pc2_opr/point_cloud_process.h"
 #include "livox_pc2_opr/dynamic_reconfigure.h"
 #include "livox_pc2_opr/recorder.h"
+#include "livox_pc2_opr/pcd_saver.h"
+
+
+void KeyInput_CallBack(std_msgs::Int8::ConstPtr key_ascii, livox_pc2_opr::PointCloudSubscriberPublisher pcSP){
+
+    livox_pc2_opr::PCDSaver pcdsaver("src/livox_pointcloud2_opr/pcd");
+    if(key_ascii->data == 10){
+        // std::cout << key_ascii->data << std::endl;
+        // ROS_INFO("Test------------------------------------------------------------------------");
+        std::cout << pcSP.get_pointcloud() << std::endl;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud = pcSP.get_pointcloud();
+        pcdsaver.save(pclCloud);
+    }
+    // printf("test-----------------------------------\n");
+}
+
 
 
 int main(int argc, char *argv[])
@@ -19,7 +37,7 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "pc2_sub_pub_test");
     ros::NodeHandle rosHandle;
     
-    livox_pc2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));
+    livox_pc2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar_proc"), std::string("/livox/lidar_proc"));
 
     livox_pc2_opr::PointCloud2Proc pcProc;
 
@@ -32,9 +50,14 @@ int main(int argc, char *argv[])
     pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud(new pcl::PointCloud<pcl::PointXYZI>);
 
 
-    livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
+    // livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
 
-    rcd.start_recording();
+    // rcd.start_recording();
+
+    
+
+    ros::Subscriber keySub = rosHandle.subscribe<std_msgs::Int8>("/msg_hikcamera/key_input", 10,
+                                                                boost::bind(&KeyInput_CallBack, _1, pcSP));
     
 
     ros::spin();

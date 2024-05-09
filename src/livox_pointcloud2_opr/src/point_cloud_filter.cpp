@@ -15,7 +15,7 @@
 
 int main(int argc, char *argv[])
 {
-    ros::init(argc, argv, "pc2_sub_pub_test");
+    ros::init(argc, argv, "point_cloud_filter");
     ros::NodeHandle rosHandle;
     
     livox_pc2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));

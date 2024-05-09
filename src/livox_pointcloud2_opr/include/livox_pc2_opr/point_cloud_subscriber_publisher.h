@@ -24,7 +24,7 @@ namespace livox_pc2_opr
             void publish(pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud);
 
         protected:
-            pcl::PointCloud<pcl::PointXYZI>::Ptr receivedPointCloud;
+            pcl::PointCloud<pcl::PointXYZI>::Ptr receivedPCLPointCloud;
 
         private:
             ros::NodeHandle rosHandle;
