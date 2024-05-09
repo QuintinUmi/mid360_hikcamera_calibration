@@ -25,6 +25,7 @@ find_package(Eigen3 REQUIRED)
 find_package(OpenCV 4 REQUIRED)
 find_package(yaml-cpp REQUIRED)
 find_package(aruco REQUIRED)
+find_package(PCL REQUIRED)
 
 generate_dynamic_reconfigure_options(
   cfg/PointcloudFilter.cfg
@@ -135,6 +136,7 @@ catkin_package(
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
+  ${OpenCV_INCLUDE_DIRS}
   ./include/livox_pointcloud2_opr/
   /usr/local/include/
 )
@@ -196,6 +198,7 @@ target_link_libraries(pcd_saver_lib
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
 add_executable(test1 src/test.cpp)
+add_executable(test_outer src/test_outer.cpp)
 add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 
@@ -218,6 +221,14 @@ target_link_libraries(test1
   recorder_lib
   pcd_saver_lib
 )
+target_link_libraries(test_outer
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  recorder_lib
+)
 target_link_libraries(point_cloud_filter
   ${catkin_LIBRARIES}
   point_cloud_subscriber_publisher_lib
@@ -232,6 +243,7 @@ target_link_libraries(rosbag_record_example
   dynamic_reconfigure_lib
   recorder_lib
 )
+
 
 #############
 ## Install ##
