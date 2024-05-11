@@ -43,8 +43,8 @@ int main(int argc, char *argv[])
         }
 
         rqtCfg.FilterConfig =  box_filter_reconfigure.getConfigure();
-        
-        processed_pointcloud.setCloud(pointcloud_SUB_PUB.getPointcloudXYZ());
+
+        processed_pointcloud.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
         // processed_pointcloud.filter(Eigen::Vector4f(0.0f, 0.0f, 0.0f, 1.0f), Eigen::Vector4f(100.0f, 100.0f, 100.0f, 1.0f));
         processed_pointcloud.boxFilter(Eigen::Vector4f(rqtCfg.FilterConfig.x_min, rqtCfg.FilterConfig.y_min, rqtCfg.FilterConfig.z_min, 1.0f), 
                     Eigen::Vector4f(rqtCfg.FilterConfig.x_max, rqtCfg.FilterConfig.y_max, rqtCfg.FilterConfig.z_max, 1.0f));

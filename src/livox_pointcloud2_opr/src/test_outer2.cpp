@@ -38,7 +38,7 @@
 	{
 
     livox_pc2_opr::PointCloud2Proc pc_process;
-    pc_process.loadPointCloudFile("src/livox_pointcloud2_opr/pcd/20240509061323.pcd");
+    pc_process.loadPointCloudFile("src/livox_pointcloud2_opr/pcd/20240509061349.pcd");
     pc_process.extractNearestRectangleCorners();
     // pc_process.normalClusterExtraction();
     // pc_process.extractNearestClusterCloud();
