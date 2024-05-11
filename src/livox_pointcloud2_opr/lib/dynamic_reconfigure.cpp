@@ -15,11 +15,11 @@ using namespace livox_pc2_opr;
 
 PointcloudFilterReconfigure::PointcloudFilterReconfigure() 
 {
-    this->f = boost::bind(&PointcloudFilterReconfigure::FilterReconfigure_CallBack, this, _1, _2);
+    this->f = boost::bind(&PointcloudFilterReconfigure::FilterReconfigureCallBack, this, _1, _2);
     this->server.setCallback(this->f);
 }
 
-void PointcloudFilterReconfigure::FilterReconfigure_CallBack(livox_pointcloud2_opr::PointcloudFilterConfig &pcFilterConfig, uint32_t level) 
+void PointcloudFilterReconfigure::FilterReconfigureCallBack(livox_pointcloud2_opr::PointcloudFilterConfig &pcFilterConfig, uint32_t level) 
 {
     ROS_INFO("Filter Reconfigure: x_min=%f, x_max=%f, y_min=%f, y_max=%f, z_min=%f, z_max=%f",
             pcFilterConfig.x_min, pcFilterConfig.x_max, pcFilterConfig.y_min, pcFilterConfig.y_max, pcFilterConfig.z_min, pcFilterConfig.z_max);
@@ -32,7 +32,7 @@ void PointcloudFilterReconfigure::FilterReconfigure_CallBack(livox_pointcloud2_o
     this->filterCfg.z_max = pcFilterConfig.z_max;
 }
 
-RQTConfig::FilterConfig_ PointcloudFilterReconfigure::get_configure()
+RQTConfig::_FilterConfig_ PointcloudFilterReconfigure::getConfigure()
 {
     return this->filterCfg;
 }

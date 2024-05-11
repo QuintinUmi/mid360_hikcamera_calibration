@@ -21,14 +21,14 @@ namespace livox_pc2_opr
             Recorder(std::string savePath, std::vector<std::string> recordTopics);
             ~Recorder();
 
-            void set_save_path(std::string savePath);
-            void set_record_topic(std::string recordTopic);
-            void set_record_topic(std::vector<std::string> recordTopics);
+            void setSavePath(std::string savePath);
+            void setRecordTopic(std::string recordTopic);
+            void setRecordTopic(std::vector<std::string> recordTopics);
 
-            void start_recording();
-            void stop_recording();
+            void startRecording();
+            void stopRecording();
 
-            void play_recording();
+            void playRecording();
 
         private:
             std::string savePath;
@@ -39,15 +39,15 @@ namespace livox_pc2_opr
             rosbag::Bag bag;
             int recorderStatus;
 
-            void set_recorder();
-            void reset_recorder();
-            void reset_record_topics();
-            void reset_save_path();
-            void destroy_subscirber();
-            void close_bag();
+            void setRecorder();
+            void resetRecorder();
+            void resetRecordTopics();
+            void resetSavePath();
+            void destroySubscirber();
+            void closeBag();
 
             void RecordingCallBack(const sensor_msgs::PointCloud2ConstPtr& pcMsgs, const std::string& topic);
-            std::string ros_time_to_local(const ros::Time time);
+            std::string rosTimeToLocal(const ros::Time time);
     };
     
 }

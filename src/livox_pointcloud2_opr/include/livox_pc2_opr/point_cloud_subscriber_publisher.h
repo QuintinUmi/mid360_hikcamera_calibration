@@ -15,28 +15,31 @@ namespace livox_pc2_opr
 
         public:
             PointCloudSubscriberPublisher();
-            PointCloudSubscriberPublisher(ros::NodeHandle rosHandle, std::string subscribe_topic, std::string publish_topic);
+            PointCloudSubscriberPublisher(ros::NodeHandle node_handle, std::string subscribe_topic, std::string publish_topic);
             ~PointCloudSubscriberPublisher();
 
-            pcl::PointCloud<pcl::PointXYZI>::Ptr get_pointcloud();
+            pcl::PointCloud<pcl::PointXYZI>::Ptr getPointcloudXYZI();
+            pcl::PointCloud<pcl::PointXYZ>::Ptr getPointcloudXYZ();
             
             void publish();
-            void publish(pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud);
+            void publish(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+            void publish(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
 
         protected:
-            pcl::PointCloud<pcl::PointXYZI>::Ptr receivedPCLPointCloud;
+            pcl::PointCloud<pcl::PointXYZI>::Ptr received_pcl_xyzi;
+            pcl::PointCloud<pcl::PointXYZ>::Ptr received_pcl_xyz;
 
         private:
-            ros::NodeHandle rosHandle;
-            ros::Subscriber pc2Sub;
-            ros::Publisher pc2Pub;
+            ros::NodeHandle node_handle;
+            ros::Subscriber pointcloud2_SUB;
+            ros::Publisher pointcloud2_PUB;
 
             std::string subscribe_topic;
             std::string publish_topic;
 
             void init_subscribers();
             void init_publishers();
-            void Pc2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud);
+            void PC2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &cloud);
 
     };
 

@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
 
-    rcd.start_recording();
+    rcd.startRecording();
     
     ros::spin();
 

@@ -15,24 +15,24 @@ namespace livox_pc2_opr
     {
         public:
             PCDSaver();
-            PCDSaver(std::string savePath);
+            PCDSaver(std::string save_path);
 
-            void set_save_path(std::string savePath);
+            void setSavePath(std::string save_path);
 
             void save(sensor_msgs::PointCloud2ConstPtr cloud);
             void save(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
 
 
         private:
-            std::string savePath;
+            std::string save_path;
 
 
 
 
-            std::string file_name_generator(sensor_msgs::PointCloud2ConstPtr cloud);
-            std::string file_name_generator(sensor_msgs::PointCloud2 cloud);
-            std::string frame_time_to_local(sensor_msgs::PointCloud2ConstPtr cloud);
-            std::string frame_time_to_local(sensor_msgs::PointCloud2 cloud);
+            std::string fileNameGenerator(sensor_msgs::PointCloud2ConstPtr cloud);
+            std::string fileNameGenerator(sensor_msgs::PointCloud2 cloud);
+            std::string frameTimeToLocal(sensor_msgs::PointCloud2ConstPtr cloud);
+            std::string frameTimeToLocal(sensor_msgs::PointCloud2 cloud);
             
 
     };
