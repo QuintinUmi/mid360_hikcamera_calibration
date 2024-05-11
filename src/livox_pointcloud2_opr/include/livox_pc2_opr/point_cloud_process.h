@@ -50,15 +50,16 @@ namespace livox_pc2_opr
 
 
             PointCloud2Proc& boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
-            PointCloud2Proc& normalClusterExtraction();
-            PointCloud2Proc& normalClusterExtraction(int k_search, float smoothness, float curvature, int number_of_neighbours,
-                                                    int min_cluster_size, int max_cluster_size);
-            PointCloud2Proc& normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), int k_search, float smoothness, float curvature, 
-                                                    int number_of_neighbours, int min_cluster_size, int max_cluster_size);
-            PointCloud2Proc& extractNearestCluster();  
-            PointCloud2Proc& extractNearestCluster(Eigen::Vector4f referencePoint);    
-            PointCloud2Proc& planeSegmentation();   
-            PointCloud2Proc& planeSegmentation(int max_iterations, int distance_threshold);
+            // PointCloud2Proc& normalClusterExtraction();
+            PointCloud2Proc& normalClusterExtraction(float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
+                                                    int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);
+            PointCloud2Proc& normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), 
+                                                    float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
+                                                    int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);
+            // PointCloud2Proc& extractNearestClusterCloud();  
+            PointCloud2Proc& extractNearestClusterCloud(Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));    
+            // PointCloud2Proc& planeSegmentation();   
+            PointCloud2Proc& planeSegmentation(float distance_threshold = 0.1, int max_iterations = 1000);
             PointCloud2Proc& planeProjection();
             PointCloud2Proc& planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients);
             PointCloud2Proc& planeProjection(Eigen::Vector4f coefficient);
@@ -74,7 +75,7 @@ namespace livox_pc2_opr
 
 
             pcl::PointCloud<pcl::Normal>::Ptr computeNormals(int k_search);
-            pcl::PointIndices getNearestClusterIndices(std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint);
+            pcl::PointIndices computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));
             void computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector);
             Eigen::Matrix4f computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
         

@@ -86,6 +86,7 @@
         "core": "cpp",
         "numericaldiff": "cpp",
         "queue": "cpp",
-        "stack": "cpp"
+        "stack": "cpp",
+        "*.ipp": "cpp"
     }
 }

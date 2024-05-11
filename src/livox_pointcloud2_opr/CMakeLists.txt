@@ -201,6 +201,7 @@ target_link_libraries(pcd_saver_lib
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(test1 src/test.cpp)
 add_executable(test_outer src/test_outer.cpp)
+add_executable(test_outer2 src/test_outer2.cpp)
 # add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 # add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 
@@ -225,6 +226,15 @@ add_executable(test_outer src/test_outer.cpp)
 #   pcd_saver_lib
 # )
 target_link_libraries(test_outer
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  recorder_lib
+)
+target_link_libraries(test_outer2
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
