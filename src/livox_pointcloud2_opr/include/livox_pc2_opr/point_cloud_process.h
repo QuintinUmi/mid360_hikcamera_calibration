@@ -32,21 +32,21 @@ namespace livox_pc2_opr
     {
         public:
             PointCloud2Proc();
-            PointCloud2Proc(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+            PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
             ~PointCloud2Proc();
 
             int loadPointCloudFile(std::string file_name);
 
             void resetCloud();
-            void setCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
+            void setCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
 
-            pcl::PointCloud<pcl::PointXYZ>::Ptr getRawPointcloud();
-            pcl::PointCloud<pcl::PointXYZ>::Ptr getProcessedPointcloud();
+            pcl::PointCloud<pcl::PointXYZI>::Ptr getRawPointcloud();
+            pcl::PointCloud<pcl::PointXYZI>::Ptr getProcessedPointcloud();
             std::vector<pcl::PointIndices> getClastersIndices();
             pcl::PointIndices getClusterIndices(int index_of_cluster_indices);
             Eigen::Matrix4f getPCATransformMatrix();
             cv::Point2f* getPCAPlaneRectCorners();
-            pcl::PointCloud<pcl::PointXYZ>::Ptr get3DRectCorners();
+            pcl::PointCloud<pcl::PointXYZI>::Ptr get3DRectCorners();
 
 
             PointCloud2Proc& boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
@@ -70,24 +70,24 @@ namespace livox_pc2_opr
             PointCloud2Proc& transformCornersTo3D();
             PointCloud2Proc& transformCornersTo3D(Eigen::Matrix4f transform_matrix);
 
-            pcl::PointCloud<pcl::PointXYZ>::Ptr extractNearestRectangleCorners();
+            pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners();
 
 
 
             pcl::PointCloud<pcl::Normal>::Ptr computeNormals(int k_search);
-            pcl::PointIndices computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));
+            pcl::PointIndices computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));
             void computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector);
             Eigen::Matrix4f computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
         
-            void rawCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-            void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud);
-            void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointIndices cluster_indices);
-            void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices);
-            void processedCloudTransform(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, Eigen::Matrix4f transform_matrix);
+            void rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+            void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+            void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::PointIndices cluster_indices);
+            void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices);
+            void processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix);
 
         private:
-            pcl::PointCloud<pcl::PointXYZ>::Ptr raw_cloud;
-            pcl::PointCloud<pcl::PointXYZ>::Ptr processed_cloud;
+            pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud;
+            pcl::PointCloud<pcl::PointXYZI>::Ptr processed_cloud;
 
             pcl::PointCloud<pcl::Normal>::Ptr normals;
             std::vector<pcl::PointIndices> clusters;
@@ -96,14 +96,14 @@ namespace livox_pc2_opr
             Eigen::Matrix4f pca_transform_matrix;
             cv::RotatedRect pointcloud_rect_box;
             cv::Point2f rect_corners_2d[4];
-            pcl::PointCloud<pcl::PointXYZ>::Ptr rect_corners_3d;
+            pcl::PointCloud<pcl::PointXYZI>::Ptr rect_corners_3d;
 
 
-            pcl::search::Search<pcl::PointXYZ>::Ptr tree;
+            pcl::search::Search<pcl::PointXYZI>::Ptr tree;
 
         private:
             int k_search_;
-            pcl::search::Search<pcl::PointXYZ>::Ptr search_method_;
+            pcl::search::Search<pcl::PointXYZI>::Ptr search_method_;
 
     };
 

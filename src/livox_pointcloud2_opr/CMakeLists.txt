@@ -201,8 +201,8 @@ target_link_libraries(pcd_saver_lib
 ## The recommended prefix ensures that target names across packages don't collide
 # add_executable(test1 src/test.cpp)
 add_executable(test_outer src/test_outer.cpp)
-add_executable(test_outer2 src/test_outer2.cpp)
-# add_executable(point_cloud_filter src/point_cloud_filter.cpp)
+add_executable(caliboard_cloud_detection src/caliboard_cloud_detection.cpp)
+add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 # add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 
 ## Rename C++ executable without prefix
@@ -234,7 +234,7 @@ target_link_libraries(test_outer
   dynamic_reconfigure_lib
   recorder_lib
 )
-target_link_libraries(test_outer2
+target_link_libraries(caliboard_cloud_detection
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
@@ -243,13 +243,13 @@ target_link_libraries(test_outer2
   dynamic_reconfigure_lib
   recorder_lib
 )
-# target_link_libraries(point_cloud_filter
-#   ${catkin_LIBRARIES}
-#   point_cloud_subscriber_publisher_lib
-#   point_cloud_process_lib
-#   dynamic_reconfigure_lib
-#   recorder_lib
-# )
+target_link_libraries(point_cloud_filter
+  ${catkin_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  recorder_lib
+)
 # target_link_libraries(rosbag_record_example
 #   ${catkin_LIBRARIES}
 #   point_cloud_subscriber_publisher_lib

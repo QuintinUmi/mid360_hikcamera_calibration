@@ -30,39 +30,39 @@
 
 namespace livox_pc2_opr
 {
-    PointCloud2Proc::PointCloud2Proc() :    raw_cloud(new pcl::PointCloud<pcl::PointXYZ>),
-                                            processed_cloud(new pcl::PointCloud<pcl::PointXYZ>),
-                                            tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZ>>(new pcl::search::KdTree<pcl::PointXYZ>)),
+    PointCloud2Proc::PointCloud2Proc() :    raw_cloud(new pcl::PointCloud<pcl::PointXYZI>),
+                                            processed_cloud(new pcl::PointCloud<pcl::PointXYZI>),
+                                            tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
                                             normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
                                             plane_coefficients(new pcl::ModelCoefficients),
-                                            rect_corners_3d(new pcl::PointCloud<pcl::PointXYZ>)
+                                            rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>)
     {
-        // this->raw_cloud = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
-        // this->processed_cloud = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
-        // this->tree = pcl::search::Search<pcl::PointXYZ>::Ptr(new pcl::search::KdTree<pcl::PointXYZ>);
+        // this->raw_cloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        // this->processed_cloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        // this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
         // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
-        // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
+        // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
     }
     
-    PointCloud2Proc::PointCloud2Proc(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud) :   raw_cloud(cloud),
+    PointCloud2Proc::PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) :   raw_cloud(cloud),
                                                                                     processed_cloud(cloud),
-                                                                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZ>>(new pcl::search::KdTree<pcl::PointXYZ>)),
+                                                                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
                                                                                     normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
                                                                                     plane_coefficients(new pcl::ModelCoefficients),
-                                                                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZ>)
+                                                                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>)
     {
-        // this->raw_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZ>>(cloud);
-        // this->processed_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZ>>(cloud),
-        // this->tree = pcl::search::Search<pcl::PointXYZ>::Ptr(new pcl::search::KdTree<pcl::PointXYZ>);
+        // this->raw_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(cloud);
+        // this->processed_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(cloud),
+        // this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
         // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
-        // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
+        // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
     }
 
     PointCloud2Proc::~PointCloud2Proc() {}
 
     int PointCloud2Proc::loadPointCloudFile(std::string file_name)
     {
-        // pcl::PointCloud<pcl::PointXYZ>::Ptr rawCloud(new pcl::PointCloud<pcl::PointXYZ>);
+        // pcl::PointCloud<pcl::PointXYZI>::Ptr rawCloud(new pcl::PointCloud<pcl::PointXYZI>);
         this->raw_cloud->clear();
         if (pcl::io::loadPCDFile(file_name, *this->raw_cloud) < 0)
         {
@@ -70,11 +70,6 @@ namespace livox_pc2_opr
             return -1;
         }
         this->processedCloudUpdate(this->raw_cloud);
-
-        // std::cout << this->clusters.size() << std::endl;
-		// viewer.showCloud(this->processed_cloud);
-        // sleep(5);
-        // this->processed_cloud = pcl::PointCloud<pcl::PointXYZ>::Ptr(this->raw_cloud);
         
         return 0;
     }
@@ -87,17 +82,17 @@ namespace livox_pc2_opr
         }
         this->processedCloudUpdate(this->raw_cloud);
     }
-    void PointCloud2Proc::setCloud(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+    void PointCloud2Proc::setCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
     {
         this->rawCloudUpdate(cloud);
         this->processedCloudUpdate(cloud);
     }
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloud2Proc::getRawPointcloud()
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getRawPointcloud()
     {
         return this->raw_cloud;
     }
-    pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloud2Proc::getProcessedPointcloud()
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getProcessedPointcloud()
     {
         return this->processed_cloud;
     }
@@ -117,7 +112,7 @@ namespace livox_pc2_opr
     {
         return this->rect_corners_2d;
     }
-    pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloud2Proc::get3DRectCorners()
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::get3DRectCorners()
     {
         return this->rect_corners_3d;
     }
@@ -125,8 +120,8 @@ namespace livox_pc2_opr
 
     PointCloud2Proc& PointCloud2Proc::boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point)
     {
-        pcl::CropBox<pcl::PointXYZ> boxFilter;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::CropBox<pcl::PointXYZI> boxFilter;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
         boxFilter.setInputCloud(this->processed_cloud);
         boxFilter.setMin(min_point);
         boxFilter.setMax(max_point);
@@ -137,61 +132,12 @@ namespace livox_pc2_opr
         return *this;
     }
 
-    // PointCloud2Proc& PointCloud2Proc::normalClusterExtraction(float smoothness, float curvature, int number_of_neighbours, int k_search, 
-                                                            // int min_cluster_size, int max_cluster_size)
-    // {
-    //     int k_search = 50;
-    //     float smoothness = 3.0 / 180.0 * M_PI;
-    //     float curvature = 0.1;
-    //     int number_of_neighbours = 30;
-    //     int min_cluster_size = 100;
-    //     int max_cluster_size = 25000;
-
-    //     this->computeNormals(k_search);
-    //     // pcl::PointCloud<pcl::PointXYZ>::Ptr rawCloud(new pcl::PointCloud<pcl::PointXYZ>);
-    //     // if (pcl::io::loadPCDFile("src/livox_pointcloud2_opr/pcd/20240509061323.pcd", *rawCloud) < 0)
-    //     // {
-    //     //     PCL_ERROR("点云读取失败！\n");
-    //     //     // return -1;
-    //     // }
-    //     // pcl::search::Search<pcl::PointXYZ>::Ptr tree1 = boost::shared_ptr<pcl::search::Search<pcl::PointXYZ> > (new pcl::search::KdTree<pcl::PointXYZ>);
-
-    //     // pcl::PointCloud<pcl::Normal>::Ptr normals_temp(new pcl::PointCloud<pcl::Normal>);
-    //     // pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
-    //     // normal_estimator.setSearchMethod(this->tree);
-    //     // normal_estimator.setInputCloud(this->processed_cloud);
-    //     // normal_estimator.setKSearch(k_search);
-    //     // normal_estimator.compute(*this->normals);
-
-    //     pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
-    //     reg.setMinClusterSize(min_cluster_size);  
-    //     reg.setMaxClusterSize(max_cluster_size);  
-    //     reg.setSearchMethod(this->tree);    
-    //     reg.setNumberOfNeighbours(number_of_neighbours);    
-    //     reg.setInputCloud(this->processed_cloud);         
-    //     reg.setInputNormals(this->normals);     
-    //     reg.setSmoothnessThreshold(smoothness);  //smoothness
-    //     reg.setCurvatureThreshold(curvature);     //curvature
-
-    //     // std::vector <pcl::PointIndices> clusters_temp;
-    //     this->clusters.clear();
-    //     reg.extract(this->clusters);
-
-    //     pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
-    //     pcl::visualization::CloudViewer cluster_viewer ("Cluster viewer");
-    //     cluster_viewer.showCloud(colored_cloud);
-    //     sleep(5);
-
-    //     this->processedCloudUpdate(this->processed_cloud, this->clusters);
-        
-    //     return *this;
-    // }
     PointCloud2Proc& PointCloud2Proc::normalClusterExtraction(float smoothness, float curvature, int number_of_neighbours, int k_search, 
                                                             int min_cluster_size, int max_cluster_size)
     {
         this->computeNormals(k_search);
 
-        pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
+        pcl::RegionGrowing<pcl::PointXYZI, pcl::Normal> reg;
         reg.setMinClusterSize(min_cluster_size);  
         reg.setMaxClusterSize(max_cluster_size);  
         reg.setSearchMethod(this->tree);    
@@ -203,7 +149,7 @@ namespace livox_pc2_opr
 
         this->clusters.clear();
         reg.extract(this->clusters);
-
+std::cout << this->clusters.size() << std::endl;
         return *this;
     }
     PointCloud2Proc& PointCloud2Proc::normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), float smoothness, float curvature, int k_search, 
@@ -211,7 +157,7 @@ namespace livox_pc2_opr
     {
         this->computeNormals(k_search);
 
-        pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
+        pcl::RegionGrowing<pcl::PointXYZI, pcl::Normal> reg;
         reg.setMinClusterSize(min_cluster_size);  
         reg.setMaxClusterSize(max_cluster_size);  
         reg.setSearchMethod(this->tree);    
@@ -227,76 +173,33 @@ namespace livox_pc2_opr
         return *this;
     }
 
-    // PointCloud2Proc& PointCloud2Proc::extractNearestClusterCloud()
-    // {
-    //     Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0);
-    //     pcl::PointIndices cluster = this->getNearestClusterIndices(this->clusters, referencePoint);    
-
-    //     this->processedCloudUpdate(this->processed_cloud, cluster);
-
-    //     return *this;
-    // }
     PointCloud2Proc& PointCloud2Proc::extractNearestClusterCloud(Eigen::Vector4f referencePoint)
     {
         pcl::PointIndices cluster = this->computeNearestClusterIndices(this->processed_cloud, this->clusters, referencePoint);   
 
         this->processedCloudUpdate(this->processed_cloud, cluster);
-
-        // viewer.showCloud(this->processed_cloud);
-        // sleep(10);
-
+std::cout << this->clusters.size() << std::endl;
         return *this;
     }
 
-    // PointCloud2Proc& PointCloud2Proc::planeSegmentation()
-    // {
-
-    //     int distance_threshold = 0.1;
-    //     int max_iterations = 1000;
-    //     pcl::SACSegmentation<pcl::PointXYZ> seg;
-    //     seg.setOptimizeCoefficients(true); 
-    //     seg.setModelType(pcl::SACMODEL_PLANE);
-    //     seg.setMethodType(pcl::SAC_RANSAC);
-    //     seg.setMaxIterations(max_iterations);        
-    //     seg.setDistanceThreshold(distance_threshold);    
-
-    //     pcl::ExtractIndices<pcl::PointXYZ> extract;
-    //     pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>);
-
-    //     pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
-    //     pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
-
-    //     seg.setInputCloud(this->processed_cloud);
-    //     seg.segment(*inliers, *coefficients);
-
-    //     // 提取内点
-    //     extract.setInputCloud(this->processed_cloud);
-    //     extract.setIndices(inliers);
-    //     extract.setNegative(false);
-    //     extract.filter(*cloud_plane);
-
-    //     this->processedCloudUpdate(this->processed_cloud);
-            
-    //     return *this;
-    // }
     PointCloud2Proc& PointCloud2Proc::planeSegmentation(float distance_threshold, int max_iterations)
     {
-        pcl::SACSegmentation<pcl::PointXYZ> seg;
+        pcl::SACSegmentation<pcl::PointXYZI> seg;
         seg.setOptimizeCoefficients(true); 
         seg.setModelType(pcl::SACMODEL_PLANE);
         seg.setMethodType(pcl::SAC_RANSAC);
         seg.setMaxIterations(max_iterations);        
         seg.setDistanceThreshold(distance_threshold);    
 
-        pcl::ExtractIndices<pcl::PointXYZ> extract;
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::ExtractIndices<pcl::PointXYZI> extract;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZI>);
 
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
         pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
         seg.setInputCloud(this->processed_cloud);
         seg.segment(*inliers, *coefficients);
 
-        // 提取内点
+
         extract.setInputCloud(this->processed_cloud);
         extract.setIndices(inliers);
         extract.setNegative(false);
@@ -305,18 +208,15 @@ namespace livox_pc2_opr
         this->plane_coefficients->header = coefficients->header;
         this->plane_coefficients->values = coefficients->values;
         this->processedCloudUpdate(cloud_plane);
-
-        // viewer.showCloud(this->processed_cloud);
-        // sleep(10);
             
         return *this;
     }
 
     PointCloud2Proc& PointCloud2Proc::planeProjection()
     {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
 
-        pcl::ProjectInliers<pcl::PointXYZ> proj;
+        pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
         proj.setInputCloud(this->processed_cloud);
         proj.setModelCoefficients(this->plane_coefficients);
@@ -324,23 +224,19 @@ namespace livox_pc2_opr
 
         this->processedCloudUpdate(cloud_projected);
 
-        // viewer.showCloud(this->processed_cloud);
-        // sleep(10);
-
         return *this;
     }
     PointCloud2Proc& PointCloud2Proc::planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients)
     {
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
 
-        pcl::ProjectInliers<pcl::PointXYZ> proj;
+        pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
         proj.setInputCloud(this->processed_cloud);
         proj.setModelCoefficients(plane_coefficients);
         proj.filter(*cloud_projected);
 
         this->processedCloudUpdate(cloud_projected);
-
 
         return *this;
     }
@@ -354,18 +250,15 @@ namespace livox_pc2_opr
         coefficients->values[2] = coefficient[2];
         coefficients->values[3] = coefficient[3];
 
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
 
-        pcl::ProjectInliers<pcl::PointXYZ> proj;
+        pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
         proj.setInputCloud(this->processed_cloud);
         proj.setModelCoefficients(plane_coefficients);
         proj.filter(*cloud_projected);
 
         this->processedCloudUpdate(cloud_projected);
-
-        // viewer.showCloud(this->processed_cloud);
-        // sleep(10);
 
         return *this;
     }
@@ -376,16 +269,8 @@ namespace livox_pc2_opr
         Eigen::Vector4f mean_vector;
         this->computePCAMatrix(eigen_vector, mean_vector);
         this->pca_transform_matrix = this->computeTransformMatrix(eigen_vector, mean_vector);
-        
-        // std::cout << this->pca_transform_matrix << std::endl;
-
-        // viewer.showCloud(this->processed_cloud);
-        // sleep(10);
 
         this->processedCloudTransform(this->processed_cloud, this->pca_transform_matrix);
-
-        // viewer.showCloud(this->processed_cloud);
-        // sleep(10);
 
         return *this;
     }
@@ -423,7 +308,12 @@ namespace livox_pc2_opr
         for (int i = 0; i < 4; i++) {
             Eigen::Vector4f pt_2d(this->rect_corners_2d[i].x, this->rect_corners_2d[i].y, 0, 1);
             Eigen::Vector4f pt_3d = this->pca_transform_matrix.inverse() * pt_2d;
-            this->rect_corners_3d->push_back(pcl::PointXYZ(pt_3d[0], pt_3d[1], pt_3d[2]));
+            pcl::PointXYZI point_3d;
+            point_3d.x = pt_3d[0];
+            point_3d.y = pt_3d[1];
+            point_3d.z = pt_3d[2];
+            point_3d.intensity = 0;
+            this->rect_corners_3d->push_back(point_3d);
         }
 
         return *this;
@@ -433,7 +323,12 @@ namespace livox_pc2_opr
         for (int i = 0; i < 4; i++) {
             Eigen::Vector4f pt_2d(this->rect_corners_2d[i].x, this->rect_corners_2d[i].y, 0, 1);
             Eigen::Vector4f pt_3d = transform_matrix * pt_2d;
-            this->rect_corners_3d->push_back(pcl::PointXYZ(pt_3d[0], pt_3d[1], pt_3d[2]));
+            pcl::PointXYZI point_3d;
+            point_3d.x = pt_3d[0];
+            point_3d.y = pt_3d[1];
+            point_3d.z = pt_3d[2];
+            point_3d.intensity = 0;
+            this->rect_corners_3d->push_back(point_3d);
         }
 
         return *this;
@@ -441,7 +336,7 @@ namespace livox_pc2_opr
 
 
 
-    pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloud2Proc::extractNearestRectangleCorners()
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners()
     {
         this->normalClusterExtraction();
         this->extractNearestClusterCloud();
@@ -461,7 +356,7 @@ namespace livox_pc2_opr
     pcl::PointCloud<pcl::Normal>::Ptr PointCloud2Proc::computeNormals(int k_search = 50)
     {
         // pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
-        pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
+        pcl::NormalEstimation<pcl::PointXYZI, pcl::Normal> normal_estimator;
         normal_estimator.setSearchMethod(this->tree);
         normal_estimator.setInputCloud(this->processed_cloud);
         normal_estimator.setKSearch(k_search);
@@ -470,7 +365,7 @@ namespace livox_pc2_opr
         return this->normals;
     }
 
-    pcl::PointIndices PointCloud2Proc::computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZ>::Ptr input_cloud, std::vector<pcl::PointIndices> input_clusters, 
+    pcl::PointIndices PointCloud2Proc::computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud, std::vector<pcl::PointIndices> input_clusters, 
                                                         Eigen::Vector4f referencePoint)
     {
         float minDistance = std::numeric_limits<float>::max();
@@ -483,7 +378,7 @@ namespace livox_pc2_opr
         }
 
         for (size_t i = 0; i < input_clusters.size(); ++i) {
-            pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*input_cloud, input_clusters[i], *cluster);
             Eigen::Vector4f centroid;
             pcl::compute3DCentroid(*cluster, centroid);
@@ -499,7 +394,7 @@ namespace livox_pc2_opr
 
     void PointCloud2Proc::computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector)
     {
-        pcl::PCA<pcl::PointXYZ> pca;
+        pcl::PCA<pcl::PointXYZI> pca;
         pca.setInputCloud(this->processed_cloud);
         eigen_vector = pca.getEigenVectors();
         mean_vector = pca.getMean();
@@ -514,16 +409,16 @@ namespace livox_pc2_opr
         return transform;
     }
 
-    void PointCloud2Proc::rawCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+    void PointCloud2Proc::rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
     {
         this->raw_cloud->clear();
         pcl::copyPointCloud(*cloud, *this->raw_cloud);
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZ>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, *this->processed_cloud);
@@ -534,11 +429,11 @@ namespace livox_pc2_opr
             pcl::copyPointCloud(*cloud, *this->processed_cloud);
         }
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, pcl::PointIndices cluster_indices)
+    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::PointIndices cluster_indices)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZ>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, cluster_indices, *this->processed_cloud);
@@ -549,11 +444,11 @@ namespace livox_pc2_opr
             pcl::copyPointCloud(*cloud, cluster_indices, *this->processed_cloud);
         }
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices)
+    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZ>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, clusters_indices, *this->processed_cloud);
@@ -564,11 +459,11 @@ namespace livox_pc2_opr
             pcl::copyPointCloud(*cloud, clusters_indices, *this->processed_cloud);
         }
     }
-    void PointCloud2Proc::processedCloudTransform(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, Eigen::Matrix4f transform_matrix)
+    void PointCloud2Proc::processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZ>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             pcl::transformPointCloud(*write_in_cloud, *this->processed_cloud, transform_matrix);
         }

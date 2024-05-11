@@ -15,6 +15,7 @@ namespace livox_pc2_opr
         this->subscribe_topic = std::string("/livox/lidar");
         this->publish_topic = std::string("/livox/lidar_proc");
 
+        this->received_pcl_xyz = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
         this->received_pcl_xyzi = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         init_subscribers();
@@ -26,6 +27,7 @@ namespace livox_pc2_opr
         this->subscribe_topic = subscribe_topic;
         this->publish_topic = publish_topic;
         
+        this->received_pcl_xyz = pcl::PointCloud<pcl::PointXYZ>::Ptr(new pcl::PointCloud<pcl::PointXYZ>);
         this->received_pcl_xyzi = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         init_subscribers();
