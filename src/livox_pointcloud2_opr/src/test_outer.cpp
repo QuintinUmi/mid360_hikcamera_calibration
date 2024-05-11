@@ -96,8 +96,10 @@
   std::vector <pcl::PointIndices> clusters;
   reg.extract (clusters);
 
-  
-
+//   pcl::PointCloud <pcl::PointXYZRGB>::Ptr colored_cloud = reg.getColoredCloud ();
+//         pcl::visualization::CloudViewer cluster_viewer ("Cluster viewer");
+//         cluster_viewer.showCloud(colored_cloud);
+//     sleep(5);
 // //-------------------------------------------------------------------------------------
 Eigen::Vector4f referencePoint(0.0, 0.0, 0.0, 0.0); // 观察点位置
 
@@ -152,7 +154,10 @@ for (size_t i = 0; i < clusters.size(); ++i) {
   
 
 // // 	sleep(5);
-
+// std::cout << clusters.size() << std::endl;
+//         pcl::visualization::CloudViewer viewer("viewer");
+// 		viewer.showCloud(normalFilter_cloud);
+//         sleep(5);
 // //--------------------------------------------------------------------------------------------------
 	// 创建分割对象
     pcl::SACSegmentation<pcl::PointXYZ> seg;
