@@ -14,14 +14,14 @@ namespace livox_pc2_opr
     PCDSaver::PCDSaver()
     {
     }
-    PCDSaver::PCDSaver(std::string savePath)
+    PCDSaver::PCDSaver(std::string save_path)
     {
-        this->savePath = savePath;
+        this->save_path = save_path;
     }
 
-    void PCDSaver::set_save_path(std::string savePath)
+    void PCDSaver::setSavePath(std::string save_path)
     {
-        this->savePath = savePath;
+        this->save_path = save_path;
     }
 
     void PCDSaver::save(sensor_msgs::PointCloud2ConstPtr cloud)
@@ -29,7 +29,7 @@ namespace livox_pc2_opr
         pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::fromROSMsg(*cloud, *pclCloud);
 
-        pcl::io::savePCDFileASCII(this->file_name_generator(cloud), *pclCloud);
+        pcl::io::savePCDFileASCII(this->fileNameGenerator(cloud), *pclCloud);
         ROS_INFO("Saved cloud with %ld points", pclCloud->points.size());
     }
     void PCDSaver::save(pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud)
@@ -38,7 +38,7 @@ namespace livox_pc2_opr
         sensor_msgs::PointCloud2 rosCloud;
         
         pcl::toROSMsg(*pclCloud, rosCloud);   
-        pcl::io::savePCDFileASCII(this->file_name_generator(rosCloud), *pclCloud);
+        pcl::io::savePCDFileASCII(this->fileNameGenerator(rosCloud), *pclCloud);
         
         ROS_INFO("Saved cloud with %ld points", pclCloud->points.size());
     }
@@ -46,48 +46,48 @@ namespace livox_pc2_opr
 
 
 
-    std::string PCDSaver::file_name_generator(sensor_msgs::PointCloud2ConstPtr cloud)
+    std::string PCDSaver::fileNameGenerator(sensor_msgs::PointCloud2ConstPtr cloud)
     {
         std::string saveFilePath;
-        if(!boost::iequals(this->savePath.substr(this->savePath.length() - 4), std::string(".pcd")))
+        if(!boost::iequals(this->save_path.substr(this->save_path.length() - 4), std::string(".pcd")))
         {
-            if(!boost::iequals(this->savePath.substr(this->savePath.length() - 1), std::string("/")))
+            if(!boost::iequals(this->save_path.substr(this->save_path.length() - 1), std::string("/")))
             {
-                this->savePath = this->savePath + std::string("/");
+                this->save_path = this->save_path + std::string("/");
             }
             
-            saveFilePath = this->savePath + this->frame_time_to_local(cloud) + std::string(".pcd");
+            saveFilePath = this->save_path + this->frameTimeToLocal(cloud) + std::string(".pcd");
         }
         else
         {
-            saveFilePath = this->savePath;
+            saveFilePath = this->save_path;
         }
 
         return saveFilePath;
     }
-    std::string PCDSaver::file_name_generator(sensor_msgs::PointCloud2 cloud)
+    std::string PCDSaver::fileNameGenerator(sensor_msgs::PointCloud2 cloud)
     {
         std::string saveFilePath;
-        if(!boost::iequals(this->savePath.substr(this->savePath.length() - 4), std::string(".pcd")))
+        if(!boost::iequals(this->save_path.substr(this->save_path.length() - 4), std::string(".pcd")))
         {
-            if(!boost::iequals(this->savePath.substr(this->savePath.length() - 1), std::string("/")))
+            if(!boost::iequals(this->save_path.substr(this->save_path.length() - 1), std::string("/")))
             {
-                this->savePath = this->savePath + std::string("/");
+                this->save_path = this->save_path + std::string("/");
             }
             // printf("test-------------------------------------------\n");
-            saveFilePath = this->savePath + this->frame_time_to_local(cloud) + std::string(".pcd");
+            saveFilePath = this->save_path + this->frameTimeToLocal(cloud) + std::string(".pcd");
             std::cout << saveFilePath << std::endl;
         }
         else
         {
-            saveFilePath = this->savePath;
+            saveFilePath = this->save_path;
         }
 
         return saveFilePath;
     }
 
 
-    std::string PCDSaver::frame_time_to_local(sensor_msgs::PointCloud2ConstPtr cloud)
+    std::string PCDSaver::frameTimeToLocal(sensor_msgs::PointCloud2ConstPtr cloud)
     {
         const ros::Time frameTime = cloud->header.stamp;
         const std::time_t time_c = frameTime.sec; 
@@ -96,7 +96,7 @@ namespace livox_pc2_opr
         ss << std::put_time(tm, "%Y%m%d%H%M%S");
         return ss.str();
     }
-    std::string PCDSaver::frame_time_to_local(sensor_msgs::PointCloud2 cloud)
+    std::string PCDSaver::frameTimeToLocal(sensor_msgs::PointCloud2 cloud)
     {
         const ros::Time frameTime = cloud.header.stamp;
         const std::time_t time_c = frameTime.sec; 

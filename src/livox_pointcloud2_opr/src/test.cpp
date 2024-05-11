@@ -23,8 +23,8 @@ void KeyInput_CallBack(std_msgs::Int8::ConstPtr key_ascii, livox_pc2_opr::PointC
     if(key_ascii->data == 10){
         // std::cout << key_ascii->data << std::endl;
         // ROS_INFO("Test------------------------------------------------------------------------");
-        std::cout << pcSP.get_pointcloud() << std::endl;
-        pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud = pcSP.get_pointcloud();
+        std::cout << pcSP.getPointcloudXYZI() << std::endl;
+        pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud = pcSP.getPointcloudXYZI();
         pcdsaver.save(pclCloud);
     }
     // printf("test-----------------------------------\n");
@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
 
     // livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
 
-    // rcd.start_recording();
+    // rcd.startRecording();
 
     
 

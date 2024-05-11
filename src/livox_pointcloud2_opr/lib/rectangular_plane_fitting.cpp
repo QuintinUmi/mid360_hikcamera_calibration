@@ -25,7 +25,7 @@ namespace livox_pc2_opr
     {
         //-----------------------------读取点云----------------------------
         
-        if (pcl::io::loadPCDFile("src/livox_pointcloud2_opr/pcd/20240509061333.pcd", *cloud) < 0)
+        if (pcl::io::loadPCDFile("src/livox_pointcloud2_opr/pcd/20240509061337.pcd", *cloud) < 0)
         {
             PCL_ERROR("点云读取失败！\n");
             return -1;

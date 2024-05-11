@@ -11,22 +11,22 @@ namespace livox_pc2_opr
 {
     PointCloudSubscriberPublisher::PointCloudSubscriberPublisher()
     {
-        this->rosHandle = ros::NodeHandle();
+        this->node_handle = ros::NodeHandle();
         this->subscribe_topic = std::string("/livox/lidar");
         this->publish_topic = std::string("/livox/lidar_proc");
 
-        this->receivedPCLPointCloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->received_pcl_xyzi = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         init_subscribers();
         init_publishers(); 
     }
-    PointCloudSubscriberPublisher::PointCloudSubscriberPublisher(ros::NodeHandle rosHandle, std::string subscribe_topic, std::string publish_topic)
+    PointCloudSubscriberPublisher::PointCloudSubscriberPublisher(ros::NodeHandle node_handle, std::string subscribe_topic, std::string publish_topic)
     {
-        this->rosHandle = rosHandle;
+        this->node_handle = node_handle;
         this->subscribe_topic = subscribe_topic;
         this->publish_topic = publish_topic;
         
-        this->receivedPCLPointCloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->received_pcl_xyzi = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
 
         init_subscribers();
         init_publishers();    
@@ -38,48 +38,64 @@ namespace livox_pc2_opr
 
     void PointCloudSubscriberPublisher::init_subscribers() 
     {
-        pc2Sub = rosHandle.subscribe<sensor_msgs::PointCloud2>(this->subscribe_topic, 10, &PointCloudSubscriberPublisher::Pc2SubCallBack, this);
+        pointcloud2_SUB = node_handle.subscribe<sensor_msgs::PointCloud2>(this->subscribe_topic, 10, &PointCloudSubscriberPublisher::PC2SubCallBack, this);
     }
 
     void PointCloudSubscriberPublisher::init_publishers()
     {
-        pc2Pub = rosHandle.advertise<sensor_msgs::PointCloud2>(this->publish_topic, 10);
+        pointcloud2_PUB = node_handle.advertise<sensor_msgs::PointCloud2>(this->publish_topic, 10);
     }
 
     
 
-    void PointCloudSubscriberPublisher::Pc2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &rcvCloud)
+    void PointCloudSubscriberPublisher::PC2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &rcvCloud)
     {
         pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
         pcl::fromROSMsg(*rcvCloud, *tempCloud);
-        pcl::copyPointCloud(*tempCloud, *this->receivedPCLPointCloud);
-        // this->receivedPCLPointCloud->points[receivedPCLPointCloud->points.size()-1] = this->receivedPCLPointCloud->points[receivedPCLPointCloud->points.size()-2];
+        pcl::copyPointCloud(*tempCloud, *this->received_pcl_xyzi);
+        pcl::copyPointCloud(*tempCloud, *this->received_pcl_xyz);
+        // this->received_pcl_pointcloud->points[received_pcl_pointcloud->points.size()-1] = this->received_pcl_pointcloud->points[received_pcl_pointcloud->points.size()-2];
         
-        // std::cout << this->receivedPCLPointCloud->points.size() << std::endl;
-        // memccpy(&this->receivedPCLPointCloud, tempCloud, 1);
+        // std::cout << this->received_pcl_pointcloud->points.size() << std::endl;
+        // memccpy(&this->received_pcl_pointcloud, tempCloud, 1);
         // pcl::copyPointCloud()
-        // std::cout << "height: " << receivedPCLPointCloud->height << " | width:" << receivedPCLPointCloud->width << std::endl;
-        // ROS_INFO("received %ld points", receivedPCLPointCloud->points.size());
+        // std::cout << "height: " << received_pcl_pointcloud->height << " | width:" << received_pcl_pointcloud->width << std::endl;
+        // ROS_INFO("received %ld points", received_pcl_pointcloud->points.size());
 
     }
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloudSubscriberPublisher::get_pointcloud()
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloudSubscriberPublisher::getPointcloudXYZI()
     {
-        return this->receivedPCLPointCloud;
+        return this->received_pcl_xyzi;
+    }
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr PointCloudSubscriberPublisher::getPointcloudXYZ()
+    {
+        return this->received_pcl_xyz;
     }
 
 
     void PointCloudSubscriberPublisher::publish(){}
 
-    void PointCloudSubscriberPublisher::publish(pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud)
+    void PointCloudSubscriberPublisher::publish(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
     {
         sensor_msgs::PointCloud2 msg;
 
-        pcl::toROSMsg(*pubCloud, msg);
+        pcl::toROSMsg(*cloud, msg);
 
         // publish
-        pc2Pub.publish(msg);
+        pointcloud2_PUB.publish(msg);
+
+    } 
+    void PointCloudSubscriberPublisher::publish(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud)
+    {
+        sensor_msgs::PointCloud2 msg;
+
+        pcl::toROSMsg(*cloud, msg);
+
+        // publish
+        pointcloud2_PUB.publish(msg);
 
     } 
 

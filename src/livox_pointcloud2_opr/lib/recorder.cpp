@@ -13,54 +13,54 @@ namespace livox_pc2_opr
 {
     Recorder::Recorder()
     {
-        this->reset_recorder();
+        this->resetRecorder();
     }
     Recorder::Recorder(std::string savePath)
     {
-        this->reset_recorder();
+        this->resetRecorder();
         this->savePath = savePath;
     }
     Recorder::Recorder(std::string savePath, std::string recordTopic)
     {
-        this->reset_recorder();
+        this->resetRecorder();
         this->savePath = savePath;
         this->recordTopics.emplace_back(recordTopic);
-        this->set_recorder();
+        this->setRecorder();
     }
     Recorder::Recorder(std::string savePath, std::vector<std::string> recordTopics)
     {
-        this->reset_recorder();
+        this->resetRecorder();
         this->savePath = savePath;
         this->recordTopics = recordTopics;
-        this->set_recorder();
+        this->setRecorder();
     }
 
     Recorder::~Recorder()
     {
-        this->reset_recorder();
+        this->resetRecorder();
     }
 
-    void Recorder::set_save_path(std::string savePath)
+    void Recorder::setSavePath(std::string savePath)
     {
-        this->destroy_subscirber();
-        this->reset_save_path();
+        this->destroySubscirber();
+        this->resetSavePath();
         this->savePath = savePath;
         
-        this->set_recorder();
+        this->setRecorder();
     }
-    void Recorder::set_record_topic(std::string recordTopic)
+    void Recorder::setRecordTopic(std::string recordTopic)
     {
-        this->destroy_subscirber();
-        this->reset_record_topics();
+        this->destroySubscirber();
+        this->resetRecordTopics();
         this->recordTopics.emplace_back(recordTopic);
-        this->set_recorder();
+        this->setRecorder();
     }
-    void Recorder::set_record_topic(std::vector<std::string> recordTopics)
+    void Recorder::setRecordTopic(std::vector<std::string> recordTopics)
     {
         this->recordTopics = recordTopics;
     }
 
-    void Recorder::start_recording()
+    void Recorder::startRecording()
     {
         if(this->recordTopics.empty())
         {
@@ -81,7 +81,7 @@ namespace livox_pc2_opr
                 this->savePath = this->savePath + std::string("/");
             }
             
-            saveFilePath = this->savePath + this->ros_time_to_local(ros::Time::now()) + std::string(".bag");
+            saveFilePath = this->savePath + this->rosTimeToLocal(ros::Time::now()) + std::string(".bag");
         }
         else
         {
@@ -91,22 +91,22 @@ namespace livox_pc2_opr
         this->bag.open(saveFilePath, rosbag::bagmode::Write);
         this->recorderStatus = 1;
     }
-    void Recorder::stop_recording()
+    void Recorder::stopRecording()
     {
         this->recorderStatus = 0;
-        this->close_bag();
+        this->closeBag();
     }
 
-    void Recorder::play_recording()
+    void Recorder::playRecording()
     {
         
     }
 
 
 
-    void Recorder::set_recorder()
+    void Recorder::setRecorder()
     {
-        this->destroy_subscirber();
+        this->destroySubscirber();
 
         ros::Subscriber subTemp;
         
@@ -117,31 +117,31 @@ namespace livox_pc2_opr
         }
         
     }
-    void Recorder::reset_recorder()
+    void Recorder::resetRecorder()
     {
-        this->destroy_subscirber(); 
-        this->reset_record_topics();
+        this->destroySubscirber(); 
+        this->resetRecordTopics();
         this->savePath.clear();
         this->recorderStatus = 0;
     }
-    void Recorder::reset_record_topics()
+    void Recorder::resetRecordTopics()
     {
         this->recordTopics.clear();
     }
-    void Recorder::reset_save_path()
+    void Recorder::resetSavePath()
     {
         this->savePath.clear();
     }
-    void Recorder::destroy_subscirber()
+    void Recorder::destroySubscirber()
     {
-        this->close_bag();
+        this->closeBag();
         for(auto iterSub:this->pcSub)
         {
             iterSub.shutdown();
         }
         this->pcSub.clear();
     }
-    void Recorder::close_bag()
+    void Recorder::closeBag()
     {
         if(this->bag.isOpen())
         {
@@ -159,7 +159,7 @@ namespace livox_pc2_opr
         }
     }
 
-    std::string Recorder::ros_time_to_local(const ros::Time time) 
+    std::string Recorder::rosTimeToLocal(const ros::Time time) 
     {
         const std::time_t time_c = time.sec; 
         std::tm* tm = std::localtime(&time_c); 
