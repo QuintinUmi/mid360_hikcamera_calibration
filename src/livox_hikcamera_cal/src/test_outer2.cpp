@@ -32,13 +32,13 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 	
 	int main()
 	{
 
-    livox_pc2_opr::PointCloud2Proc pc_process;
-    pc_process.loadPointCloudFile("src/livox_pointcloud2_opr/pcd/20240509061349.pcd");
+    livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc pc_process;
+    pc_process.loadPointCloudFile("src/livox_hikcamera_cal/pcd/20240509061349.pcd");
     pc_process.extractNearestRectangleCorners();
     // pc_process.normalClusterExtraction();
     // pc_process.extractNearestClusterCloud();
