@@ -49,26 +49,26 @@ namespace livox_pc2_opr
             pcl::PointCloud<pcl::PointXYZI>::Ptr get3DRectCorners();
 
 
-            PointCloud2Proc& boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
-            // PointCloud2Proc& normalClusterExtraction();
-            PointCloud2Proc& normalClusterExtraction(float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
+            void boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
+            // void normalClusterExtraction();
+            std::vector<pcl::PointIndices> normalClusterExtraction(float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
                                                     int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);
-            PointCloud2Proc& normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), 
+            std::vector<pcl::PointIndices> normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), 
                                                     float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
                                                     int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);
-            // PointCloud2Proc& extractNearestClusterCloud();  
-            PointCloud2Proc& extractNearestClusterCloud(Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));    
-            // PointCloud2Proc& planeSegmentation();   
-            PointCloud2Proc& planeSegmentation(float distance_threshold = 0.1, int max_iterations = 1000);
-            PointCloud2Proc& planeProjection();
-            PointCloud2Proc& planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients);
-            PointCloud2Proc& planeProjection(Eigen::Vector4f coefficient);
-            PointCloud2Proc& pcaTransform();
-            PointCloud2Proc& transform(Eigen::Matrix4f transform_matrix);
-            PointCloud2Proc& transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
-            PointCloud2Proc& findRectangleCornersInPCAPlane();
-            PointCloud2Proc& transformCornersTo3D();
-            PointCloud2Proc& transformCornersTo3D(Eigen::Matrix4f transform_matrix);
+            // void extractNearestClusterCloud();  
+            pcl::PointIndices extractNearestClusterCloud(Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));    
+            // void planeSegmentation();   
+            pcl::PointIndices planeSegmentation(float distance_threshold = 0.1, int max_iterations = 1000);
+            void planeProjection();
+            void planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients);
+            void planeProjection(Eigen::Vector4f coefficient);
+            void pcaTransform();
+            void transform(Eigen::Matrix4f transform_matrix);
+            void transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
+            void findRectangleCornersInPCAPlane();
+            void transformCornersTo3D();
+            void transformCornersTo3D(Eigen::Matrix4f transform_matrix);
 
             pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners();
 
@@ -85,6 +85,10 @@ namespace livox_pc2_opr
             void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices);
             void processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix);
 
+            std::vector<std::string> iterateFilesFromPath(std::string folderPath);
+
+            pcl::PointCloud<pcl::PointXYZI>::Ptr NOCLOUD();
+
         private:
             pcl::PointCloud<pcl::PointXYZI>::Ptr raw_cloud;
             pcl::PointCloud<pcl::PointXYZI>::Ptr processed_cloud;
@@ -97,6 +101,8 @@ namespace livox_pc2_opr
             cv::RotatedRect pointcloud_rect_box;
             cv::Point2f rect_corners_2d[4];
             pcl::PointCloud<pcl::PointXYZI>::Ptr rect_corners_3d;
+
+            pcl::PointCloud<pcl::PointXYZI>::Ptr no_cloud;
 
 
             pcl::search::Search<pcl::PointXYZI>::Ptr tree;
