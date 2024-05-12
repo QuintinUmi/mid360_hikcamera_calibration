@@ -10,7 +10,7 @@
 
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
-#include "livox_hikcamera_cal/pointcloud2_opr/dynamic_reconfigure.h"
+#include "livox_hikcamera_cal/dynamic_reconfigure.h"
 
 
 int main(int argc, char *argv[])
@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
 
     livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc processed_pointcloud;
 
-    livox_hikcamera_cal::pointcloud2_opr::PointcloudFilterReconfigure box_filter_reconfigure;
-    livox_hikcamera_cal::pointcloud2_opr::RQTConfig rqtCfg;
+    livox_hikcamera_cal::PointcloudFilterReconfigure box_filter_reconfigure;
+    livox_hikcamera_cal::RQTConfig rqtCfg;
 
     int loopRate = 20;
     ros::Rate loop_rate(loopRate);

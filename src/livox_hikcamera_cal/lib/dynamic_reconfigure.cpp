@@ -8,9 +8,9 @@
 #include <dynamic_reconfigure/server.h>
 #include <livox_hikcamera_cal/PointcloudFilterConfig.h>
 
-#include "livox_hikcamera_cal/pointcloud2_opr/dynamic_reconfigure.h"
+#include "livox_hikcamera_cal/dynamic_reconfigure.h"
 
-using namespace livox_hikcamera_cal::pointcloud2_opr;
+using namespace livox_hikcamera_cal;
 
 
 PointcloudFilterReconfigure::PointcloudFilterReconfigure() 
