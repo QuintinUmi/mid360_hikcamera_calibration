@@ -20,10 +20,16 @@ int main(int argc, char *argv[])
     rcd.addTopic(lidar_msg);
     rcd.addTopic(camera_msg);
 
+    int record_frame_rate = 2;
+    ros::Rate frame_rate(record_frame_rate);
+
     ROS_INFO("Start Recording\n");
     rcd.startRecording();
-    
-    ros::spin();
+    while(ros::ok())
+    {
+        ros::spinOnce();
+        frame_rate.sleep();
+    }  
     ROS_INFO("Stop Recording\n");
     return 0;
 }

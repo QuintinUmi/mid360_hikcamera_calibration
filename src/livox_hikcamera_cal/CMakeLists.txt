@@ -19,6 +19,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   tf
   dynamic_reconfigure
+  visualization_msgs
 )
 
 find_package(Eigen3 REQUIRED)
@@ -144,13 +145,13 @@ include_directories(
 ## Declare a C++ library
 add_library(point_cloud_subscriber_publisher_lib
   include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
-  lib/point_cloud_subscriber_publisher.cpp
+  lib/pointcloud2_opr/point_cloud_subscriber_publisher.cpp
 )
 
 add_library(point_cloud_process_lib
   include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
   include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h
-  lib/point_cloud_process.cpp
+  lib/pointcloud2_opr/point_cloud_process.cpp
 )
 
 add_library(dynamic_reconfigure_lib
@@ -165,7 +166,12 @@ add_library(recorder_lib
 
 add_library(pcd_saver_lib
   include include/livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h
-  lib/pcd_saver.cpp
+  lib/pointcloud2_opr/pcd_saver.cpp
+)
+
+add_library(rviz_drawing_3d_lib
+  include include/livox_hikcamera_cal/pointcloud2_opr/rviz_drawing_3d.h
+  lib/pointcloud2_opr/rviz_drawing_3d.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -195,6 +201,9 @@ target_link_libraries(recorder_lib
 target_link_libraries(pcd_saver_lib
   ${catkin_LIBRARIES}
 )
+target_link_libraries(rviz_drawing_3d_lib
+  ${catkin_LIBRARIES}
+)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
@@ -204,6 +213,7 @@ target_link_libraries(pcd_saver_lib
 add_executable(caliboard_cloud_detection src/caliboard_cloud_detection.cpp)
 add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 add_executable(rosbag_record_example src/rosbag_record_example.cpp)
+add_executable(pcd_saver_example src/pcd_saver_example.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -256,6 +266,15 @@ target_link_libraries(rosbag_record_example
   point_cloud_process_lib
   dynamic_reconfigure_lib
   recorder_lib
+)
+target_link_libraries(pcd_saver_example
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  recorder_lib
+  pcd_saver_lib
 )
 
 
