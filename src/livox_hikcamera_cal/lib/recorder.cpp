@@ -11,6 +11,15 @@
 
 namespace livox_hikcamera_cal
 {
+    Recorder::Topic::Topic(){}
+    Recorder::Topic::Topic(std::string topic, MessageType message_type)
+    {
+        this->topic = topic;
+        this->message_type = message_type;
+    }
+    Recorder::Topic::~Topic(){}
+
+
     Recorder::Recorder()
     {
         this->resetRecorder();
@@ -18,20 +27,37 @@ namespace livox_hikcamera_cal
     Recorder::Recorder(std::string savePath)
     {
         this->resetRecorder();
-        this->savePath = savePath;
+        this->savePath_ = savePath;
     }
-    Recorder::Recorder(std::string savePath, std::string recordTopic)
+    Recorder::Recorder(std::string savePath, Recorder::Topic topic)
     {
         this->resetRecorder();
-        this->savePath = savePath;
-        this->recordTopics.emplace_back(recordTopic);
+        this->savePath_ = savePath;
+        this->topics_.emplace_back(topic);
         this->setRecorder();
     }
-    Recorder::Recorder(std::string savePath, std::vector<std::string> recordTopics)
+    Recorder::Recorder(std::string savePath, std::vector<Recorder::Topic> topics)
     {
         this->resetRecorder();
-        this->savePath = savePath;
-        this->recordTopics = recordTopics;
+        this->savePath_ = savePath;
+        this->topics_ = topics;
+        this->setRecorder();
+    }
+    Recorder::Recorder(std::string savePath, std::string topic_str, Recorder::MessageType message_type)
+    {
+        this->resetRecorder();
+        this->savePath_ = savePath;
+        this->topics_.emplace_back(Recorder::Topic(topic_str, message_type));
+        this->setRecorder();
+    }
+    Recorder::Recorder(std::string savePath, std::vector<std::string> topic_strs, std::vector<Recorder::MessageType> message_types)
+    {
+        this->resetRecorder();
+        this->savePath_ = savePath;
+        for(int i = 0; i < topic_strs.size(); i++)
+        {
+            this->topics_.emplace_back(Recorder::Topic(topic_strs[i], message_types[i]));
+        }
         this->setRecorder();
     }
 
@@ -40,29 +66,57 @@ namespace livox_hikcamera_cal
         this->resetRecorder();
     }
 
+
     void Recorder::setSavePath(std::string savePath)
     {
         this->destroySubscirber();
         this->resetSavePath();
-        this->savePath = savePath;
-        
+        this->savePath_ = savePath;
         this->setRecorder();
     }
-    void Recorder::setRecordTopic(std::string recordTopic)
+    void Recorder::addTopic(Recorder::Topic topic)
     {
         this->destroySubscirber();
-        this->resetRecordTopics();
-        this->recordTopics.emplace_back(recordTopic);
+        this->topics_.emplace_back(topic);
         this->setRecorder();
     }
-    void Recorder::setRecordTopic(std::vector<std::string> recordTopics)
+    void Recorder::setTopic(Recorder::Topic topic)
     {
-        this->recordTopics = recordTopics;
+        this->resetRecorder();
+        this->topics_.emplace_back(topic);
+        this->setRecorder();
+    }
+    void Recorder::setTopic(std::vector<Recorder::Topic> topics)
+    {
+        this->resetRecorder();
+        this->topics_ = topics;
+        this->setRecorder();
+    }
+    void Recorder::addTopic(std::string topic_str, Recorder::MessageType message_type)
+    {
+        this->destroySubscirber();
+        this->topics_.emplace_back(Recorder::Topic(topic_str, message_type));
+        this->setRecorder();
+    }
+    void Recorder::setTopic(std::string topic_str, Recorder::MessageType message_type)
+    {
+        this->resetRecorder();
+        this->topics_.emplace_back(Recorder::Topic(topic_str, message_type));
+        this->setRecorder();
+    }
+    void Recorder::setTopic(std::vector<std::string> topic_strs, std::vector<Recorder::MessageType> message_types)
+    {
+        this->resetRecorder();
+        for(int i = 0; i < topic_strs.size(); i++)
+        {
+            this->topics_.emplace_back(Recorder::Topic(topic_strs[i], message_types[i]));
+        }
+        this->setRecorder();
     }
 
     void Recorder::startRecording()
     {
-        if(this->recordTopics.empty())
+        if(this->topics_.empty())
         {
             printf("Please set the subscriber topic first!!!\n");
             return;
@@ -74,18 +128,18 @@ namespace livox_hikcamera_cal
         }
 
         std::string saveFilePath;
-        if(!boost::iequals(savePath.substr(savePath.length() - 4), std::string(".bag")))
+        if(!boost::iequals(this->savePath_.substr(this->savePath_.length() - 4), std::string(".bag")))
         {
-            if(!boost::iequals(savePath.substr(savePath.length() - 1), std::string("/")))
+            if(!boost::iequals(this->savePath_.substr(this->savePath_.length() - 1), std::string("/")))
             {
-                this->savePath = this->savePath + std::string("/");
+                this->savePath_ = this->savePath_ + std::string("/");
             }
             
-            saveFilePath = this->savePath + this->rosTimeToLocal(ros::Time::now()) + std::string(".bag");
+            saveFilePath = this->savePath_ + this->rosTimeToLocal(ros::Time::now()) + std::string(".bag");
         }
         else
         {
-            saveFilePath = this->savePath;
+            saveFilePath = this->savePath_;
         }
 
         this->bag.open(saveFilePath, rosbag::bagmode::Write);
@@ -110,30 +164,43 @@ namespace livox_hikcamera_cal
 
         ros::Subscriber subTemp;
         
-        for(auto iterTopic:this->recordTopics)
+        for(auto iterTopic:this->topics_)
         {
-            subTemp = this->nh.subscribe<sensor_msgs::PointCloud2>(iterTopic, 10, boost::bind(&Recorder::RecordingCallBack, this, _1, iterTopic));
-            this->pcSub.emplace_back(subTemp);
+            switch (iterTopic.message_type) {
+                case Recorder::MessageType::PointCloud2:
+                    subTemp = this->nh.subscribe<sensor_msgs::PointCloud2>(iterTopic.topic, 10, boost::bind(&Recorder::PointCloud2CallBack, this, _1, iterTopic));
+                    this->pcSub.emplace_back(subTemp);
+                    break;
+                case Recorder::MessageType::Image:
+                    subTemp = this->nh.subscribe<sensor_msgs::Image>(iterTopic.topic, 10, boost::bind(&Recorder::ImageCallBack, this, _1, iterTopic));
+                    this->pcSub.emplace_back(subTemp);
+                    break;
+                default:
+                    std::cerr << "Unknown message type" << std::endl;
+            }
+            
         }
         
     }
     void Recorder::resetRecorder()
     {
         this->destroySubscirber(); 
-        this->resetRecordTopics();
-        this->savePath.clear();
-        this->recorderStatus = 0;
+        this->resetTopics();
+        this->resetSavePath();
     }
-    void Recorder::resetRecordTopics()
+    void Recorder::resetTopics()
     {
-        this->recordTopics.clear();
+        this->recorderStatus = 0;
+        this->topics_.clear();
     }
     void Recorder::resetSavePath()
     {
-        this->savePath.clear();
+        this->recorderStatus = 0;
+        this->savePath_.clear();
     }
     void Recorder::destroySubscirber()
     {
+        this->recorderStatus = 0;
         this->closeBag();
         for(auto iterSub:this->pcSub)
         {
@@ -143,6 +210,7 @@ namespace livox_hikcamera_cal
     }
     void Recorder::closeBag()
     {
+        this->recorderStatus = 0;
         if(this->bag.isOpen())
         {
             this->bag.close();
@@ -151,11 +219,20 @@ namespace livox_hikcamera_cal
 
 
 
-    void Recorder::RecordingCallBack(const sensor_msgs::PointCloud2ConstPtr& pcMsgs, const std::string& topic)
+    void Recorder::PointCloud2CallBack(const sensor_msgs::PointCloud2ConstPtr& pcMsgs, const Recorder::Topic& topic)
     {
         if(this->recorderStatus == 1)
         {
-            this->bag.write(topic, pcMsgs->header.stamp, pcMsgs);
+            this->bag.write(topic.topic, ros::Time::now(), pcMsgs);
+            // this->bag.write(topic.topic, pcMsgs->header.stamp, pcMsgs);
+        }
+    }
+    void Recorder::ImageCallBack(const sensor_msgs::ImageConstPtr& imgMsgs, const Recorder::Topic& topic)
+    {
+        if(this->recorderStatus == 1)
+        {
+            this->bag.write(topic.topic, ros::Time::now(), imgMsgs);
+            // this->bag.write(topic.topic, imgMsgs->header.stamp, imgMsgs);
         }
     }
 
