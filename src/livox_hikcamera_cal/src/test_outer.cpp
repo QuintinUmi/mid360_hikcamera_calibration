@@ -32,13 +32,13 @@
 
 #include <opencv2/opencv.hpp>
 
-#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 	
 	int main()
 	{
 		//-----------------------------读取点云----------------------------
 	pcl::PointCloud<pcl::PointXYZ>::Ptr rawCloud(new pcl::PointCloud<pcl::PointXYZ>);
-	if (pcl::io::loadPCDFile("src/livox_pointcloud2_opr/pcd/20240509061323.pcd", *rawCloud) < 0)
+	if (pcl::io::loadPCDFile("src/livox_hikcamera_cal/pcd/20240509061323.pcd", *rawCloud) < 0)
 	{
 		PCL_ERROR("点云读取失败！\n");
 		return -1;
@@ -330,8 +330,8 @@ for (size_t i = 0; i < clusters.size(); ++i) {
 
 //-------------------------------------------------------------------------------------------------
 
-    livox_pc2_opr::PointCloud2Proc pc_process;
-    pc_process.loadPointCloudFile("src/livox_pointcloud2_opr/pcd/20240509061323.pcd");
+    livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc pc_process;
+    pc_process.loadPointCloudFile("src/livox_hikcamera_cal/pcd/20240509061323.pcd");
     // pc_process.extractNearestRectangleCorners();
 
     

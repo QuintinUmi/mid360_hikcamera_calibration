@@ -11,14 +11,15 @@
         "/home/quintinumi/git_package_src/ws_livox/devel/include/**",
         "/opt/ros/noetic/include/**",
         "/home/quintinumi/project/ws_hikcamera_ros_driver/src/hikcamera_ros_driver/src/hikcamera_opr/include/**",
-        "/home/quintinumi/project/ws_mid360_hikcamera_calibration/src/mid360_hikcamera_calibration/src/livox_pointcloud2_opr/include/**",
+        "/home/quintinumi/project/ws_mid360_hikcamera_calibration/src/mid360_hikcamera_calibration/src/livox_hikcamera_cal/include/**",
         "/home/quintinumi/git_package_src/wpr_simulation/src/waterplus_map_tools/include/**",
         "/home/quintinumi/git_package_src/wpr_simulation/src/wpb_home/wpb_home_bringup/include/**",
         "/home/quintinumi/git_package_src/wpr_simulation/src/wpb_home/wpb_home_tutorials/include/**",
         "/home/quintinumi/git_package_src/wpr_simulation/src/wpb_home/wpbh_local_planner/include/**",
         "/home/quintinumi/git_package_src/wpr_simulation/src/wpr_simulation/include/**",
         "/usr/include/**",
-        "/usr/local/include/**"
+        "/usr/local/include/**",
+        "/usr/local/include/aruco/**"
       ],
       "name": "ROS",
       "intelliSenseMode": "gcc-x64",

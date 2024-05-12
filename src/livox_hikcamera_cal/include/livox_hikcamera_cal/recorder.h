@@ -10,8 +10,9 @@
 #include <rosbag/bag.h>
 #include <boost/bind.hpp>
 
-namespace livox_pc2_opr
+namespace livox_hikcamera_cal
 {
+
     class Recorder
     {
         public:
@@ -51,6 +52,8 @@ namespace livox_pc2_opr
     };
     
 }
+
+
 
 
 #endif

@@ -6,11 +6,11 @@
 #include <pcl/conversions.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <livox_pointcloud2_opr/PointcloudFilterConfig.h>
+#include <livox_hikcamera_cal/PointcloudFilterConfig.h>
 
-#include "livox_pc2_opr/dynamic_reconfigure.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/dynamic_reconfigure.h"
 
-using namespace livox_pc2_opr;
+using namespace livox_hikcamera_cal::pointcloud2_opr;
 
 
 PointcloudFilterReconfigure::PointcloudFilterReconfigure() 
@@ -19,7 +19,7 @@ PointcloudFilterReconfigure::PointcloudFilterReconfigure()
     this->server.setCallback(this->f);
 }
 
-void PointcloudFilterReconfigure::FilterReconfigureCallBack(livox_pointcloud2_opr::PointcloudFilterConfig &pcFilterConfig, uint32_t level) 
+void PointcloudFilterReconfigure::FilterReconfigureCallBack(livox_hikcamera_cal::PointcloudFilterConfig &pcFilterConfig, uint32_t level) 
 {
     ROS_INFO("Filter Reconfigure: x_min=%f, x_max=%f, y_min=%f, y_max=%f, z_min=%f, z_max=%f",
             pcFilterConfig.x_min, pcFilterConfig.x_max, pcFilterConfig.y_min, pcFilterConfig.y_max, pcFilterConfig.z_min, pcFilterConfig.z_max);

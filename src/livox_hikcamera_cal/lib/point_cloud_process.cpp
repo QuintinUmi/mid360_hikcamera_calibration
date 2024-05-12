@@ -23,13 +23,13 @@
 
 #include <Eigen/Core>
 
-#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
-#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 #include <pcl/visualization/cloud_viewer.h> 
 
 // pcl::visualization::CloudViewer viewer("viewer");
 
-namespace livox_pc2_opr
+namespace livox_hikcamera_cal::pointcloud2_opr
 {
     PointCloud2Proc::PointCloud2Proc() :    raw_cloud(new pcl::PointCloud<pcl::PointXYZI>),
                                             processed_cloud(new pcl::PointCloud<pcl::PointXYZI>),

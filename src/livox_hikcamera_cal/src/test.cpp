@@ -8,18 +8,18 @@
 #include <pcl/conversions.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <livox_pointcloud2_opr/PointcloudFilterConfig.h>
+#include <livox_hikcamera_cal/PointcloudFilterConfig.h>
 
-#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
-#include "livox_pc2_opr/point_cloud_process.h"
-#include "livox_pc2_opr/dynamic_reconfigure.h"
-#include "livox_pc2_opr/recorder.h"
-#include "livox_pc2_opr/pcd_saver.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/dynamic_reconfigure.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/recorder.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h"
 
 
-void KeyInput_CallBack(std_msgs::Int8::ConstPtr key_ascii, livox_pc2_opr::PointCloudSubscriberPublisher pcSP){
+void KeyInput_CallBack(std_msgs::Int8::ConstPtr key_ascii, pointcloud2_opr::PointCloudSubscriberPublisher pcSP){
 
-    livox_pc2_opr::PCDSaver pcdsaver("src/livox_pointcloud2_opr/pcd");
+    pointcloud2_opr::PCDSaver pcdsaver("src/livox_hikcamera_cal/pcd");
     if(key_ascii->data == 10){
         // std::cout << key_ascii->data << std::endl;
         // ROS_INFO("Test------------------------------------------------------------------------");
@@ -37,12 +37,12 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "pc2_sub_pub_test");
     ros::NodeHandle rosHandle;
     
-    livox_pc2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar_proc"), std::string("/livox/lidar_proc"));
+    pointcloud2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar_proc"), std::string("/livox/lidar_proc"));
 
-    livox_pc2_opr::PointCloud2Proc pcProc;
+    pointcloud2_opr::PointCloud2Proc pcProc;
 
-    livox_pc2_opr::PointcloudFilterReconfigure filterRecfg;
-    livox_pc2_opr::RQTConfig rqtCfg;
+    pointcloud2_opr::PointcloudFilterReconfigure filterRecfg;
+    pointcloud2_opr::RQTConfig rqtCfg;
 
     int loopRate = 20;
     ros::Rate loop_rate(loopRate);
@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
     pcl::PointCloud<pcl::PointXYZI>::Ptr pubCloud(new pcl::PointCloud<pcl::PointXYZI>);
 
 
-    // livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
+    // pointcloud2_opr::Recorder rcd(std::string("src/livox_hikcamera_cal/bag"), std::string("/livox/lidar"));
 
     // rcd.startRecording();
 
@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
     // ss << std::put_time(tm, "%Y%m%d%H%M%S");
     // std::cout << ss.str() << std::endl;
 
-    // livox_pc2_opr::Recorder recorder();
+    // pointcloud2_opr::Recorder recorder();
 
     // while(ros::ok()){
     

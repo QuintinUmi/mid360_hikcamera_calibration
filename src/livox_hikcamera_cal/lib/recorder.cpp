@@ -6,10 +6,10 @@
 #include <pcl/conversions.h>
 #include <boost/bind.hpp>
 
-#include "livox_pc2_opr/recorder.h"
+#include "livox_hikcamera_cal/recorder.h"
 
 
-namespace livox_pc2_opr
+namespace livox_hikcamera_cal
 {
     Recorder::Recorder()
     {

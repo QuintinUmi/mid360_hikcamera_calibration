@@ -7,9 +7,9 @@
 #include <pcl/io/pcd_io.h>
 #include <boost/bind.hpp>
 
-#include "livox_pc2_opr/pcd_saver.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h"
 
-namespace livox_pc2_opr
+namespace livox_hikcamera_cal::pointcloud2_opr
 {
     PCDSaver::PCDSaver()
     {

@@ -5,7 +5,7 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
-#include "livox_pc2_opr/recorder.h"
+#include "livox_hikcamera_cal/recorder.h"
 
 
 int main(int argc, char *argv[])
@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
     ros::NodeHandle rosHandle;
 
 
-    livox_pc2_opr::Recorder rcd(std::string("src/livox_pointcloud2_opr/bag"), std::string("/livox/lidar"));
+    livox_hikcamera_cal::pointcloud2_opr::Recorder rcd(std::string("src/livox_hikcamera_cal/bag"), std::string("/livox/lidar"));
 
     rcd.startRecording();
     

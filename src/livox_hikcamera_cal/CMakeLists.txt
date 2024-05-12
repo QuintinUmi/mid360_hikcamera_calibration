@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(livox_pointcloud2_opr)
+project(livox_hikcamera_cal)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
@@ -121,8 +121,8 @@ generate_dynamic_reconfigure_options(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
- INCLUDE_DIRS include/livox_pc2_opr
- LIBRARIES livox_pointcloud2_opr
+ INCLUDE_DIRS include/livox_hikcamera_cal
+ LIBRARIES livox_hikcamera_cal
  CATKIN_DEPENDS geometry_msgs livox_ros_driver  nav_msgs pcl_conversions pcl_ros roscpp rospy sensor_msgs std_msgs tf dynamic_reconfigure
  DEPENDS system_lib
 )
@@ -137,34 +137,34 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
-  ./include/livox_pointcloud2_opr/
+  ./include/livox_hikcamera_cal/
   /usr/local/include/
 )
 
 ## Declare a C++ library
 add_library(point_cloud_subscriber_publisher_lib
-  include include/livox_pc2_opr/point_cloud_subscriber_publisher.h
+  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
   lib/point_cloud_subscriber_publisher.cpp
 )
 
 add_library(point_cloud_process_lib
-  include include/livox_pc2_opr/point_cloud_subscriber_publisher.h
-  include include/livox_pc2_opr/point_cloud_process.h
+  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
+  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h
   lib/point_cloud_process.cpp
 )
 
 add_library(dynamic_reconfigure_lib
-  include include/livox_pc2_opr/dynamic_reconfigure.h
+  include include/livox_hikcamera_cal/pointcloud2_opr/dynamic_reconfigure.h
   lib/dynamic_reconfigure.cpp
 )
 
 add_library(recorder_lib
-  include include/livox_pc2_opr/recorder.h
+  include include/livox_hikcamera_cal/recorder.h
   lib/recorder.cpp
 )
 
 add_library(pcd_saver_lib
-  include include/livox_pc2_opr/pcd_saver.h
+  include include/livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h
   lib/pcd_saver.cpp
 )
 

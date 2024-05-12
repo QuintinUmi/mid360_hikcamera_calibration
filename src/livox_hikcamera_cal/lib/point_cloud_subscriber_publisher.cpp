@@ -5,9 +5,9 @@
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
 
-#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
 
-namespace livox_pc2_opr
+namespace livox_hikcamera_cal::pointcloud2_opr
 {
     PointCloudSubscriberPublisher::PointCloudSubscriberPublisher()
     {
@@ -101,7 +101,7 @@ namespace livox_pc2_opr
 
     } 
 
-} // namespace livox_pc2_opr
+} // namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 

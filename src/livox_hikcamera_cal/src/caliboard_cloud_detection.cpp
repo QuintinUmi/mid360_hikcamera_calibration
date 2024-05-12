@@ -22,18 +22,18 @@
 
 #include <Eigen/Core>
 
-#include "livox_pc2_opr/point_cloud_subscriber_publisher.h"
-#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 #include <pcl/visualization/cloud_viewer.h> 
 
-#include "livox_pc2_opr/point_cloud_process.h"
+#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 	
 	int main()
 	{
 
-		livox_pc2_opr::PointCloud2Proc pc_process;
+		livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc pc_process;
 		std::vector<std::string> file_paths;
-		file_paths = pc_process.iterateFilesFromPath("src/livox_pointcloud2_opr/pcd");
+		file_paths = pc_process.iterateFilesFromPath("src/livox_hikcamera_cal/pcd");
 
 		for(const auto file_path:file_paths)
 		{
