@@ -211,6 +211,7 @@ target_link_libraries(rviz_drawing_3d_lib
 # add_executable(test1 src/test.cpp)
 # add_executable(test_outer src/test_outer.cpp)
 add_executable(caliboard_cloud_detection src/caliboard_cloud_detection.cpp)
+add_executable(caliboard_cloud_detection_dynamic src/caliboard_cloud_detection_dynamic.cpp)
 add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 add_executable(pcd_saver_example src/pcd_saver_example.cpp)
@@ -251,6 +252,16 @@ target_link_libraries(caliboard_cloud_detection
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
   dynamic_reconfigure_lib
+  recorder_lib
+)
+target_link_libraries(caliboard_cloud_detection_dynamic
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  rviz_drawing_3d_lib
   recorder_lib
 )
 target_link_libraries(point_cloud_filter

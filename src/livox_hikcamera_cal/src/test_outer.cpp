@@ -37,19 +37,21 @@
 	int main()
 	{
 		//-----------------------------读取点云----------------------------
-	pcl::PointCloud<pcl::PointXYZ>::Ptr rawCloud(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr rawCloud (new pcl::PointCloud<pcl::PointXYZI>);
+	pcl::PointCloud<pcl::PointXYZI>::Ptr rawCloud1(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointCloud<pcl::PointXYZ>::Ptr rawCloud2(new pcl::PointCloud<pcl::PointXYZ>);
 	if (pcl::io::loadPCDFile("src/livox_hikcamera_cal/pcd/20240509061323.pcd", *rawCloud) < 0)
 	{
 		PCL_ERROR("点云读取失败！\n");
 		return -1;
 	}
 	//------------------------------------------------------------------------------------------
-// 	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud (new pcl::PointCloud<pcl::PointXYZ>);
-// 	// pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
-// 	// sor.setInputCloud (rawCloud);
-// 	// sor.setMeanK (50);
-// 	// sor.setStddevMulThresh (0.5);
-// 	// sor.filter (*cloud);
+    // pcl::copyPointCloud(*rawCloud1, *rawCloud2);
+	// pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+	// sor.setInputCloud (rawCloud2);
+	// sor.setMeanK (50);
+	// sor.setStddevMulThresh (0.5);
+	// sor.filter (*rawCloud);
 
 // 	// pcl::search::KdTree<pcl::PointXYZ>::Ptr tree (new pcl::search::KdTree<pcl::PointXYZ>);
 // 	// tree->setInputCloud (rawCloud);//　桌子平面上其他的点云
@@ -66,13 +68,13 @@
 
 // 	//-------------------------------------------------------------------------------------------------------------
 
-	pcl::search::Search<pcl::PointXYZ>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZ> > (new pcl::search::KdTree<pcl::PointXYZ>);
+	pcl::search::Search<pcl::PointXYZI>::Ptr tree = boost::shared_ptr<pcl::search::Search<pcl::PointXYZI> > (new pcl::search::KdTree<pcl::PointXYZI>);
    //求法线
   pcl::PointCloud <pcl::Normal>::Ptr normals (new pcl::PointCloud <pcl::Normal>);
-  pcl::NormalEstimation<pcl::PointXYZ, pcl::Normal> normal_estimator;
+  pcl::NormalEstimation<pcl::PointXYZI, pcl::Normal> normal_estimator;
   normal_estimator.setSearchMethod (tree);
   normal_estimator.setInputCloud (rawCloud);
-  normal_estimator.setKSearch(50);
+  normal_estimator.setKSearch(70);
   normal_estimator.compute (*normals);
 //    //直通滤波在Z轴的0到1米之间
 // //   pcl::IndicesPtr indices (new std::vector <int>);
@@ -82,7 +84,7 @@
 // //   pass.setFilterLimits (0.0, 1.0);
 // //   pass.filter (*indices);
   //聚类对象<点，法线>
-  pcl::RegionGrowing<pcl::PointXYZ, pcl::Normal> reg;
+  pcl::RegionGrowing<pcl::PointXYZI, pcl::Normal> reg;
   reg.setMinClusterSize (100);  //最小的聚类的点数
   reg.setMaxClusterSize (25000);  //最大的
   reg.setSearchMethod (tree);    //搜索方式
@@ -109,7 +111,7 @@ float minDistance = std::numeric_limits<float>::max();
 int nearestPlaneIndex = -1;
 
 for (size_t i = 0; i < clusters.size(); ++i) {
-    pcl::PointCloud<pcl::PointXYZ>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::PointCloud<pcl::PointXYZI>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::copyPointCloud(*rawCloud, clusters[i], *cluster);
     Eigen::Vector4f centroid;
     pcl::compute3DCentroid(*cluster, centroid);
@@ -125,8 +127,18 @@ for (size_t i = 0; i < clusters.size(); ++i) {
 // //--------------------------------------------------------------------------------------
 
 
-  pcl::PointCloud<pcl::PointXYZ>::Ptr normalFilter_cloud (new pcl::PointCloud<pcl::PointXYZ>);
+  pcl::PointCloud<pcl::PointXYZI>::Ptr normalFilter_cloud (new pcl::PointCloud<pcl::PointXYZI>);
   pcl::copyPointCloud(*rawCloud, clusters[nearestPlaneIndex], *normalFilter_cloud);
+
+    pcl::PointCloud<pcl::PointXYZ>::Ptr normalFilter_cloud1 (new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::copyPointCloud(*normalFilter_cloud, *rawCloud2);
+	pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+	sor.setInputCloud (rawCloud2);
+	sor.setMeanK (50);
+	sor.setStddevMulThresh (0.5);
+	sor.filter (*normalFilter_cloud1);
+
+    pcl::copyPointCloud(*normalFilter_cloud1, *normalFilter_cloud);
 
 // //   std::cout << "Number of clusters is equal to " << clusters.size () << std::endl;
 // //   std::cout << "First cluster has " << clusters[0].indices.size () << " points." << endl;
@@ -160,15 +172,15 @@ for (size_t i = 0; i < clusters.size(); ++i) {
 //         sleep(5);
 // //--------------------------------------------------------------------------------------------------
 	// 创建分割对象
-    pcl::SACSegmentation<pcl::PointXYZ> seg;
+    pcl::SACSegmentation<pcl::PointXYZI> seg;
     seg.setOptimizeCoefficients(true); // 优化系数
     seg.setModelType(pcl::SACMODEL_PLANE);
     seg.setMethodType(pcl::SAC_RANSAC);
     seg.setMaxIterations(1000);        // 增加迭代次数提高拟合机会
     seg.setDistanceThreshold(0.01);    // 设置距离阈值
 
-	pcl::ExtractIndices<pcl::PointXYZ> extract;
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::ExtractIndices<pcl::PointXYZI> extract;
+	pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZI>);
 
     pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
     pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
@@ -202,7 +214,7 @@ for (size_t i = 0; i < clusters.size(); ++i) {
 
 // 	//----------------------------输出模型参数---------------------------
 	
-        pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZ>);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
  
     
 //         std::cerr << "Cloud before projection: " << std::endl;
@@ -220,7 +232,7 @@ for (size_t i = 0; i < clusters.size(); ++i) {
 //         // coefficients->values[3] = coefficient[3];
     
         // Create the filtering object
-        pcl::ProjectInliers<pcl::PointXYZ> proj;
+        pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
         proj.setInputCloud(cloud_plane);
         proj.setModelCoefficients(coefficients);
@@ -248,7 +260,7 @@ for (size_t i = 0; i < clusters.size(); ++i) {
 // //---------------------------------------------------------------------------------------------------------
 
     // 使用PCA计算点云的主方向
-    pcl::PCA<pcl::PointXYZ> pca;
+    pcl::PCA<pcl::PointXYZI> pca;
     pca.setInputCloud(cloud_projected);
     Eigen::Matrix3f eigen_vectors = pca.getEigenVectors();
     Eigen::Vector4f mean_vector = pca.getMean();
@@ -262,7 +274,7 @@ for (size_t i = 0; i < clusters.size(); ++i) {
     Eigen::Matrix4f inverse_transform = transform.inverse();
 
     // pcl::PointCloud<pcl::PointXYZ>::Ptr rawTransformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
-	pcl::PointCloud<pcl::PointXYZ>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZ>);
+	pcl::PointCloud<pcl::PointXYZI>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZI>);
     pcl::transformPointCloud(*cloud_projected, *transformed_cloud, transform);
 
 
@@ -358,13 +370,13 @@ for (size_t i = 0; i < clusters.size(); ++i) {
     // pc_process.planeSegmentation();
 
     // pcl::PointCloud<pcl::PointXYZ>::Ptr rawCloud(pc_process.getRawPointcloud());
-	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> rawCloud_color(rawCloud, 255, 255, 255);
+	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> rawCloud_color(rawCloud, 255, 255, 255);
 	viewer_final.addPointCloud(rawCloud, rawCloud_color, "raw_cloud");
 	viewer_final.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 3, "raw_cloud");
     
     // pc_process.transform(pc_process.getPCATransformMatrix().inverse());
     // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_plane(pc_process.getProcessedPointcloud());
-	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> cloud_plane_color(cloud_plane, 0, 255, 0);
+	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZI> cloud_plane_color(cloud_plane, 0, 255, 0);
     viewer_final.addPointCloud(cloud_plane, cloud_plane_color, "cloud_plane");
 	viewer_final.setPointCloudRenderingProperties (pcl::visualization::PCL_VISUALIZER_POINT_SIZE, 5, "cloud_plane");
 	// viewer_final.addPointCloud(cloud_projected, "cloud");

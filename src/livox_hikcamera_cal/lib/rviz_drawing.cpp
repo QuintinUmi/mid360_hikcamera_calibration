@@ -33,14 +33,14 @@ namespace livox_hikcamera_cal
     }
 
 
-    void RvizDrawing::addPoint(float x, float y, float z, 
+    void RvizDrawing::addPoint(std::string object_id, float x, float y, float z, 
                                 float scale, float r, float g, float b, float a) 
     {
         visualization_msgs::Marker point;
         point.header.frame_id = this->frame_id_;
         point.header.stamp = ros::Time::now();
         point.ns = "points";
-        point.id = this->object_id_ ++;
+        point.id = this->updateMarkerId(object_id);
         point.type = visualization_msgs::Marker::SPHERE;
         point.action = visualization_msgs::Marker::ADD;
         point.pose.position.x = x;
@@ -53,19 +53,20 @@ namespace livox_hikcamera_cal
         point.color.g = g;
         point.color.b = b;
         point.color.a = a;
-        this->addObject(point);
+        this->updateObject(object_id, point);
     }
-    void RvizDrawing::addPoint(geometry_msgs::Point point_ip, 
+    void RvizDrawing::addPoint(std::string object_id, geometry_msgs::Point point_ip, 
                                 float scale, float r, float g, float b, float a) 
     {
         visualization_msgs::Marker point;
         point.header.frame_id = this->frame_id_;
         point.header.stamp = ros::Time::now();
         point.ns = "points";
-        point.id = this->object_id_ ++;
+        point.id = this->updateMarkerId(object_id);
         point.type = visualization_msgs::Marker::POINTS;
         point.action = visualization_msgs::Marker::ADD;
         point.points.emplace_back(point_ip);
+        point.pose.orientation.w = 1.0;
         point.scale.x = scale;
         point.scale.y = scale;
         point.scale.z = scale;
@@ -73,16 +74,22 @@ namespace livox_hikcamera_cal
         point.color.g = g;
         point.color.b = b;
         point.color.a = a;
-        this->addObject(point);
+        // std_msgs::ColorRGBA color;
+        // color.r = r;
+        // color.g = g;
+        // color.b = b;
+        // color.a = a;
+        // point.colors.assign(point.points.size(), color);
+        this->updateObject(object_id, point);
     }
-    void RvizDrawing::addPoints(std::vector<geometry_msgs::Point> points_ip, 
+    void RvizDrawing::addPoints(std::string object_id, std::vector<geometry_msgs::Point> points_ip, 
                                 float scale, float r, float g, float b, float a) 
     {
         visualization_msgs::Marker points;
         points.header.frame_id = this->frame_id_;
         points.header.stamp = ros::Time::now();
         points.ns = "points";
-        points.id = this->object_id_ ++;
+        points.id = this->updateMarkerId(object_id);
         points.type = visualization_msgs::Marker::POINTS;
         points.action = visualization_msgs::Marker::ADD;
         points.points = points_ip;
@@ -94,46 +101,132 @@ namespace livox_hikcamera_cal
         points.color.g = g;
         points.color.b = b;
         points.color.a = a;
-        this->addObject(points);
+        // std_msgs::ColorRGBA color;
+        // color.r = r;
+        // color.g = g;
+        // color.b = b;
+        // color.a = a;
+        // points.colors.assign(points.points.size(), color);
+        this->updateObject(object_id, points);
     }
 
-    // void RvizDrawing::addLine(const std::vector<geometry_msgs::Point>& points,
-    //                             float width, float r, float g, float b, float a) {
-    //     visualization_msgs::Marker marker;
-    //     marker.header.frame_id = frame_id_;
-    //     marker.header.stamp = ros::Time::now();
-    //     marker.ns = "lines";
-    //     marker.id = marker_id_++;
-    //     marker.type = visualization_msgs::Marker::LINE_STRIP;
-    //     marker.action = visualization_msgs::Marker::ADD;
-    //     marker.scale.x = width;
-    //     marker.points = points;
-    //     marker.color.r = r;
-    //     marker.color.g = g;
-    //     marker.color.b = b;
-    //     marker.color.a = a;
-    //     addMarker(marker);
+
+    void RvizDrawing::addLine(std::string object_id, float x1, float y1, float z1, float x2, float y2, float z2, 
+                                float width, float r, float g, float b, float a)
+    {
+        visualization_msgs::Marker line;
+        geometry_msgs::Point point;
+        point.x = x1;
+        point.y = y1;
+        point.z = z1;
+        line.points.emplace_back(point);
+        point.x = x2;
+        point.y = y2;
+        point.z = z2;
+        line.points.emplace_back(point);
+
+        line.header.frame_id = frame_id_;
+        line.header.stamp = ros::Time::now();
+        line.ns = "lines";
+        line.id = this->updateMarkerId(object_id);
+        line.type = visualization_msgs::Marker::LINE_LIST;
+        line.action = visualization_msgs::Marker::ADD;
+        line.pose.orientation.w = 1.0;
+        line.scale.x = width;
+        line.color.r = r;
+        line.color.g = g;
+        line.color.b = b;
+        line.color.a = a;
+        this->updateObject(object_id, line);
+    }
+    void RvizDrawing::addLines(std::string object_id, const std::vector<geometry_msgs::Point>& points,
+                                visualization_msgs::Marker::_type_type line_type, 
+                                float width, float r, float g, float b, float a) {
+        visualization_msgs::Marker lines;
+        lines.header.frame_id = frame_id_;
+        lines.header.stamp = ros::Time::now();
+        lines.ns = "lines";
+        lines.id = this->updateMarkerId(object_id);
+        lines.type = line_type;
+        lines.action = visualization_msgs::Marker::ADD;
+        lines.scale.x = width;
+        lines.points = points;
+        lines.color.r = r;
+        lines.color.g = g;
+        lines.color.b = b;
+        lines.color.a = a;
+        this->updateObject(object_id, lines);
+    }
+
+    // void RvizDrawing::addImage(std::string object_id, const std::string& mesh_resource, float x, float y, float z,
+    //                                 float scale_x, float scale_y, float scale_z) {
+    //     visualization_msgs::Marker image;
+    //     image.header.frame_id = frame_id_;
+    //     image.header.stamp = ros::Time::now();
+    //     image.ns = "images";
+    //     image.id = this->updateMarkerId(object_id);
+    //     image.type = visualization_msgs::Marker::MESH_RESOURCE;
+    //     image.action = visualization_msgs::Marker::ADD;
+    //     image.pose.position.x = x;
+    //     image.pose.position.y = y;
+    //     image.pose.position.z = z;
+    //     image.scale.x = scale_x;
+    //     image.scale.y = scale_y;
+    //     image.scale.z = scale_z;
+    //     image.mesh_resource = mesh_resource;
+    //     image.color.a = 1.0; 
+    //     this->updateObject(object_id, image);
     // }
 
-    // void RvizDrawing::addImage(const std::string& mesh_resource, float x, float y, float z,
-    //                                 float scale_x, float scale_y, float scale_z) {
-    //     visualization_msgs::Marker marker;
-    //     marker.header.frame_id = frame_id_;
-    //     marker.header.stamp = ros::Time::now();
-    //     marker.ns = "images";
-    //     marker.id = marker_id_++;
-    //     marker.type = visualization_msgs::Marker::MESH_RESOURCE;
-    //     marker.action = visualization_msgs::Marker::ADD;
-    //     marker.pose.position.x = x;
-    //     marker.pose.position.y = y;
-    //     marker.pose.position.z = z;
-    //     marker.scale.x = scale_x;
-    //     marker.scale.y = scale_y;
-    //     marker.scale.z = scale_z;
-    //     marker.mesh_resource = mesh_resource;
-    //     marker.color.a = 1.0; // Ensure this is visible
-    //     addMarker(marker);
-    // }
+    void RvizDrawing::deleteObject(std::string object_id)
+    {
+        auto it_object_id = this->objects_list_.find(object_id);
+        if(it_object_id != this->objects_list_.end()) 
+        {
+            it_object_id->second.action = visualization_msgs::Marker::DELETE;
+        }
+    }
+    void RvizDrawing::deleteAllObject()
+    {
+        visualization_msgs::Marker delete_all;
+        delete_all.ns = "delete_all";
+        delete_all.id = 0;
+        delete_all.action = visualization_msgs::Marker::DELETEALL;
+        this->objects_list_.clear();
+        this->objects_list_["delete_all"] = delete_all;
+    }
+
+    void RvizDrawing::publish()
+    {
+        std::vector<std::map<std::string, visualization_msgs::Marker>::iterator> delete_objects;
+        this->markers_.markers.clear();
+        for (auto it_objects_list_ = this->objects_list_.begin(); it_objects_list_ != this->objects_list_.end(); ) 
+        {
+            if (it_objects_list_->second.action == visualization_msgs::Marker::DELETE || 
+                it_objects_list_->second.action == visualization_msgs::Marker::DELETEALL ) 
+            {
+                this->markers_.markers.push_back(it_objects_list_->second);
+                delete_objects.emplace_back(it_objects_list_); 
+            } 
+            else 
+            {
+                this->markers_.markers.push_back(it_objects_list_->second);
+                ++it_objects_list_;
+                
+            }
+        }
+
+        this->pub_.publish(this->markers_);
+        this->markers_.markers.clear();
+
+        if(delete_objects.size() != 0)
+        {
+            for(auto delete_object:delete_objects)
+            {
+                this->objects_list_.erase(delete_object); 
+            }
+        }
+    }
 
 
     void RvizDrawing::initPublisher()
@@ -150,8 +243,20 @@ namespace livox_hikcamera_cal
         }
     }
 
-    void RvizDrawing::addObject(const visualization_msgs::Marker& marker)
+
+    int RvizDrawing::updateMarkerId(std::string object_id)
     {
-        this->objects_.markers.emplace_back(marker);
+        auto it_objects_list_ = this->objects_list_.find(object_id);
+        if(it_objects_list_ != this->objects_list_.end())
+        { 
+            return it_objects_list_->second.id;
+        }
+        this->marker_id_ ++;
+        return this->marker_id_;
+    }
+    // return 0 -> add, return 1 -> modify
+    void RvizDrawing::updateObject(std::string object_id, const visualization_msgs::Marker& marker)
+    {
+        this->objects_list_[object_id] = marker;
     }
 }
