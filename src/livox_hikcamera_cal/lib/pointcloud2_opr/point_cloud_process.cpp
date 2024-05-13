@@ -11,6 +11,7 @@
 #include <pcl/search/kdtree.h>
 #include <pcl/features/normal_3d.h>
 #include <pcl/segmentation/region_growing.h>
+#include <pcl/filters/statistical_outlier_removal.h>
 #include <pcl/segmentation/sac_segmentation.h>
 #include <pcl/filters/extract_indices.h>
 #include <pcl/filters/project_inliers.h>
@@ -22,6 +23,7 @@
 #include <opencv2/opencv.hpp>
 
 #include <Eigen/Core>
+#include <Eigen/Geometry>
 
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
@@ -144,6 +146,31 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         
         return;
     }
+    void PointCloud2Proc::boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
+                                    float angle_x, float angle_y, float angle_z)
+    {
+        pcl::CropBox<pcl::PointXYZI> boxFilter;
+
+        boxFilter.setMin(Eigen::Vector4f(-length_x/2, -length_y/2, -length_z/2, 1.0));
+        boxFilter.setMax(Eigen::Vector4f(length_x/2, length_y/2, length_z/2, 1.0));
+
+        Eigen::Quaternionf q;
+        q = Eigen::AngleAxisf(angle_x / 360 * M_PI, Eigen::Vector3f::UnitX()) *
+            Eigen::AngleAxisf(angle_y / 360 * M_PI, Eigen::Vector3f::UnitY()) *
+            Eigen::AngleAxisf(angle_z / 360 * M_PI, Eigen::Vector3f::UnitZ());
+        Eigen::Affine3f rotate(q);
+        
+        Eigen::Translation3f translate_to_center(box_center);
+        
+        boxFilter.setTransform(translate_to_center * rotate);
+
+        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        boxFilter.setInputCloud(this->processed_cloud);
+        boxFilter.filter(*tempCloud);
+        this->processedCloudUpdate(tempCloud);
+        
+        return;
+    }
 
     std::vector<pcl::PointIndices> PointCloud2Proc::normalClusterExtraction(float smoothness, float curvature, int number_of_neighbours, int k_search, 
                                                             int min_cluster_size, int max_cluster_size)
@@ -193,6 +220,27 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->processedCloudUpdate(this->processed_cloud, cluster);
 
         return cluster;
+    }
+
+    int PointCloud2Proc::statisticalOutlierFilter(int mean_k, float stddev_mul)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::StatisticalOutlierRemoval<pcl::PointXYZI> sor;
+        pcl::Indices indices;
+        
+        sor.setInputCloud(this->processed_cloud);
+        sor.setMeanK(mean_k);  
+        sor.setStddevMulThresh(stddev_mul); 
+        sor.setNegative(false);
+        sor.filter(*cloud_filtered);
+        if(cloud_filtered->size() == 0)
+        {
+            return 0;
+        }
+
+        this->processedCloudUpdate(cloud_filtered);
+
+        return cloud_filtered->size();
     }
 
     pcl::PointIndices PointCloud2Proc::planeSegmentation(float distance_threshold, int max_iterations)
@@ -358,7 +406,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners()
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, int mean_k, float stddev_mul)
     {
         
         if(this->normalClusterExtraction().size() == 0)
@@ -368,6 +416,13 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         if(this->extractNearestClusterCloud().indices.size() == 0)
         {
             return this->NOCLOUD();
+        }
+        if(useStatisticalOutlierFilter)
+        {
+            if(this->statisticalOutlierFilter() == 0)
+            {
+                return this->NOCLOUD();
+            }
         }
         if(this->planeSegmentation().indices.size() == 0)
         {
@@ -494,6 +549,22 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             pcl::copyPointCloud(*cloud, clusters_indices, *this->processed_cloud);
         }
     }
+    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::Indices indices)
+    {
+        if(cloud == this->processed_cloud)
+        {
+            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            pcl::copyPointCloud(*cloud, *write_in_cloud);
+            this->processed_cloud->clear();
+            pcl::copyPointCloud(*write_in_cloud, indices, *this->processed_cloud);
+        }
+        else
+        {
+            this->processed_cloud->clear();
+            pcl::copyPointCloud(*cloud, indices, *this->processed_cloud);
+        }
+    }
+
     void PointCloud2Proc::processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix)
     {
         if(cloud == this->processed_cloud)

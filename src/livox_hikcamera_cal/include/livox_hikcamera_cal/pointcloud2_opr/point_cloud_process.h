@@ -55,15 +55,18 @@ namespace livox_hikcamera_cal
 
 
                 void boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
+                void boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
+                                float angle_x=0.0, float angle_y=0.0, float angle_z=0.0);
                 // void normalClusterExtraction();
-                std::vector<pcl::PointIndices> normalClusterExtraction(float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
+                std::vector<pcl::PointIndices> normalClusterExtraction(float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 90, 
                                                         int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);
                 std::vector<pcl::PointIndices> normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), 
-                                                        float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 50, 
+                                                        float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 90, 
                                                         int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);
                 // void extractNearestClusterCloud();  
                 pcl::PointIndices extractNearestClusterCloud(Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));    
-                // void planeSegmentation();   
+                int statisticalOutlierFilter(int mean_k=50, float stddev_mul=1.0);
+                // pcl::PointIndices planeSegmentation();   
                 pcl::PointIndices planeSegmentation(float distance_threshold = 0.1, int max_iterations = 1000);
                 void planeProjection();
                 void planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients);
@@ -75,7 +78,7 @@ namespace livox_hikcamera_cal
                 void transformCornersTo3D();
                 void transformCornersTo3D(Eigen::Matrix4f transform_matrix);
 
-                pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners();
+                pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, int mean_k=50, float stddev_mul=1.0);
 
 
 
@@ -88,6 +91,8 @@ namespace livox_hikcamera_cal
                 void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
                 void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::PointIndices cluster_indices);
                 void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices);
+                void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::Indices indices);
+
                 void processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix);
 
                 std::vector<std::string> iterateFilesFromPath(std::string folderPath);
