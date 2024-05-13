@@ -3,7 +3,17 @@
 ## This pack is still constructing...
 
 <p align="center">
-        <a href="https://github.com/QuintinUmi/camera_calibration/">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_10hz_1.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_10hz_2.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_5hz_1.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_5hz_2.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_5hz_3.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
+</p>
+        
+
+
+<p align="center">
+        <a href="https://github.com/QuintinUmi/mid360_hikcamera_calibration/">
             <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/rviz_caliboard_cloud_collection.png?raw=true" alt="rviz_caliboard_cloud_collection.png"/>
             <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliboard_cloud_detection.png?raw=true" alt="caliboard_cloud_detection.png"/>
             <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliboard_cloud_detection_2.png?raw=true" alt="caliboard_cloud_detection_2.png"/>
