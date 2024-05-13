@@ -155,7 +155,7 @@ add_library(point_cloud_process_lib
 )
 
 add_library(dynamic_reconfigure_lib
-  include include/livox_hikcamera_cal/pointcloud2_opr/dynamic_reconfigure.h
+  include include/livox_hikcamera_cal/dynamic_reconfigure.h
   lib/dynamic_reconfigure.cpp
 )
 
@@ -170,8 +170,8 @@ add_library(pcd_saver_lib
 )
 
 add_library(rviz_drawing_3d_lib
-  include include/livox_hikcamera_cal/pointcloud2_opr/rviz_drawing_3d.h
-  lib/pointcloud2_opr/rviz_drawing_3d.cpp
+  include include/livox_hikcamera_cal/rviz_drawing.h
+  lib/rviz_drawing.cpp
 )
 
 ## Add cmake target dependencies of the library
