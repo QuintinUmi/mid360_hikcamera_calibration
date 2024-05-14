@@ -33,36 +33,40 @@
 
 namespace livox_hikcamera_cal::pointcloud2_opr
 {
-    PointCloud2Proc::PointCloud2Proc() :    raw_cloud(new pcl::PointCloud<pcl::PointXYZI>),
-                                            processed_cloud(new pcl::PointCloud<pcl::PointXYZI>),
-                                            tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
-                                            normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
-                                            pca_transform_matrix(Eigen::Matrix4f::Identity()),
-                                            plane_coefficients(new pcl::ModelCoefficients),
-                                            rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>),
-                                            no_cloud(new pcl::PointCloud<pcl::PointXYZI>)
+    PointCloud2Proc::PointCloud2Proc(bool remove_origin_point) :    
+                                    raw_cloud(new pcl::PointCloud<pcl::PointXYZI>),
+                                    processed_cloud(new pcl::PointCloud<pcl::PointXYZI>),
+                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
+                                    normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
+                                    pca_transform_matrix(Eigen::Matrix4f::Identity()),
+                                    plane_coefficients(new pcl::ModelCoefficients),
+                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>),
+                                    no_cloud(new pcl::PointCloud<pcl::PointXYZI>)
     {
         // this->raw_cloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
         // this->processed_cloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
         // this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
         // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
         // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->remove_origin_point_ = remove_origin_point;
     }
     
-    PointCloud2Proc::PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud) :  raw_cloud(cloud),
-                                                                                    processed_cloud(cloud),
-                                                                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
-                                                                                    normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
-                                                                                    pca_transform_matrix(Eigen::Matrix4f::Identity()),
-                                                                                    plane_coefficients(new pcl::ModelCoefficients),
-                                                                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>),
-                                                                                    no_cloud(new pcl::PointCloud<pcl::PointXYZI>)
+    PointCloud2Proc::PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, bool remove_origin_point) :  
+                                    raw_cloud(cloud),
+                                    processed_cloud(cloud),
+                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
+                                    normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
+                                    pca_transform_matrix(Eigen::Matrix4f::Identity()),
+                                    plane_coefficients(new pcl::ModelCoefficients),
+                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>),
+                                    no_cloud(new pcl::PointCloud<pcl::PointXYZI>)
     {
         // this->raw_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(cloud);
         // this->processed_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(cloud),
         // this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
         // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
         // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->remove_origin_point_ = remove_origin_point;
     }
 
     PointCloud2Proc::~PointCloud2Proc() {}
@@ -88,6 +92,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             return;
         }
         this->processedCloudUpdate(this->raw_cloud);
+        this->removeOriginPoint();
 
         this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
         this->normals = boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>),
@@ -102,6 +107,11 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->rawCloudUpdate(cloud);
         this->resetCloud();
     }
+    void PointCloud2Proc::setRemoveOriginPoint(bool remove_origin_point)
+    {
+        this->remove_origin_point_ = remove_origin_point;
+    }
+
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getRawPointcloud()
     {
@@ -599,6 +609,14 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         }
 
         return file_names;
+    }
+
+    void PointCloud2Proc::removeOriginPoint()
+    {
+        if(this->remove_origin_point_)
+        {
+            this->boxFilter(Eigen::Vector4f(-0.0001, -0.0001, -0.0001, 1.0), Eigen::Vector4f(0.0001, 0.0001, 0.0001, 1.0), true);
+        }
     }
 
     pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::NOCLOUD()

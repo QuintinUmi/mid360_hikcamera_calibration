@@ -18,7 +18,7 @@ namespace livox_hikcamera_cal
             ~RvizDrawing();
 
             void setRvizDrawing(std::string topic, std::string frame_id);
-            void initRvizDrawing();
+            // void initRvizDrawing();
 
             
 
