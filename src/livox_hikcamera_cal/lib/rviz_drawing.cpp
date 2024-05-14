@@ -46,6 +46,10 @@ namespace livox_hikcamera_cal
         point.pose.position.x = x;
         point.pose.position.y = y;
         point.pose.position.z = z;
+        point.pose.orientation.w = 1.0;
+        point.pose.orientation.x = 0.0;
+        point.pose.orientation.y = 0.0;
+        point.pose.orientation.z = 0.0;
         point.scale.x = scale;
         point.scale.y = scale;
         point.scale.z = scale;
@@ -67,6 +71,9 @@ namespace livox_hikcamera_cal
         point.action = visualization_msgs::Marker::ADD;
         point.points.emplace_back(point_ip);
         point.pose.orientation.w = 1.0;
+        point.pose.orientation.x = 0.0;
+        point.pose.orientation.y = 0.0;
+        point.pose.orientation.z = 0.0;
         point.scale.x = scale;
         point.scale.y = scale;
         point.scale.z = scale;
@@ -94,6 +101,9 @@ namespace livox_hikcamera_cal
         points.action = visualization_msgs::Marker::ADD;
         points.points = points_ip;
         points.pose.orientation.w = 1.0;
+        points.pose.orientation.x = 0.0;
+        points.pose.orientation.y = 0.0;
+        points.pose.orientation.z = 0.0;
         points.scale.x = scale;
         points.scale.y = scale;
         points.scale.z = scale;
@@ -132,6 +142,9 @@ namespace livox_hikcamera_cal
         line.type = visualization_msgs::Marker::LINE_LIST;
         line.action = visualization_msgs::Marker::ADD;
         line.pose.orientation.w = 1.0;
+        line.pose.orientation.x = 0.0;
+        line.pose.orientation.y = 0.0;
+        line.pose.orientation.z = 0.0;
         line.scale.x = width;
         line.color.r = r;
         line.color.g = g;
@@ -151,6 +164,10 @@ namespace livox_hikcamera_cal
         lines.action = visualization_msgs::Marker::ADD;
         lines.scale.x = width;
         lines.points = points;
+        lines.pose.orientation.w = 1.0;
+        lines.pose.orientation.x = 0.0;
+        lines.pose.orientation.y = 0.0;
+        lines.pose.orientation.z = 0.0;
         lines.color.r = r;
         lines.color.g = g;
         lines.color.b = b;

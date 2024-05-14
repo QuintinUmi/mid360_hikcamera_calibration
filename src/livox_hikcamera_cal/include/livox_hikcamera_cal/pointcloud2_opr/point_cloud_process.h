@@ -36,14 +36,15 @@ namespace livox_hikcamera_cal
         class PointCloud2Proc
         {
             public:
-                PointCloud2Proc();
-                PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+                PointCloud2Proc(bool remove_origin_point=false);
+                PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, bool remove_origin_point=false);
                 ~PointCloud2Proc();
 
                 int loadPointCloudFile(std::string file_name);
 
                 void resetCloud();
                 void setCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
+                void setRemoveOriginPoint(bool remove_origin_point=true);
 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr getRawPointcloud();
                 pcl::PointCloud<pcl::PointXYZI>::Ptr getProcessedPointcloud();
@@ -96,6 +97,7 @@ namespace livox_hikcamera_cal
                 void processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix);
 
                 std::vector<std::string> iterateFilesFromPath(std::string folderPath);
+                void removeOriginPoint();
 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr NOCLOUD();
 
@@ -118,6 +120,7 @@ namespace livox_hikcamera_cal
                 pcl::search::Search<pcl::PointXYZI>::Ptr tree;
 
             private:
+                bool remove_origin_point_;
                 int k_search_;
                 pcl::search::Search<pcl::PointXYZI>::Ptr search_method_;
 

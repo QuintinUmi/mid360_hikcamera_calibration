@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	ros::NodeHandle rosHandle;
 
 	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));		
-	pointcloud2_opr::PointCloud2Proc pc_process;
+	pointcloud2_opr::PointCloud2Proc pc_process(true); // Remove Origin Point Published by livox_ros_driver2
 	PointcloudFilterReconfigure filterRecfg;
     RQTConfig rqtCfg;
 	RvizDrawing rviz_drawing;
@@ -55,7 +55,6 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		pc_process.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
-		pc_process.boxFilter(Eigen::Vector4f(-0.001, -0.001, -0.001, 1.0), Eigen::Vector4f(0.001, 0.001, 0.001, 1.0), true);
 		// ROS_INFO("%ld\n", pointcloud_SUB_PUB.getPointcloudXYZI()->size());
 		rqtCfg.FilterConfig = filterRecfg.getConfigure();
 		float x_max = rqtCfg.FilterConfig.x_max;
