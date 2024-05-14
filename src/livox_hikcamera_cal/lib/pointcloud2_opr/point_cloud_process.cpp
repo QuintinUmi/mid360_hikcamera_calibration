@@ -133,13 +133,14 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
-    void PointCloud2Proc::boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point)
+    void PointCloud2Proc::boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive)
     {
         pcl::CropBox<pcl::PointXYZI> boxFilter;
         pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
         boxFilter.setInputCloud(this->processed_cloud);
         boxFilter.setMin(min_point);
         boxFilter.setMax(max_point);
+        boxFilter.setNegative(negetive);
 
         boxFilter.filter(*tempCloud);
         this->processedCloudUpdate(tempCloud);
@@ -147,7 +148,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
     void PointCloud2Proc::boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
-                                    float angle_x, float angle_y, float angle_z)
+                                    float angle_x, float angle_y, float angle_z, bool negetive)
     {
         pcl::CropBox<pcl::PointXYZI> boxFilter;
 
@@ -163,6 +164,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         Eigen::Translation3f translate_to_center(box_center);
         
         boxFilter.setTransform(translate_to_center * rotate);
+
+        boxFilter.setNegative(negetive);
 
         pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
         boxFilter.setInputCloud(this->processed_cloud);

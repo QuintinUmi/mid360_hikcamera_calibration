@@ -206,7 +206,7 @@ namespace livox_hikcamera_cal
                 it_objects_list_->second.action == visualization_msgs::Marker::DELETEALL ) 
             {
                 this->markers_.markers.push_back(it_objects_list_->second);
-                delete_objects.emplace_back(it_objects_list_); 
+                it_objects_list_ = this->objects_list_.erase(it_objects_list_);
             } 
             else 
             {
@@ -217,15 +217,14 @@ namespace livox_hikcamera_cal
         }
 
         this->pub_.publish(this->markers_);
-        this->markers_.markers.clear();
 
-        if(delete_objects.size() != 0)
-        {
-            for(auto delete_object:delete_objects)
-            {
-                this->objects_list_.erase(delete_object); 
-            }
-        }
+        // if(delete_objects.size() != 0)
+        // {
+        //     for(auto delete_object:delete_objects)
+        //     {
+        //         this->objects_list_.erase(delete_object); 
+        //     }
+        // }
     }
 
 

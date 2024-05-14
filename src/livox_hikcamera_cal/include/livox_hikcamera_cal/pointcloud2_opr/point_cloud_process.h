@@ -54,9 +54,9 @@ namespace livox_hikcamera_cal
                 pcl::PointCloud<pcl::PointXYZI>::Ptr get3DRectCorners();
 
 
-                void boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
+                void boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive=false);
                 void boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
-                                float angle_x=0.0, float angle_y=0.0, float angle_z=0.0);
+                                float angle_x=0.0, float angle_y=0.0, float angle_z=0.0, bool negetive=false);
                 // void normalClusterExtraction();
                 std::vector<pcl::PointIndices> normalClusterExtraction(float smoothness = 3.0 / 180.0 * M_PI, float curvature = 0.1, int k_search = 90, 
                                                         int number_of_neighbours = 30, int min_cluster_size = 100, int max_cluster_size = 25000);

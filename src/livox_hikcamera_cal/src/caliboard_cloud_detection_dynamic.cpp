@@ -43,12 +43,6 @@ int main(int argc, char *argv[])
 	RvizDrawing rviz_drawing;
 
 
-	ros::Publisher pub = rosHandle.advertise<visualization_msgs::MarkerArray>("livox_hikcamera_cal/rviz_drawing", 10);
-	visualization_msgs::Marker delete_marker;
-	delete_marker.ns = "delete_marker";
-	delete_marker.id = 0;
-	delete_marker.action = visualization_msgs::Marker::DELETEALL;
-
 	ros::Rate rate(30);
 
 	while(ros::ok())
@@ -61,6 +55,7 @@ int main(int argc, char *argv[])
 			continue;
 		}
 		pc_process.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
+		pc_process.boxFilter(Eigen::Vector4f(-0.001, -0.001, -0.001, 1.0), Eigen::Vector4f(0.001, 0.001, 0.001, 1.0), true);
 		// ROS_INFO("%ld\n", pointcloud_SUB_PUB.getPointcloudXYZI()->size());
 		rqtCfg.FilterConfig = filterRecfg.getConfigure();
 		float x_max = rqtCfg.FilterConfig.x_max;
@@ -117,10 +112,9 @@ int main(int argc, char *argv[])
 
 		if(corners->size() == 0)
 		{
-			// rviz_drawing.deleteObject("corners");
-			// rviz_drawing.deleteObject("rect_lines");
-			pub.publish(delete_marker);
-			continue;
+			// rviz_drawing.deleteAllObject();
+			rviz_drawing.deleteObject("corners");
+			rviz_drawing.deleteObject("rect_lines");
 		}
 		else
 		{
