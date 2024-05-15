@@ -3,6 +3,10 @@
 ## This pack is still constructing...
 
 ### mid360 10hz publish
+
+
+<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliborad_detection.png" alt="caliborad_detection.gif"/>
+
 <p align="center">
         <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_10hz_1.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
         <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_10hz_2.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
