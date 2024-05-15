@@ -50,6 +50,8 @@ namespace livox_hikcamera_cal
                 pcl::PointCloud<pcl::PointXYZI>::Ptr getProcessedPointcloud();
                 std::vector<pcl::PointIndices> getClastersIndices();
                 pcl::PointIndices getClusterIndices(int index_of_cluster_indices);
+                pcl::ModelCoefficients getPlaneCoefficients();
+                Eigen::Vector3f getPlaneNormals();
                 Eigen::Matrix4f getPCATransformMatrix();
                 cv::Point2f* getPCAPlaneRectCorners();
                 pcl::PointCloud<pcl::PointXYZI>::Ptr get3DRectCorners();
@@ -87,6 +89,7 @@ namespace livox_hikcamera_cal
                 pcl::PointIndices computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));
                 void computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector);
                 Eigen::Matrix4f computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
+                void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, float angle_offset=0);
             
                 void rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
                 void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
@@ -109,6 +112,7 @@ namespace livox_hikcamera_cal
                 std::vector<pcl::PointIndices> clusters;
 
                 pcl::ModelCoefficients::Ptr plane_coefficients;
+                Eigen::Vector3f plane_normals;
                 Eigen::Matrix4f pca_transform_matrix;
                 cv::RotatedRect pointcloud_rect_box;
                 cv::Point2f rect_corners_2d[4];

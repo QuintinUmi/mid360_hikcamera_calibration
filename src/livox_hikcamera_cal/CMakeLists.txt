@@ -165,31 +165,15 @@ add_library(point_cloud_process_lib
   lib/pointcloud2_opr/point_cloud_process.cpp
 )
 
-add_library(dynamic_reconfigure_lib
-  include include/livox_hikcamera_cal/dynamic_reconfigure.h
-  lib/dynamic_reconfigure.cpp
-)
-
-add_library(recorder_lib
-  include include/livox_hikcamera_cal/recorder.h
-  lib/recorder.cpp
-)
-
 add_library(pcd_saver_lib
   include include/livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h
   lib/pointcloud2_opr/pcd_saver.cpp
 )
 
-add_library(rviz_drawing_3d_lib
-  include include/livox_hikcamera_cal/rviz_drawing.h
-  lib/rviz_drawing.cpp
-)
 
 
 add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(pcd_saver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
@@ -202,18 +186,10 @@ target_link_libraries(point_cloud_process_lib
   ${OpenCV_LIBRARIES}
   point_cloud_subscriber_publisher_lib
 )
-target_link_libraries(dynamic_reconfigure_lib
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(recorder_lib
-  ${catkin_LIBRARIES}
-)
 target_link_libraries(pcd_saver_lib
   ${catkin_LIBRARIES}
 )
-target_link_libraries(rviz_drawing_3d_lib
-  ${catkin_LIBRARIES}
-)
+
 
 
 
@@ -242,9 +218,49 @@ target_link_libraries(aruco_tool_lib
 
 
 
-# -----------------------------------------------------------------------------------------------------
+# ------------------------------------- livox_hikcamera_cal -------------------------------------------
+
+add_library(dynamic_reconfigure_lib
+  include include/livox_hikcamera_cal/dynamic_reconfigure.h
+  lib/dynamic_reconfigure.cpp
+)
+
+add_library(recorder_lib
+  include include/livox_hikcamera_cal/recorder.h
+  lib/recorder.cpp
+)
+
+add_library(rviz_drawing_3d_lib
+  include include/livox_hikcamera_cal/rviz_drawing.h
+  lib/rviz_drawing.cpp
+)
+
+add_library(calibration_solver_lib
+  include include/livox_hikcamera_cal/calibration_solver.h
+  lib/calibration_solver.cpp
+)
 
 
+add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(rviz_drawing_3d_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(calibration_solver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
+target_link_libraries(dynamic_reconfigure_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(recorder_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(rviz_drawing_3d_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(calibration_solver_lib
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
 
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context

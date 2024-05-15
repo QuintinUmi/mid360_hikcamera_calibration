@@ -89,6 +89,8 @@
         "stack": "cpp",
         "*.ipp": "cpp",
         "filesystem": "cpp",
-        "random": "cpp"
+        "random": "cpp",
+        "dense": "cpp",
+        "svd": "cpp"
     }
 }

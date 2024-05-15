@@ -113,11 +113,32 @@ int main(int argc, char *argv[])
 		{
 			// rviz_drawing.deleteAllObject();
 			rviz_drawing.deleteObject("corners");
+
+			rviz_drawing.deleteObject("corner_1");
+			rviz_drawing.deleteObject("corner_2");
+			rviz_drawing.deleteObject("corner_3");
+			rviz_drawing.deleteObject("corner_4");
+
+			rviz_drawing.deleteObject("plane_normals");
+
 			rviz_drawing.deleteObject("rect_lines");
 		}
 		else
 		{
 			rviz_drawing.addPoints("corners", ros_corners, 0.03, 1.0, 0.0, 0.0);
+
+			rviz_drawing.addText("corner_1", ros_corners.at(0), "1", 0.3, 1.0, 0.0, 0.0);
+			rviz_drawing.addText("corner_2", ros_corners.at(1), "2", 0.3, 1.0, 0.0, 0.0);
+			rviz_drawing.addText("corner_3", ros_corners.at(2), "3", 0.3, 1.0, 0.0, 0.0);
+			rviz_drawing.addText("corner_4", ros_corners.at(3), "4", 0.3, 1.0, 0.0, 0.0);
+
+			Eigen::Vector3f plane_normals = pc_process.getPlaneNormals();
+			rviz_drawing.addArrow("plane_normals", 
+									(ros_corners[0].x + ros_corners[1].x + ros_corners[2].x + ros_corners[3].x) / 4,
+									(ros_corners[0].y + ros_corners[1].y + ros_corners[2].y + ros_corners[3].y) / 4,
+									(ros_corners[0].z + ros_corners[1].z + ros_corners[2].z + ros_corners[3].z) / 4,
+									plane_normals, 0.03, 0.06, 0.06, 1.0, 0.0, 0.0);
+
 			ros_corners.push_back(ros_corners[0]);
 			rviz_drawing.addLines("rect_lines", ros_corners, 4, 0.01, 0.0, 1.0, 0.0);
 		}

@@ -34,6 +34,22 @@ namespace livox_hikcamera_cal
             void addLines(std::string object_id, const std::vector<geometry_msgs::Point>& points,
                             visualization_msgs::Marker::_type_type line_type = visualization_msgs::Marker::LINE_STRIP, 
                             float width=1.0, float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+
+            void addArrow(std::string object_id, float x1, float y1, float z1, float x2, float y2, float z2,
+                            float shaft_diameter=1.0, float head_diameter=1.0, float head_length=1.0, 
+                            float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+            void addArrow(std::string object_id, float x, float y, float z, Eigen::Vector3f vector_ip,
+                            float shaft_diameter=1.0, float head_diameter=1.0, float head_length=1.0, 
+                            float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+            void addArrow(std::string object_id, geometry_msgs::Point point, Eigen::Vector3f vector_ip,
+                            float shaft_diameter=1.0, float head_diameter=1.0, float head_length=1.0, 
+                            float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+
+            void addText(std::string object_id, float x, float y, float z, std::string text, 
+                            float size=1.0, float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+            void addText(std::string object_id, geometry_msgs::Point position, std::string text, 
+                            float size=1.0, float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+
             
             // void addImage(std::string object_id, const std::string& mesh_resource, float x, float y, float z,
             //                         float scale_x, float scale_y, float scale_z);
