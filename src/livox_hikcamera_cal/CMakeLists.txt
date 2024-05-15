@@ -134,6 +134,12 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
+find_library(APRILTAG_LIB apriltag)
+if(NOT APRILTAG_LIB)
+    message(FATAL_ERROR "AprilTag library not found")
+endif()
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -173,6 +179,7 @@ add_library(rviz_drawing_3d_lib
   include include/livox_hikcamera_cal/rviz_drawing.h
   lib/rviz_drawing.cpp
 )
+
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
