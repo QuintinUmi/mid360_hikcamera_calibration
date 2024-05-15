@@ -1,0 +1,17 @@
+
+image_save_path: src/livox_hikcamera_cal/aruco_img/
+image_load_path: src/livox_hikcamera_cal/aruco_img
+image_format: png
+
+yaml_save_path: /home/quintinumi/project/ws_camera_calibration/src/camera_calibration/src/camera_calibration_pkg/config/
+
+dictionary_name: 10
+selected_ids: [62, 80, 150, 230]
+aruco_marker_size: 200
+
+aruco_real_length: [47.62, 47.62, 47.62, 47.62]
+
+# criteria_iter_times: 1000000
+# iter_difference: 0.00000001
+
+# show_corners_image: false

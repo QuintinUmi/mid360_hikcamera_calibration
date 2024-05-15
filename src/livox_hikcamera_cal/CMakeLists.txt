@@ -17,6 +17,8 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   sensor_msgs
   std_msgs
+  cv_bridge
+  image_transport
   tf
   dynamic_reconfigure
   visualization_msgs
@@ -134,6 +136,12 @@ catkin_package(
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
+
+find_library(APRILTAG_LIB apriltag)
+if(NOT APRILTAG_LIB)
+    message(FATAL_ERROR "AprilTag library not found")
+endif()
+
 include_directories(
   include
   ${catkin_INCLUDE_DIRS}
@@ -142,7 +150,10 @@ include_directories(
   /usr/local/include/
 )
 
-## Declare a C++ library
+
+
+# ---------------------------------------- pointcloud2_opr -----------------------------------------------
+
 add_library(point_cloud_subscriber_publisher_lib
   include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
   lib/pointcloud2_opr/point_cloud_subscriber_publisher.cpp
@@ -174,14 +185,13 @@ add_library(rviz_drawing_3d_lib
   lib/rviz_drawing.cpp
 )
 
-## Add cmake target dependencies of the library
-## as an example, code may need to be generated before libraries
-## either from message generation or dynamic reconfigure
+
 add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(pcd_saver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
 
 target_link_libraries(point_cloud_subscriber_publisher_lib
   ${catkin_LIBRARIES}
@@ -205,6 +215,37 @@ target_link_libraries(rviz_drawing_3d_lib
   ${catkin_LIBRARIES}
 )
 
+
+
+# ---------------------------------------- image_opr -----------------------------------------------
+
+add_library(drawing_tool_lib
+  include include/livox_hikcamera_cal/image_opr/drawing_tool.h
+  lib/image_opr/drawing_tool.cpp
+)
+add_library(aruco_tool_lib
+  include include/livox_hikcamera_cal/image_opr/aruco_tool.h
+  lib/image_opr/aruco_tool.cpp
+)
+
+
+add_dependencies(drawing_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(aruco_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
+target_link_libraries(drawing_tool_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(aruco_tool_lib
+  ${catkin_LIBRARIES}
+)
+
+
+
+# -----------------------------------------------------------------------------------------------------
+
+
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
@@ -215,6 +256,8 @@ add_executable(caliboard_cloud_detection_dynamic src/caliboard_cloud_detection_d
 add_executable(point_cloud_filter src/point_cloud_filter.cpp)
 add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 add_executable(pcd_saver_example src/pcd_saver_example.cpp)
+
+add_executable(aruco_detection_example src/aruco_detection_example.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -288,6 +331,13 @@ target_link_libraries(pcd_saver_example
   pcd_saver_lib
 )
 
+
+target_link_libraries(aruco_detection_example
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  drawing_tool_lib
+  aruco_tool_lib
+)
 
 #############
 ## Install ##
