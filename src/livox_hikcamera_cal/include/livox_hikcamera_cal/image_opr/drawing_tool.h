@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <stdlib.h>
 
+#include <cv_bridge/cv_bridge.h>
 #include "opencv2/opencv.hpp"   
 // #include "apriltag/apriltag.h" 
 #include "opencv2/aruco/charuco.hpp"    
@@ -21,13 +22,13 @@
 
 #include "image_transport/image_transport.h"
 
-#include "param_code.h"
-
 
 using namespace std;
 
-
-namespace drt{
+namespace image_opr
+{
+    #define SUCCESS_PROCESS true
+    #define FAILD_PROCESS false
 
     class Draw3D{
 
@@ -94,10 +95,10 @@ namespace drt{
             cv::Size setImgSizeIn3d = cv::Size(1.0, 1.0);
             cv::Mat setOffsetRvec = cv::Mat();
             cv::Mat setOffsetTvec = cv::Mat();
+    
     };
 
-
-    
 }
+
 
 #endif
