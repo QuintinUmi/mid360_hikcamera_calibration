@@ -129,6 +129,14 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     {
         return this->clusters[index_of_cluster_indices];
     }
+    pcl::ModelCoefficients PointCloud2Proc::getPlaneCoefficients()
+    {
+        return *this->plane_coefficients;
+    }
+    Eigen::Vector3f PointCloud2Proc::getPlaneNormals()
+    {
+        return this->plane_normals;
+    }
     Eigen::Matrix4f PointCloud2Proc::getPCATransformMatrix()
     {
         return this->pca_transform_matrix;
@@ -291,6 +299,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->plane_coefficients->header = coefficients->header;
         this->plane_coefficients->values = coefficients->values;
         this->processedCloudUpdate(cloud_plane);
+
+        this->plane_normals = Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]).normalized();
             
         return inliers_;
     }
@@ -445,6 +455,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pcaTransform();
         this->findRectangleCornersInPCAPlane();
         this->transformCornersTo3D();
+        this->sortPointByNormal(this->rect_corners_3d, this->plane_normals, M_PI/2);
         this->processedCloudUpdate(this->raw_cloud, this->computeNearestClusterIndices(this->raw_cloud, this->clusters));
 
         return this->rect_corners_3d;
@@ -510,6 +521,54 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         transform.block<3,1>(0, 3) = -1.0 * (rotation_matrix.transpose() * translation_matrix.head<3>()); 
         
         return transform;
+    }
+
+    void PointCloud2Proc::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, float angle_offset)
+    {
+        // 计算点云的几何中心
+        pcl::PointXYZI center;
+        for (const auto& p : points->points) {
+            center.x += p.x;
+            center.y += p.y;
+            center.z += p.z;
+        }
+        center.x /= points->points.size();
+        center.y /= points->points.size();
+        center.z /= points->points.size();
+
+        // 为每个点计算角度
+        std::vector<std::pair<float, int>> angle_indices;
+        float max_z = -std::numeric_limits<float>::max();
+        int max_z_index = 0;
+        for (int i = 0; i < points->points.size(); ++i) {
+            const auto& p = points->points[i];
+            if (p.z > max_z) {
+                max_z = p.z;
+                max_z_index = i;
+            }
+            Eigen::Vector3f vec(p.x - center.x, p.y - center.y, p.z - center.z);
+            Eigen::Vector3f ref(0.0, 1.0, 0.0); // 使用 y 轴正方向作为参考向量
+            float angle = atan2(vec.dot(Eigen::Vector3f(0, 0, 1)), ref.dot(vec)); // 使用 z 轴和 y 轴的点积
+            angle_indices.emplace_back(angle, i);
+        }
+
+        // 对计算得到的角度进行排序
+        std::sort(angle_indices.begin(), angle_indices.end());
+
+        // 确保从 z 值最大的点开始排序
+        while (angle_indices.front().second != max_z_index) {
+            std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
+        }
+
+        // 根据排序结果重建点云
+        pcl::PointCloud<pcl::PointXYZI> sorted_cloud;
+        for (const auto& angle_index : angle_indices) {
+            sorted_cloud.push_back(points->points[angle_index.second]);
+        }
+
+        // 更新原点云
+        *points = sorted_cloud;
+
     }
 
     void PointCloud2Proc::rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)

@@ -28,7 +28,7 @@
 
 
 using namespace std;
-using namespace image_opr;
+using namespace livox_hikcamera_cal::image_opr;
 
 
 bool g_exit = false;

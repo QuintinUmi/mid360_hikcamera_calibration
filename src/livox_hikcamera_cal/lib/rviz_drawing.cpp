@@ -2,6 +2,8 @@
 #include <visualization_msgs/Marker.h>
 #include <geometry_msgs/Point.h>
 
+#include <Eigen/Core>
+
 #include "livox_hikcamera_cal/rviz_drawing.h"
 
 namespace livox_hikcamera_cal
@@ -173,6 +175,158 @@ namespace livox_hikcamera_cal
         lines.color.b = b;
         lines.color.a = a;
         this->updateObject(object_id, lines);
+    }
+
+    void RvizDrawing::addArrow(std::string object_id, float x1, float y1, float z1, float x2, float y2, float z2,
+                            float shaft_diameter, float head_diameter, float head_length, 
+                            float r, float g, float b, float a)
+    {
+        visualization_msgs::Marker arrow;
+        arrow.header.frame_id = frame_id_;
+        arrow.header.stamp = ros::Time::now();
+        arrow.ns = "arrows";
+        arrow.id = this->updateMarkerId(object_id);
+        arrow.type = visualization_msgs::Marker::ARROW;
+        arrow.action = visualization_msgs::Marker::ADD;
+        geometry_msgs::Point start, end;
+        start.x = x1;
+        start.y = y1;
+        start.z = z1;
+        end.x = x2;
+        end.y = y2;
+        end.z = z2;
+        arrow.points.emplace_back(start);   
+        arrow.points.emplace_back(end);
+        arrow.pose.orientation.w = 1.0;
+        arrow.pose.orientation.x = 0.0;
+        arrow.pose.orientation.y = 0.0;
+        arrow.pose.orientation.z = 0.0;
+        arrow.scale.x = shaft_diameter; 
+        arrow.scale.y = head_diameter; 
+        arrow.scale.z = head_length; 
+
+        arrow.color.r = r;
+        arrow.color.g = g;
+        arrow.color.b = b;
+        arrow.color.a = a;
+
+        this->updateObject(object_id, arrow);
+    }
+    void RvizDrawing::addArrow(std::string object_id, float x, float y, float z, Eigen::Vector3f vector_ip,
+                            float shaft_diameter, float head_diameter, float head_length, 
+                            float r, float g, float b, float a)
+    {
+        visualization_msgs::Marker arrow;
+        arrow.header.frame_id = frame_id_;
+        arrow.header.stamp = ros::Time::now();
+        arrow.ns = "arrows";
+        arrow.id = this->updateMarkerId(object_id);
+        arrow.type = visualization_msgs::Marker::ARROW;
+        arrow.action = visualization_msgs::Marker::ADD;
+        geometry_msgs::Point start, end;
+        start.x = x;
+        start.y = y;
+        start.z = z;
+        end.x = start.x + vector_ip.x();
+        end.y = start.y + vector_ip.y();
+        end.z = start.z + vector_ip.z();
+        arrow.points.emplace_back(start);   
+        arrow.points.emplace_back(end);
+        arrow.pose.orientation.w = 1.0;
+        arrow.pose.orientation.x = 0.0;
+        arrow.pose.orientation.y = 0.0;
+        arrow.pose.orientation.z = 0.0;
+        arrow.scale.x = shaft_diameter; 
+        arrow.scale.y = head_diameter; 
+        arrow.scale.z = head_length; 
+
+        arrow.color.r = r;
+        arrow.color.g = g;
+        arrow.color.b = b;
+        arrow.color.a = a;
+
+        this->updateObject(object_id, arrow);
+    }
+    void RvizDrawing::addArrow(std::string object_id, geometry_msgs::Point point, Eigen::Vector3f vector_ip,
+                            float shaft_diameter, float head_diameter, float head_length, 
+                            float r, float g, float b, float a)
+    {
+        visualization_msgs::Marker arrow;
+        arrow.header.frame_id = frame_id_;
+        arrow.header.stamp = ros::Time::now();
+        arrow.ns = "arrows";
+        arrow.id = this->updateMarkerId(object_id);
+        arrow.type = visualization_msgs::Marker::ARROW;
+        arrow.action = visualization_msgs::Marker::ADD;
+        arrow.points.emplace_back(point);
+        geometry_msgs::Point end;
+        end.x = point.x + vector_ip.x();
+        end.y = point.y + vector_ip.y();
+        end.z = point.z + vector_ip.z();
+        arrow.points.emplace_back(end);
+        arrow.pose.orientation.w = 1.0;
+        arrow.pose.orientation.x = 0.0;
+        arrow.pose.orientation.y = 0.0;
+        arrow.pose.orientation.z = 0.0;
+        arrow.scale.x = shaft_diameter; 
+        arrow.scale.y = head_diameter; 
+        arrow.scale.z = head_length; 
+
+        arrow.color.r = r;
+        arrow.color.g = g;
+        arrow.color.b = b;
+        arrow.color.a = a;
+
+        this->updateObject(object_id, arrow);
+    }
+
+    void RvizDrawing::addText(std::string object_id, float x, float y, float z, std::string text_ip, 
+                                float size, float r, float g, float b, float a) {
+        visualization_msgs::Marker text;
+        text.header.frame_id = frame_id_;
+        text.header.stamp = ros::Time::now();
+        text.ns = "texts";
+        text.id = this->updateMarkerId(object_id);
+        text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+        text.action = visualization_msgs::Marker::ADD;
+        text.scale.z = size;
+        text.text = text_ip;
+        text.pose.position.x = x;
+        text.pose.position.y = y;
+        text.pose.position.z = z;
+        text.pose.orientation.w = 1.0;
+        text.pose.orientation.x = 0.0;
+        text.pose.orientation.y = 0.0;
+        text.pose.orientation.z = 0.0;
+        text.color.r = r;
+        text.color.g = g;
+        text.color.b = b;
+        text.color.a = a;
+        this->updateObject(object_id, text);
+    }
+    void RvizDrawing::addText(std::string object_id, geometry_msgs::Point position, std::string text_ip, 
+                                float size, float r, float g, float b, float a) {
+        visualization_msgs::Marker text;
+        text.header.frame_id = frame_id_;
+        text.header.stamp = ros::Time::now();
+        text.ns = "texts";
+        text.id = this->updateMarkerId(object_id);
+        text.type = visualization_msgs::Marker::TEXT_VIEW_FACING;
+        text.action = visualization_msgs::Marker::ADD;
+        text.scale.z = size;
+        text.text = text_ip;
+        text.pose.position.x = position.x;
+        text.pose.position.y = position.y;
+        text.pose.position.z = position.z;
+        text.pose.orientation.w = 1.0;
+        text.pose.orientation.x = 0.0;
+        text.pose.orientation.y = 0.0;
+        text.pose.orientation.z = 0.0;
+        text.color.r = r;
+        text.color.g = g;
+        text.color.b = b;
+        text.color.a = a;
+        this->updateObject(object_id, text);
     }
 
     // void RvizDrawing::addImage(std::string object_id, const std::string& mesh_resource, float x, float y, float z,
