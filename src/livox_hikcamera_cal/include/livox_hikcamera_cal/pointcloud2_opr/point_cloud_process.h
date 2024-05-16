@@ -84,12 +84,14 @@ namespace livox_hikcamera_cal
                 pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, int mean_k=50, float stddev_mul=1.0);
 
 
-
+                pcl::PointCloud<pcl::PointXYZI>::Ptr getFilterBoxCorners(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
+                pcl::PointCloud<pcl::PointXYZI>::Ptr getFilterBoxCorners(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
+                                                                            float angle_x=0.0, float angle_y=0.0, float angle_z=0.0);
                 pcl::PointCloud<pcl::Normal>::Ptr computeNormals(int k_search);
                 pcl::PointIndices computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));
                 void computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector);
                 Eigen::Matrix4f computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
-                void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, float angle_offset=0);
+                void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal);
             
                 void rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
                 void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);

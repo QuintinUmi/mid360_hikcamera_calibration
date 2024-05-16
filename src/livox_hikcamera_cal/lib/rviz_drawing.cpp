@@ -123,6 +123,29 @@ namespace livox_hikcamera_cal
     }
 
 
+    void RvizDrawing::addLine(std::string object_id, geometry_msgs::Point point1, geometry_msgs::Point point2,
+                                float width, float r, float g, float b, float a)
+    {
+        visualization_msgs::Marker line;
+        line.points.emplace_back(point1);
+        line.points.emplace_back(point2);
+        line.header.frame_id = frame_id_;
+        line.header.stamp = ros::Time::now();
+        line.ns = "lines";
+        line.id = this->updateMarkerId(object_id);
+        line.type = visualization_msgs::Marker::LINE_LIST;
+        line.action = visualization_msgs::Marker::ADD;
+        line.pose.orientation.w = 1.0;
+        line.pose.orientation.x = 0.0;
+        line.pose.orientation.y = 0.0;
+        line.pose.orientation.z = 0.0;
+        line.scale.x = width;
+        line.color.r = r;
+        line.color.g = g;
+        line.color.b = b;
+        line.color.a = a;
+        this->updateObject(object_id, line);
+    }
     void RvizDrawing::addLine(std::string object_id, float x1, float y1, float z1, float x2, float y2, float z2, 
                                 float width, float r, float g, float b, float a)
     {

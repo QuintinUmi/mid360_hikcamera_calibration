@@ -159,7 +159,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         boxFilter.setMin(min_point);
         boxFilter.setMax(max_point);
         boxFilter.setNegative(negetive);
-
+    
         boxFilter.filter(*tempCloud);
         this->processedCloudUpdate(tempCloud);
         
@@ -455,7 +455,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pcaTransform();
         this->findRectangleCornersInPCAPlane();
         this->transformCornersTo3D();
-        this->sortPointByNormal(this->rect_corners_3d, this->plane_normals, M_PI/2);
+        this->sortPointByNormal(this->rect_corners_3d, this->plane_normals);
         this->processedCloudUpdate(this->raw_cloud, this->computeNearestClusterIndices(this->raw_cloud, this->clusters));
 
         return this->rect_corners_3d;
@@ -465,6 +465,74 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getFilterBoxCorners(Eigen::Vector4f min_point, Eigen::Vector4f max_point)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr corners(new pcl::PointCloud<pcl::PointXYZI>);
+
+        pcl::PointXYZI point;
+
+        point.x = min_point.x(); point.y = min_point.y(); point.z = min_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        point.x = max_point.x(); point.y = min_point.y(); point.z = min_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        point.x = max_point.x(); point.y = max_point.y(); point.z = min_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        point.x = min_point.x(); point.y = max_point.y(); point.z = min_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+
+        point.x = min_point.x(); point.y = min_point.y(); point.z = max_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        point.x = max_point.x(); point.y = min_point.y(); point.z = max_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        point.x = max_point.x(); point.y = max_point.y(); point.z = max_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        point.x = min_point.x(); point.y = max_point.y(); point.z = max_point.z(); point.intensity = 0;
+        corners->emplace_back(point);
+
+        
+        return corners;
+    }
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getFilterBoxCorners(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
+                                                                                float angle_x, float angle_y, float angle_z)
+    {
+        Eigen::Quaternionf q;
+        q = Eigen::AngleAxisf(angle_x * M_PI / 180.0, Eigen::Vector3f::UnitX()) *
+            Eigen::AngleAxisf(angle_y * M_PI / 180.0, Eigen::Vector3f::UnitY()) *
+            Eigen::AngleAxisf(angle_z * M_PI / 180.0, Eigen::Vector3f::UnitZ());
+        Eigen::Affine3f rotate(q);
+
+        Eigen::Translation3f translate_to_center(box_center);
+
+        Eigen::Affine3f transform = translate_to_center * rotate;
+
+        std::vector<Eigen::Vector3f> corners_at_origin;
+        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, -length_y/2, -length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(length_x/2, -length_y/2, -length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, -length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(length_x/2, length_y/2, -length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, -length_y/2, length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(length_x/2, -length_y/2, length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(length_x/2, length_y/2, length_z/2));
+
+        pcl::PointCloud<pcl::PointXYZI>::Ptr corners(new pcl::PointCloud<pcl::PointXYZI>);
+        for (const auto& corner_at_origin : corners_at_origin) 
+        {
+            Eigen::Vector3f transformed_corner = transform * corner_at_origin; 
+            pcl::PointXYZI point;
+            point.x = transformed_corner.x(); point.y = transformed_corner.y(); point.z = transformed_corner.z(); point.intensity = 0.0; 
+            corners->emplace_back(point);
+        }
+        return corners;
+    }
 
 
     pcl::PointCloud<pcl::Normal>::Ptr PointCloud2Proc::computeNormals(int k_search = 50)
@@ -523,9 +591,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return transform;
     }
 
-    void PointCloud2Proc::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, float angle_offset)
+    void PointCloud2Proc::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal)
     {
-        // 计算点云的几何中心
         pcl::PointXYZI center;
         for (const auto& p : points->points) {
             center.x += p.x;
@@ -536,7 +603,22 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         center.y /= points->points.size();
         center.z /= points->points.size();
 
-        // 为每个点计算角度
+        Eigen::Vector3f orthogonal_vector;
+        float x_abs = std::abs(normal.x());
+        float y_abs = std::abs(normal.y());
+        float z_abs = std::abs(normal.z());
+
+        if (x_abs <= y_abs && x_abs <= z_abs) {
+            orthogonal_vector = Eigen::Vector3f(1.0, 0.0, 0.0);  
+        } else if (y_abs <= x_abs && y_abs <= z_abs) {
+            orthogonal_vector = Eigen::Vector3f(0.0, 1.0, 0.0);  
+        } else {
+            orthogonal_vector = Eigen::Vector3f(0.0, 0.0, 1.0);  
+        }
+
+        Eigen::Vector3f ref_vector = normal.cross(orthogonal_vector).normalized(); 
+        Eigen::Vector3f plane_vector = normal.cross(ref_vector).normalized(); 
+
         std::vector<std::pair<float, int>> angle_indices;
         float max_z = -std::numeric_limits<float>::max();
         int max_z_index = 0;
@@ -547,26 +629,21 @@ namespace livox_hikcamera_cal::pointcloud2_opr
                 max_z_index = i;
             }
             Eigen::Vector3f vec(p.x - center.x, p.y - center.y, p.z - center.z);
-            Eigen::Vector3f ref(0.0, 1.0, 0.0); // 使用 y 轴正方向作为参考向量
-            float angle = atan2(vec.dot(Eigen::Vector3f(0, 0, 1)), ref.dot(vec)); // 使用 z 轴和 y 轴的点积
+            float angle = atan2(vec.dot(ref_vector), vec.dot(plane_vector)); 
             angle_indices.emplace_back(angle, i);
         }
 
-        // 对计算得到的角度进行排序
         std::sort(angle_indices.begin(), angle_indices.end());
 
-        // 确保从 z 值最大的点开始排序
         while (angle_indices.front().second != max_z_index) {
             std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
         }
 
-        // 根据排序结果重建点云
         pcl::PointCloud<pcl::PointXYZI> sorted_cloud;
         for (const auto& angle_index : angle_indices) {
             sorted_cloud.push_back(points->points[angle_index.second]);
         }
 
-        // 更新原点云
         *points = sorted_cloud;
 
     }

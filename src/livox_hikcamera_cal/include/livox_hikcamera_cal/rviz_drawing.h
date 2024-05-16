@@ -31,6 +31,8 @@ namespace livox_hikcamera_cal
 
             void addLine(std::string object_id, float x1, float y1, float z1, float x2, float y2, float z2, 
                             float width=1.0, float r=1.0, float g=1.0, float b=1.0, float a=1.0);
+            void addLine(std::string object_id, geometry_msgs::Point point1, geometry_msgs::Point point2,
+                                float width, float r=1.0, float g=1.0, float b=1.0, float a=1.0);
             void addLines(std::string object_id, const std::vector<geometry_msgs::Point>& points,
                             visualization_msgs::Marker::_type_type line_type = visualization_msgs::Marker::LINE_STRIP, 
                             float width=1.0, float r=1.0, float g=1.0, float b=1.0, float a=1.0);

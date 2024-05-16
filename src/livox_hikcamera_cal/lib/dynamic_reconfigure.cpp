@@ -30,9 +30,21 @@ void PointcloudFilterReconfigure::FilterReconfigureCallBack(livox_hikcamera_cal:
     this->filterCfg.y_max = pcFilterConfig.y_max;
     this->filterCfg.z_min = pcFilterConfig.z_min;
     this->filterCfg.z_max = pcFilterConfig.z_max;
+
+    this->is_updated_ = true;
 }
 
 RQTConfig::_FilterConfig_ PointcloudFilterReconfigure::getConfigure()
 {
     return this->filterCfg;
+}
+
+bool PointcloudFilterReconfigure::isUpdated()
+{
+    if(this->is_updated_)
+    {
+        this->is_updated_ = false;
+        return true;
+    }
+    return false;
 }
