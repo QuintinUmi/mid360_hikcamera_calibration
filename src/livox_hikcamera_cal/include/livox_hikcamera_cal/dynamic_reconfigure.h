@@ -41,6 +41,7 @@ namespace livox_hikcamera_cal
             PointcloudFilterReconfigure();
 
             RQTConfig::_FilterConfig_ getConfigure();
+            bool isUpdated();
 
         private:
             void FilterReconfigureCallBack(livox_hikcamera_cal::PointcloudFilterConfig &pcFilterConfig, uint32_t level);
@@ -49,6 +50,8 @@ namespace livox_hikcamera_cal
             RQTConfig::_FilterConfig_ filterCfg;
             dynamic_reconfigure::Server<livox_hikcamera_cal::PointcloudFilterConfig> server;
             dynamic_reconfigure::Server<livox_hikcamera_cal::PointcloudFilterConfig>::CallbackType f;
+
+            bool is_updated_ = false;
             
     };
 

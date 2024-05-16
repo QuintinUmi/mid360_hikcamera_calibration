@@ -67,6 +67,37 @@ int main(int argc, char *argv[])
 
 		pointcloud_SUB_PUB.publish(pc_process.getProcessedPointcloud());
 
+		if(filterRecfg.isUpdated())
+		{
+			pcl::PointCloud<pcl::PointXYZI>::Ptr box_corners(new pcl::PointCloud<pcl::PointXYZI>);
+			box_corners = pc_process.getFilterBoxCorners(Eigen::Vector4f(x_min, y_min, z_min, 1.0), Eigen::Vector4f(x_max, y_max, z_max, 1.0));
+			
+			std::vector<geometry_msgs::Point> ros_box_corners;
+			for (const auto& box_corner : *box_corners) 
+			{
+				geometry_msgs::Point ros_point;
+				ros_point.x = box_corner.x;
+				ros_point.y = box_corner.y;
+				ros_point.z = box_corner.z;
+				ros_box_corners.push_back(ros_point);
+			}
+			rviz_drawing.addPoints("box_corners", ros_box_corners, 0.1, 1.0, 0.0, 0.0);
+
+			std::vector<geometry_msgs::Point> line_corners;
+			line_corners.assign(ros_box_corners.begin() + 0, ros_box_corners.begin() + 4);
+			line_corners.emplace_back(*(ros_box_corners.begin() + 0));
+			rviz_drawing.addLines("box_line_min", line_corners, visualization_msgs::Marker::LINE_STRIP, 0.05, 1.0, 1.0, 0.0);
+			line_corners.assign(ros_box_corners.begin() + 4, ros_box_corners.begin() + 8);
+			line_corners.emplace_back(*(ros_box_corners.begin() + 4));
+			rviz_drawing.addLines("box_line_max", line_corners, visualization_msgs::Marker::LINE_STRIP, 0.05, 1.0, 1.0, 0.0);
+
+			rviz_drawing.addLine("box_line_middle1", ros_box_corners.at(0), ros_box_corners.at(0 + 4), 0.05, 1.0, 1.0, 0.0);
+			rviz_drawing.addLine("box_line_middle2", ros_box_corners.at(1), ros_box_corners.at(1 + 4), 0.05, 1.0, 1.0, 0.0);
+			rviz_drawing.addLine("box_line_middle3", ros_box_corners.at(2), ros_box_corners.at(2 + 4), 0.05, 1.0, 1.0, 0.0);
+			rviz_drawing.addLine("box_line_middle4", ros_box_corners.at(3), ros_box_corners.at(3 + 4), 0.05, 1.0, 1.0, 0.0);
+		}
+		
+
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
 		// corners = pc_process.extractNearestRectangleCorners(true, 50, 1.5);
@@ -132,12 +163,12 @@ int main(int argc, char *argv[])
 			rviz_drawing.addText("corner_3", ros_corners.at(2), "3", 0.3, 1.0, 0.0, 0.0);
 			rviz_drawing.addText("corner_4", ros_corners.at(3), "4", 0.3, 1.0, 0.0, 0.0);
 
-			Eigen::Vector3f plane_normals = pc_process.getPlaneNormals();
+			Eigen::Vector3f plane_normals = pc_process.getPlaneNormals() * 0.3;
 			rviz_drawing.addArrow("plane_normals", 
 									(ros_corners[0].x + ros_corners[1].x + ros_corners[2].x + ros_corners[3].x) / 4,
 									(ros_corners[0].y + ros_corners[1].y + ros_corners[2].y + ros_corners[3].y) / 4,
 									(ros_corners[0].z + ros_corners[1].z + ros_corners[2].z + ros_corners[3].z) / 4,
-									plane_normals, 0.03, 0.06, 0.06, 1.0, 0.0, 0.0);
+									plane_normals, 0.03, 0.06, 0.06, 0.0, 1.0, 1.0);
 
 			ros_corners.push_back(ros_corners[0]);
 			rviz_drawing.addLines("rect_lines", ros_corners, 4, 0.01, 0.0, 1.0, 0.0);
