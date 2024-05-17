@@ -1,9 +1,9 @@
 
 image_save_path: src/livox_hikcamera_cal/aruco_img/
-image_load_path: src/livox_hikcamera_cal/aruco_img
+image_load_path: src/livox_hikcamera_cal/aruco_img/
 image_format: png
 
-yaml_save_path: /home/quintinumi/project/ws_camera_calibration/src/camera_calibration/src/camera_calibration_pkg/config/
+yaml_save_path: cfg/
 
 dictionary_name: 10
 selected_ids: [62, 80, 150, 230]

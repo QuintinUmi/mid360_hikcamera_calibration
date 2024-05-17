@@ -1,0 +1,6 @@
+<launch>
+    <param name="package_path" value="$(find livox_hikcamera_cal)"/>
+    <rosparam file="$(find livox_hikcamera_cal)/cfg/setup_aruco.yaml" command="load"/>
+    <rosparam file="$(find livox_hikcamera_cal)/cfg/setup_ros.yaml" command="load"/>
+    <node pkg="livox_hikcamera_cal" type="aruco_detection_example" name="aruco_detection_example" output="screen"/>
+</launch>
