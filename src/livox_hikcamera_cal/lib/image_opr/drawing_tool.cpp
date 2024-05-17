@@ -70,6 +70,11 @@ void Draw3D::write_in(vector<cv::Point3f> &dst, float x, float y, float z)
 {
     dst.emplace_back(x * this->scaleX, y * this->scaleY, z * this->scaleZ);
 }
+void Draw3D::write_in(vector<cv::Point3f> &dst, cv::Point3f point)
+{
+    point = cv::Point3f(point.x * this->scaleX, point.y * this->scaleX, point.z * this->scaleX);
+    dst.emplace_back(point);
+}
 
 cv::Mat Draw3D::getCameraMatrix()
 {
@@ -114,13 +119,13 @@ vector<vector<cv::Point3f>> Draw3D::draw_ortho_coordinate_3d(float cx, float cy,
     return coordinate;
 }
 void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Mat rvec, cv::Mat tvec,
-                                        float cx, float cy, float cz)
+                                        float scale, float cx, float cy, float cz)
 {
     vector<cv::Point3f> p3d;
     this->write_in(p3d, cx, cy, cz);
-    this->write_in(p3d, cx + this->unitLength, cy, cz);
-    this->write_in(p3d, cx, cy + this->unitLength, cz);
-    this->write_in(p3d, cx, cy, cz + this->unitLength);
+    this->write_in(p3d, cx + this->unitLength * scale, cy, cz);
+    this->write_in(p3d, cx, cy + this->unitLength * scale, cz);
+    this->write_in(p3d, cx, cy, cz + this->unitLength * scale);
 
     vector<cv::Point2f> p2d;
     cv::projectPoints(p3d, rvec, tvec, cameraMatrix, disCoffes, p2d);
@@ -131,14 +136,14 @@ void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMat
 
 }
 
-void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMatrix, cv::Mat disCoffes, vector<cv::Mat> rvecs, vector<cv::Mat> tvecs,
-                                                float cx, float cy, float cz)
+void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMatrix, cv::Mat disCoffes, vector<cv::Mat> rvecs, vector<cv::Mat> tvecs, 
+                                        float scale, float cx, float cy, float cz)
 {
     vector<cv::Point3f> p3d;
     this->write_in(p3d, cx, cy, cz);
-    this->write_in(p3d, cx + this->unitLength, cy, cz);
-    this->write_in(p3d, cx, cy + this->unitLength, cz);
-    this->write_in(p3d, cx, cy, cz + this->unitLength);
+    this->write_in(p3d, cx + this->unitLength * scale, cy, cz);
+    this->write_in(p3d, cx, cy + this->unitLength * scale, cz);
+    this->write_in(p3d, cx, cy, cz + this->unitLength * scale);
 
     for(int i = 0; i < rvecs.size() && i < tvecs.size(); i++)
     {
@@ -148,6 +153,7 @@ void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMat
         cv::line(imgInputOutput, p2d[0], p2d[1], cv::Scalar(0, 0, 255), 3);
         cv::line(imgInputOutput, p2d[0], p2d[2], cv::Scalar(0, 255, 0), 3);
         cv::line(imgInputOutput, p2d[0], p2d[3], cv::Scalar(255, 0, 0), 3);
+        p2d.clear();
     }
 }
 
@@ -511,3 +517,44 @@ void Draw3D::center_image_scale(cv::Mat &srcImage, cv::Mat &dstImage, float scal
 //     cv::Rodrigues(R ,rvec);
 //     return rvec;
 // }
+
+
+void Draw3D::draw_line_2d(cv::Mat &imgInputOutput, float x1, float y1, float z1, float x2, float y2, float z2, 
+                            cv::Scalar color, cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Mat rvec, cv::Mat tvec)
+{
+    vector<cv::Point3f> p3d;
+    this->write_in(p3d, x1, y1, z1);
+    this->write_in(p3d, x2, y2, z2);
+
+    vector<cv::Point2f> p2d;
+    cv::projectPoints(p3d, rvec, tvec, cameraMatrix, disCoffes, p2d);
+    
+    cv::line(imgInputOutput, p2d[0], p2d[1], cv::Scalar(0, 0, 255), 3);
+}
+void Draw3D::draw_line_2d(cv::Mat &imgInputOutput, cv::Point3f point1, cv::Point3f point2,
+                            cv::Scalar color, cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Mat rvec, cv::Mat tvec)
+{
+    vector<cv::Point3f> p3d;
+    this->write_in(p3d, point1);
+    this->write_in(p3d, point2);
+
+    vector<cv::Point2f> p2d;
+    cv::projectPoints(p3d, rvec, tvec, cameraMatrix, disCoffes, p2d);
+    
+    cv::line(imgInputOutput, p2d[0], p2d[1], cv::Scalar(0, 0, 255), 3);
+}
+void Draw3D::draw_line_2d(cv::Mat &imgInputOutput, cv::Point3f point1, cv::Point3f point2,
+                            cv::Scalar color, cv::Mat rvec, cv::Mat tvec)
+{
+    cv::Mat cameraMatrix = this->setCameraMatrix;
+    cv::Mat disCoffes = setDisCoffes;
+
+    vector<cv::Point3f> p3d;
+    this->write_in(p3d, point1);
+    this->write_in(p3d, point2);
+
+    vector<cv::Point2f> p2d;
+    cv::projectPoints(p3d, rvec, tvec, cameraMatrix, disCoffes, p2d);
+    
+    cv::line(imgInputOutput, p2d[0], p2d[1], cv::Scalar(0, 0, 255), 3);
+}

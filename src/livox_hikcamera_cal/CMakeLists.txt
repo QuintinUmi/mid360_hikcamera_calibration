@@ -195,6 +195,10 @@ target_link_libraries(pcd_saver_lib
 
 # ---------------------------------------- image_opr -----------------------------------------------
 
+add_library(image_subscriber_publisher_lib
+  include include/livox_hikcamera_cal/image_opr/image_subscriber_publisher.h
+  lib/image_opr/image_subscriber_publisher.cpp
+)
 add_library(drawing_tool_lib
   include include/livox_hikcamera_cal/image_opr/drawing_tool.h
   lib/image_opr/drawing_tool.cpp
@@ -205,10 +209,14 @@ add_library(aruco_tool_lib
 )
 
 
+add_dependencies(image_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(drawing_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(aruco_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
+target_link_libraries(image_subscriber_publisher_lib
+  ${catkin_LIBRARIES}
+)
 target_link_libraries(drawing_tool_lib
   ${catkin_LIBRARIES}
 )
@@ -274,6 +282,8 @@ add_executable(rosbag_record_example src/rosbag_record_example.cpp)
 add_executable(pcd_saver_example src/pcd_saver_example.cpp)
 
 add_executable(aruco_detection_example src/aruco_detection_example.cpp)
+
+add_executable(lidar_camera_calibration src/lidar_camera_calibration.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -353,6 +363,20 @@ target_link_libraries(aruco_detection_example
   ${OpenCV_LIBRARIES}
   drawing_tool_lib
   aruco_tool_lib
+)
+
+target_link_libraries(lidar_camera_calibration
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  image_subscriber_publisher_lib
+  drawing_tool_lib
+  aruco_tool_lib
+  rviz_drawing_3d_lib
+  recorder_lib
 )
 
 #############
