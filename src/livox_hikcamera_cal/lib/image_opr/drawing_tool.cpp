@@ -71,6 +71,15 @@ void Draw3D::write_in(vector<cv::Point3f> &dst, float x, float y, float z)
     dst.emplace_back(x * this->scaleX, y * this->scaleY, z * this->scaleZ);
 }
 
+cv::Mat Draw3D::getCameraMatrix()
+{
+    return this->setCameraMatrix;
+}
+cv::Mat Draw3D::getDisCoffes()
+{
+    return this->setDisCoffes;
+}
+
 vector<vector<cv::Point3f>> Draw3D::draw_ortho_coordinate_3d(cv::Point3f centerPoint, float density)
 {
     vector<vector<cv::Point3f>> coordinate(4);
@@ -120,6 +129,26 @@ void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMat
     cv::line(imgInputOutput, p2d[0], p2d[2], cv::Scalar(0, 255, 0), 3);
     cv::line(imgInputOutput, p2d[0], p2d[3], cv::Scalar(255, 0, 0), 3);
 
+}
+
+void Draw3D::draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMatrix, cv::Mat disCoffes, vector<cv::Mat> rvecs, vector<cv::Mat> tvecs,
+                                                float cx, float cy, float cz)
+{
+    vector<cv::Point3f> p3d;
+    this->write_in(p3d, cx, cy, cz);
+    this->write_in(p3d, cx + this->unitLength, cy, cz);
+    this->write_in(p3d, cx, cy + this->unitLength, cz);
+    this->write_in(p3d, cx, cy, cz + this->unitLength);
+
+    for(int i = 0; i < rvecs.size() && i < tvecs.size(); i++)
+    {
+        vector<cv::Point2f> p2d;
+        cv::projectPoints(p3d, rvecs.at(i), tvecs.at(i), cameraMatrix, disCoffes, p2d);
+        
+        cv::line(imgInputOutput, p2d[0], p2d[1], cv::Scalar(0, 0, 255), 3);
+        cv::line(imgInputOutput, p2d[0], p2d[2], cv::Scalar(0, 255, 0), 3);
+        cv::line(imgInputOutput, p2d[0], p2d[3], cv::Scalar(255, 0, 0), 3);
+    }
 }
 
 

@@ -9,6 +9,7 @@
 #include <ctime>
 #include <unistd.h>
 #include <stdlib.h>
+#include <boost/filesystem.hpp>
 
 #include "opencv2/opencv.hpp"  
 #include <cv_bridge/cv_bridge.h>
@@ -53,10 +54,12 @@ void imgStreamReceiveCallBack(const sensor_msgs::ImageConstPtr& pImgStream, ros:
     vector<cv::Mat> rvecs, tvecs;
     cv_bridge::CvImagePtr cvPtr = cv_bridge::toCvCopy(pImgStream, std::string("bgr8"));
     cv::Mat image = cvPtr->image;
+
     arucoMarker.ext_calib_single_arucos(image, 150, rvecs, tvecs);
     if(!(rvecs.empty() || tvecs.empty()))
     {
-        d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
+        // d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
+        d3d.draw_ortho_coordinate_2d(image, d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs, tvecs);
     }
 
     gettimeofday(&time, NULL);
@@ -73,6 +76,18 @@ int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "Aruco_Video_Ext_Calib");
     ros::NodeHandle rosHandle;
+
+    cv::String packagePath;
+    if (!rosHandle.getParam("package_path", packagePath)) {
+        ROS_ERROR("Failed to get 'package_path' from the parameter server.");
+        return 1;
+    }
+    std::cout << "package_path: " << packagePath << std::endl;
+    int chdir_flags = chdir(packagePath.c_str());
+    if (chdir_flags != 0) {
+        perror("Error changing directory");  
+        return 1;  
+    }
     
     cv::String yamlPath;
     std::string imageFormat;
@@ -88,7 +103,7 @@ int main(int argc, char *argv[])
     rosHandle.param("image_save_path", imageSavePath, cv::String("~/"));
     rosHandle.param("image_load_path", imageLoadPath, cv::String("~/"));
     rosHandle.param("image_format", imageFormat, cv::String("png"));
-    rosHandle.param("topic_image_stream", topicImageStream, std::string("/msg_camera/img_stream"));
+    rosHandle.param("topic_image_stream", topicImageStream, std::string("/hikcamera/img_stream"));
 
     int dictionaryName;
     vector<int> ids;
@@ -102,6 +117,9 @@ int main(int argc, char *argv[])
     
 
     cv::String intrinsicsPath = yamlPath + "calibration_param.yaml";
+    boost::filesystem::path p = boost::filesystem::current_path();  // 获取当前路径
+    std::cout << "Current working directory: " << p << std::endl;
+    std::cout << intrinsicsPath << std::endl;
     cv::FileStorage fs(intrinsicsPath, cv::FileStorage::READ);
     int image_width{0}, image_height{0};
     fs["imageWidth"] >> image_width;
@@ -130,8 +148,16 @@ int main(int argc, char *argv[])
                                         (cv::Mat_<float>(3, 1) << 0, 0, -PI/2));
 
 
-    cv::Mat stackImage = cv::imread("/home/quintinumi/test.jpeg");
-
+    std::string assets_path;
+    rosHandle.param("assets_path", assets_path, std::string("~/"));
+    std::string stack_image_path = assets_path + "90885055.jpeg";
+    cv::Mat stackImage = cv::imread(stack_image_path);
+    if(stackImage.empty())
+    {
+        ROS_ERROR("Cannot Open stackImage!\n");
+        return 0;
+    }
+    std::cout << "stackImage.size() = " << stackImage.size() << std::endl;
     
     image_transport::ImageTransport imgIt(rosHandle);
     image_transport::Subscriber imgStreamSub = imgIt.subscribe(topicImageStream, 1, 
