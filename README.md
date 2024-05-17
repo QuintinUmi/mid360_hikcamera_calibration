@@ -2,6 +2,9 @@
 
 ## This pack is still constructing...
 
+
+<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/cal2.gif" alt="caliborad_detection.gif"/>
+
 <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliborad_detection.png" alt="caliborad_detection.gif"/>
 
 ### mid360 10hz publish
