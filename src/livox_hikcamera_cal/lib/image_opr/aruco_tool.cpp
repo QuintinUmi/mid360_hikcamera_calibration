@@ -29,10 +29,9 @@ using namespace livox_hikcamera_cal::image_opr;
 ArucoM::ArucoM()
 {
     this->dParameters = cv::aruco::DetectorParameters::create();
-    this->aruco_hash = NULL;
 }
 ArucoM::ArucoM(int dictionaryName, vector<int> selectedIds, vector<float> markerRealLength, cv::Mat cameraMatrix, cv::Mat disCoffes)
-{
+{   cv::aruco::DICT_6X6_1000;
     this->markerDictionary = cv::aruco::getPredefinedDictionary(dictionaryName);
     this->selectedIds = selectedIds;
     this->dParameters = cv::aruco::DetectorParameters::create();
@@ -65,38 +64,45 @@ ArucoM::~ArucoM()
 
 void ArucoM::create()
 {
-    this->aruco_hash_init();
+    this->aruco_map_init();
 }
 
-void ArucoM::aruco_hash_init()
+void ArucoM::aruco_map_init()
 {
-    if(this->aruco_hash != NULL){
-        int* tmp = this->aruco_hash;
-        this->aruco_hash = NULL;
-        delete tmp;
-    }
-    int hashSize = 0;
     for(int i = 0; i < this->selectedIds.size(); i++)
     {
-        hashSize = max(hashSize, selectedIds[i]);
+        this->aruco_map[selectedIds[i]] = i;
     }
-    this->aruco_hash = new int[hashSize + 1]();
-    for(int i = 0; i < this->selectedIds.size(); i++)
-    {
-        this->aruco_hash[selectedIds[i]] = i;
-    }
-    printf("Aruco Hash Init Success!\n");
+    
+    printf("Aruco Map Init Success!\n");
 }
 
-void ArucoM::release()
+// void ArucoM::release()
+// {
+//     if(this->aruco_hash != NULL){
+//         int* tmp = this->aruco_hash;
+//         this->aruco_hash = NULL;
+//         delete tmp;
+//     }
+// }
+
+
+float ArucoM::getMarkerRealLength(int markerId)
 {
-    if(this->aruco_hash != NULL){
-        int* tmp = this->aruco_hash;
-        this->aruco_hash = NULL;
-        delete tmp;
+    if(this->aruco_map.find(markerId) == this->aruco_map.end())
+    {
+        return 1.0;
     }
+    return this->markerRealLength[this->aruco_map.find(markerId)->second];
 }
-
+vector<int> ArucoM::getSelectedIds()
+{
+    return this->selectedIds;
+}
+int ArucoM::getSelectedIds(int index)
+{
+    return this->selectedIds.at(index);
+}
 
 
 void ArucoM::set_aruco(int dictionaryName, vector<int> selectedIds, vector<float> markerRealLength)
@@ -121,8 +127,9 @@ void ArucoM::set_aruco(cv::Ptr<cv::aruco::Dictionary> markerDictionary, vector<i
 }
 void ArucoM::sel_aruco_ids(vector<int> selectedIds)
 {
+    this->selectedIds.clear();
     this->selectedIds = selectedIds;
-    this->aruco_hash_init();
+    this->aruco_map_init();
 }
 void ArucoM::set_aruco_real_length(vector<float> markerRealLength)
 {
@@ -223,7 +230,7 @@ void ArucoM::ext_calib_single_arucos(cv::Mat &inputImage, int targetId,
     {
         // std::cout << this->cameraMatrix << std::endl;
         std::cout << markerIds[indexId] << std::endl;
-        cv::aruco::estimatePoseSingleMarkers(selectedCorners, this->markerRealLength[this->aruco_hash[targetId]], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
+        cv::aruco::estimatePoseSingleMarkers(selectedCorners, this->markerRealLength[this->aruco_map.find(targetId)->second], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
         int vecSize = selectedCorners.size();
         for(int j = 0; j < vecSize; j++)
         {
@@ -240,40 +247,13 @@ void ArucoM::ext_calib_single_arucos(cv::Mat &inputImage, int targetId,
 }
 
 
-void ArucoM::set_target_id_hash(vector<int> targetIds)
+void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs, vector<int>& detectedIds)
 {
-    if(this->targetId_hash != NULL){
-        bool* tmp = this->targetId_hash;
-        this->targetId_hash = NULL;
-        delete tmp;
-    }
-    int hashSize = 0;
-    for(int i = 0; i < targetIds.size(); i++)
-    {
-        hashSize = max(hashSize, targetIds[i]);
-    }
-    this->targetId_hash = new bool[hashSize + 1]();
-    for(int i = 0; i < targetIds.size(); i++)
-    {
-        this->targetId_hash[targetIds[i]] = true;
-    }
-    this->targetIds = targetIds;
-    printf("targetId_hash Init Success!\n");
-}
-void ArucoM::release_target_id_hash()
-{
-    if(this->targetId_hash != NULL){
-        bool* tmp = this->targetId_hash;
-        this->targetId_hash = NULL;
-        delete tmp;
-    }
-}
-void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs, vector<int> detectedIds)
-{
-    vector<vector<cv::Point2f>> markerCorners, selectedCorners;
+    vector<vector<cv::Point2f>> markerCorners;
+    vector<vector<vector<cv::Point2f>>> selectedCorners;
+    detectedIds.clear();
     vector<int> markerIds;
     int indexId;
-    vector<cv::Vec3d> rvecs3d, tvecs3d;
     cv::Mat vecData;
     
     cv::aruco::detectMarkers(inputImage, this->markerDictionary, markerCorners, markerIds, this->dParameters);
@@ -283,25 +263,32 @@ void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rve
         return;
     }
     for(indexId = 0; indexId < markerIds.size(); indexId++){
-        printf("Marker %d check!\n", markerIds[indexId]);
-        if(this->targetId_hash[markerIds[indexId]])
+        printf("Marker %d find!\n", markerIds[indexId]);
+        if(this->aruco_map.find(markerIds[indexId]) != this->aruco_map.end())
         {
-            selectedCorners.emplace_back(markerCorners[indexId]);
-            detectedIds.emplace_back(markerIds[indexId]);
-            break;             
+            printf("Marker %d is selected!\n", markerIds[indexId]);
+            std::vector<std::vector<cv::Point2f>> temp_markerCorners;
+            temp_markerCorners.emplace_back(markerCorners[indexId]);
+            selectedCorners.emplace_back(temp_markerCorners);
+            detectedIds.emplace_back(markerIds[indexId]);           
         }
         
     }
-    if(!selectedCorners.empty())
+    if(!detectedIds.empty())
     {
-        // std::cout << this->cameraMatrix << std::endl;
-        cv::aruco::estimatePoseSingleMarkers(selectedCorners, this->markerRealLength[indexId], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
-        int vecSize = selectedCorners.size();
-        for(int j = 0; j < vecSize; j++)
+
+        vector<cv::Vec3d> rvecs3d, tvecs3d;
+        for(int detectedIds_index = 0; detectedIds_index < detectedIds.size(); detectedIds_index++)
         {
-            rvecs.emplace_back((cv::Mat_<float>(3, 1) << rvecs3d[j][0], rvecs3d[j][1], rvecs3d[j][2]));
-            tvecs.emplace_back((cv::Mat_<float>(3, 1) << tvecs3d[j][0], tvecs3d[j][1], tvecs3d[j][2]));
+            cv::aruco::estimatePoseSingleMarkers(selectedCorners[detectedIds_index], this->markerRealLength[this->aruco_map.find(markerIds[detectedIds_index])->second], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
+            int vecSize = selectedCorners[detectedIds_index].size();
+            for(int j = 0; j < vecSize; j++)
+            {
+                rvecs.emplace_back((cv::Mat_<float>(3, 1) << rvecs3d[j][0], rvecs3d[j][1], rvecs3d[j][2]));
+                tvecs.emplace_back((cv::Mat_<float>(3, 1) << tvecs3d[j][0], tvecs3d[j][1], tvecs3d[j][2]));
+            }
         }
+        
     }
     else
     {

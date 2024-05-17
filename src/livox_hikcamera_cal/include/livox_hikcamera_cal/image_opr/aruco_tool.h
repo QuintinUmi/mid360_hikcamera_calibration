@@ -41,8 +41,12 @@ namespace livox_hikcamera_cal
                 ~ArucoM();
 
                 void create();
-                void aruco_hash_init();
-                void release();
+                void aruco_map_init();
+                // void release();
+
+                float getMarkerRealLength(int markerId);
+                vector<int> getSelectedIds();
+                int getSelectedIds(int index);
 
                     
                 void set_aruco(int dictionaryName, vector<int> selectedIds, vector<float> markerRealLength = vector<float>{1.0});
@@ -61,16 +65,13 @@ namespace livox_hikcamera_cal
                 void ext_calib_single_arucos(cv::Mat &inputImage, int targetId, 
                                             vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs);
                 
-                void set_target_id_hash(vector<int> targetIds);
-                void release_target_id_hash();
-                void ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs, vector<int> detectedIds);
+                void ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs, vector<int>& detectedIds);
 
                 void aruco_marker_save(cv::String imageSavePath, cv::String imageFormat, vector<cv::Mat> arucoMarkerImages, int dictionaryName, bool showImage);
 
             private:
                 
-                int *aruco_hash = NULL;
-                bool *targetId_hash = NULL;
+                std::map<int, int> aruco_map;
                 vector<int> targetIds; 
 
                 cv::Ptr<cv::aruco::Dictionary> markerDictionary;

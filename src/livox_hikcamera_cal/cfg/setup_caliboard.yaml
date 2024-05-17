@@ -1,0 +1,17 @@
+
+image_save_path: src/livox_hikcamera_cal/aruco_img/
+image_load_path: src/livox_hikcamera_cal/aruco_img/
+image_format: png
+
+yaml_save_path: cfg/
+
+dictionary_name: 11
+selected_ids: [150, 364, 544, 712]
+aruco_marker_size: 300
+
+aruco_real_length: [164, 164, 164, 164]
+
+# criteria_iter_times: 1000000
+# iter_difference: 0.00000001
+
+# show_corners_image: false

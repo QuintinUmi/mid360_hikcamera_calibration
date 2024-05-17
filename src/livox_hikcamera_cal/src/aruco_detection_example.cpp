@@ -172,7 +172,5 @@ int main(int argc, char *argv[])
             break;
     }
 
-    arucoMarker.release();
-
     return 0;
 }
