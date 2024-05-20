@@ -36,15 +36,18 @@
 #include "livox_hikcamera_cal/image_opr/drawing_tool.h"
 #include "livox_hikcamera_cal/image_opr/aruco_tool.h"
 
+#include "livox_hikcamera_cal/conversion_bridge.h"
 #include "livox_hikcamera_cal/dynamic_reconfigure.h"
 #include "livox_hikcamera_cal/rviz_drawing.h"
-#include "livox_hikcamera_cal/calibration_solver.h"
+#include "livox_hikcamera_cal/calibration_tool.h"
 
 #define PI 3.14159265358979324
 
 
 using namespace std;
+using namespace livox_hikcamera_cal;
 using namespace livox_hikcamera_cal::image_opr;
+using namespace livox_hikcamera_cal::pointcloud2_opr;
 
 vector<cv::Point3f> caliboard_corners;
 cv::Point3f caliboard_corner1(-76.5, 40.0, 0);
@@ -60,6 +63,8 @@ int fps(int deltaTime)
     int fps = static_cast<int>(1.f / deltaTime * 1000); 
     return fps;
 }
+
+cv::Mat testPoint;
 
 void imgStreamReceiveCallBack(const sensor_msgs::ImageConstPtr& pImgStream, ros::NodeHandle& rosHandle, image_transport::Publisher& imgStreamPub, ArucoM& arucoMarker, Draw3D& d3d)
 {
@@ -78,19 +83,22 @@ void imgStreamReceiveCallBack(const sensor_msgs::ImageConstPtr& pImgStream, ros:
     
     arucoMarker.ext_calib_multipul_arucos(image, rvecs, tvecs, detectedIds);
 
-    d3d.draw_ortho_coordinate_2d(image, d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs, tvecs);
+    
+
+    // d3d.draw_ortho_coordinate_2d(image, d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs, tvecs);
     
     // arucoMarker.ext_calib_single_arucos(image, 544, rvecs, tvecs);
 
-    // if(!(rvecs.empty() || tvecs.empty()))
-    // {
-    //     // d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
-    //     d3d.draw_ortho_coordinate_2d(image, d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs, tvecs);
-    //     // d3d.draw_line_2d(image, caliboard_corner1, caliboard_corner2, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-    //     // d3d.draw_line_2d(image, caliboard_corner2, caliboard_corner3, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-    //     // d3d.draw_line_2d(image, caliboard_corner3, caliboard_corner4, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-    //     // d3d.draw_line_2d(image, caliboard_corner4, caliboard_corner1, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-    // }
+    if(!(rvecs.empty() || tvecs.empty()))
+    {
+        testPoint = tvecs[0];
+        // d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
+        d3d.draw_ortho_coordinate_2d(image, rvecs, tvecs);
+        // d3d.draw_line_2d(image, tvecs[0].at<float>(0, 0), tvecs[0].at<float>(1, 0), tvecs[0].at<float>(2, 0), tvecs[1].at<float>(0, 0), tvecs[1].at<float>(1, 0), tvecs[1].at<float>(2, 0), cv::Scalar(0, 255, 0), d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs[0], tvecs[0]);
+        // d3d.draw_line_2d(image, caliboard_corner2, caliboard_corner3, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
+        // d3d.draw_line_2d(image, caliboard_corner3, caliboard_corner4, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
+        // d3d.draw_line_2d(image, caliboard_corner4, caliboard_corner1, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
+    }
     
     sensor_msgs::ImagePtr msg = cv_bridge::CvImage(cvPtr->header, "bgr8", image).toImageMsg();
     imgStreamPub.publish(msg);
@@ -148,7 +156,7 @@ int main(int argc, char *argv[])
     rosHandle.param("aruco_marker_size", markerSize, 500);
     rosHandle.param("aruco_real_length", arucoRealLength, vector<float>{1.0});
 
-    cv::String intrinsicsPath = yamlPath + "calibration_param.yaml";
+    cv::String intrinsicsPath = yamlPath + "camera_intrinsics.yaml";
     boost::filesystem::path p = boost::filesystem::current_path();  // 获取当前路径
     std::cout << "Current working directory: " << p << std::endl;
     std::cout << intrinsicsPath << std::endl;
@@ -175,7 +183,7 @@ int main(int argc, char *argv[])
 
     
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, newCameraMatrix, newDisCoffes);
-    d3d.setparam_image_perspective_3d(newCameraMatrix, newDisCoffes, cv::Point3f(0, 0, 0), cv::Size(47.62 * 2, 47.62 * 2), 
+    d3d.setparam_image_perspective_3d(newCameraMatrix, newDisCoffes, cv::Point3f(0, 0, 0), cv::Size(arucoRealLength[0] * 2, arucoRealLength[0] * 2), 
                                         (cv::Mat_<float>(3, 1) << 0, 0, -PI/2));
 
 
@@ -184,6 +192,8 @@ int main(int argc, char *argv[])
     caliboard_corners.emplace_back(caliboard_corner3);
     caliboard_corners.emplace_back(caliboard_corner4);
 
+
+    RvizDrawing rviz_drawing("test", "livox_frame");
 
     // std::string assets_path;
     // rosHandle.param("assets_path", assets_path, std::string("~/"));
@@ -206,6 +216,18 @@ int main(int argc, char *argv[])
     while(ros::ok())
     {
         ros::spinOnce();
+
+        if(!testPoint.empty())
+        {
+            rviz_drawing.addPoint("point0", testPoint.at<float>(2, 0) / 1000, -testPoint.at<float>(0, 0) / 1000, -testPoint.at<float>(1, 0) / 1000, 0.3, 1.0, 0.0, 1.0);
+            // std::cout << testPoint << std::endl;
+        }
+        else
+        {
+            rviz_drawing.deleteObject("point0");
+        }
+        rviz_drawing.publish();
+
         if(g_exit)
             break;
     }

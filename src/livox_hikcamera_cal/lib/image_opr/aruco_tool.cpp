@@ -215,6 +215,8 @@ void ArucoM::ext_calib_single_arucos(cv::Mat &inputImage, int targetId,
     vector<cv::Vec3d> rvecs3d, tvecs3d;
     cv::Mat vecData;
     
+    rvecs.clear();
+    tvecs.clear();
     cv::aruco::detectMarkers(inputImage, this->markerDictionary, markerCorners, markerIds, this->dParameters);
     if(markerIds.empty())
     {
@@ -251,15 +253,19 @@ void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rve
 {
     vector<vector<cv::Point2f>> markerCorners;
     vector<vector<vector<cv::Point2f>>> selectedCorners;
-    detectedIds.clear();
     vector<int> markerIds;
     int indexId;
     cv::Mat vecData;
     
+    rvecs.clear();
+    tvecs.clear();
+    detectedIds.clear();
     cv::aruco::detectMarkers(inputImage, this->markerDictionary, markerCorners, markerIds, this->dParameters);
     if(markerIds.empty())
     {
         printf("No marker detected!\n");
+        rvecs = vector<cv::Mat>{};
+        tvecs = vector<cv::Mat>{};
         return;
     }
     for(indexId = 0; indexId < markerIds.size(); indexId++){
@@ -292,6 +298,7 @@ void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rve
     }
     else
     {
+        std::cout << "Detection Empty!\n" << std::endl;
         rvecs = vector<cv::Mat>{};
         tvecs = vector<cv::Mat>{};
     }
