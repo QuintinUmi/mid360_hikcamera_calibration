@@ -243,16 +243,22 @@ add_library(rviz_drawing_3d_lib
   lib/rviz_drawing.cpp
 )
 
-add_library(calibration_solver_lib
-  include include/livox_hikcamera_cal/calibration_solver.h
-  lib/calibration_solver.cpp
+add_library(conversion_bridge_lib
+  include include/livox_hikcamera_cal/conversion_bridge.h
+  lib/conversion_bridge.cpp
+)
+
+add_library(calibration_tool_lib
+  include include/livox_hikcamera_cal/calibration_tool.h
+  lib/calibration_tool.cpp
 )
 
 
 add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(rviz_drawing_3d_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(calibration_solver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(conversion_bridge_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(calibration_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 target_link_libraries(dynamic_reconfigure_lib
@@ -264,7 +270,12 @@ target_link_libraries(recorder_lib
 target_link_libraries(rviz_drawing_3d_lib
   ${catkin_LIBRARIES}
 )
-target_link_libraries(calibration_solver_lib
+target_link_libraries(conversion_bridge_lib
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
+target_link_libraries(calibration_tool_lib
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
@@ -371,12 +382,14 @@ target_link_libraries(lidar_camera_calibration
   ${OpenCV_LIBRARIES}
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
+  conversion_bridge_lib
   dynamic_reconfigure_lib
   image_subscriber_publisher_lib
   drawing_tool_lib
   aruco_tool_lib
   rviz_drawing_3d_lib
   recorder_lib
+  calibration_tool_lib
 )
 
 #############

@@ -52,10 +52,12 @@ namespace livox_hikcamera_cal
 
                 vector<vector<cv::Point3f>> draw_ortho_coordinate_3d(cv::Point3f centerPoint, float density = 0.1);
                 vector<vector<cv::Point3f>> draw_ortho_coordinate_3d(float cx = 0.0, float cy = 0.0, float cz = 0.0, float density = 0.1);
-                void draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Mat rvec, cv::Mat tvec,
-                                                float scale=1.0, float cx = 0.0, float cy = 0.0, float cz = 0.0);
-                void draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat cameraMatrix, cv::Mat disCoffes, vector<cv::Mat> rvecs, vector<cv::Mat> tvecs,
-                                                float scale=1.0, float cx = 0.0, float cy = 0.0, float cz = 0.0);
+                void draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, cv::Mat rvec, cv::Mat tvec, 
+                                                float scale=1.0, float cx = 0.0, float cy = 0.0, float cz = 0.0, 
+                                                cv::Mat cameraMatrix=cv::Mat(), cv::Mat disCoffes=cv::Mat());
+                void draw_ortho_coordinate_2d(cv::Mat &imgInputOutput, vector<cv::Mat> rvecs, vector<cv::Mat> tvecs, 
+                                                float scale=1.0, float cx = 0.0, float cy = 0.0, float cz = 0.0, 
+                                                cv::Mat cameraMatrix=cv::Mat(), cv::Mat disCoffes=cv::Mat());
 
                 void transform_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Point3f> &newWorldPoints, cv::Mat rvec, cv::Mat tvec);
                 void transform_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Point3f> &newWorldPoints, 
@@ -64,8 +66,8 @@ namespace livox_hikcamera_cal
                 void mirror_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Point3f> &newWorldPoints, cv::Point3f surfaceNorVec);
                 void mirror_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Point3f> &newWorldPoints, float surNorX, float surNorY, float surNorZ);
 
-                void setparam_image_perspective_3d(cv::Mat cameraMatrix, cv::Mat disCoffes,
-                                        cv::Point3f imgOriPoint, cv::Size imgSizeIn3d, cv::Mat offsetRvec = cv::Mat(), cv::Mat offsetTvec = cv::Mat());
+                void setparam_image_perspective_3d(cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Point3f imgOriPoint, cv::Size imgSizeIn3d, 
+                                                    cv::Mat offsetRvec = cv::Mat(), cv::Mat offsetTvec = cv::Mat());
                 void paste_image_perspective_3d(cv::Mat &srcImage, cv::Mat &dstImage, bool remove_background_color, bool center_image_axis, cv::Mat rvec, cv::Mat tvec);
                 void paste_image_perspective_3d(cv::Mat &srcImage, cv::Mat &dstImage, bool remove_background_color, bool center_image_axis, vector<cv::Mat> rvecs, vector<cv::Mat> tvecs);
                 void paste_image_perspective_3d(cv::Mat &srcImage, cv::Mat &dstImage, bool remove_background_color, bool center_image_axis, cv::Mat cameraMatrix, cv::Mat disCoffes, 
@@ -78,11 +80,9 @@ namespace livox_hikcamera_cal
 
 
                 void draw_line_2d(cv::Mat &imgInputOutput, float x1, float y1, float z1, float x2, float y2, float z2, 
-                                    cv::Scalar color, cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Mat rvec, cv::Mat tvec);
+                                    cv::Mat rvec, cv::Mat tvec, cv::Scalar color, cv::Mat cameraMatrix=cv::Mat(), cv::Mat disCoffes=cv::Mat());
                 void draw_line_2d(cv::Mat &imgInputOutput, cv::Point3f point1, cv::Point3f point2,
-                                    cv::Scalar color, cv::Mat cameraMatrix, cv::Mat disCoffes, cv::Mat rvec, cv::Mat tvec);
-                void draw_line_2d(cv::Mat &imgInputOutput, cv::Point3f point1, cv::Point3f point2,
-                                    cv::Scalar color, cv::Mat rvec, cv::Mat tvec);
+                                    cv::Mat rvec, cv::Mat tvec, cv::Scalar color, cv::Mat cameraMatrix=cv::Mat(), cv::Mat disCoffes=cv::Mat());
 
 
 

@@ -59,7 +59,7 @@ void imgStreamReceiveCallBack(const sensor_msgs::ImageConstPtr& pImgStream, ros:
     if(!(rvecs.empty() || tvecs.empty()))
     {
         // d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
-        d3d.draw_ortho_coordinate_2d(image, d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs, tvecs);
+        d3d.draw_ortho_coordinate_2d(image, rvecs, tvecs);
     }
 
     gettimeofday(&time, NULL);
@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     rosHandle.param("aruco_real_length", arucoRealLength, vector<float>{1.0});
     
 
-    cv::String intrinsicsPath = yamlPath + "calibration_param.yaml";
+    cv::String intrinsicsPath = yamlPath + "camera_intrinsics.yaml";
     boost::filesystem::path p = boost::filesystem::current_path();  // 获取当前路径
     std::cout << "Current working directory: " << p << std::endl;
     std::cout << intrinsicsPath << std::endl;
