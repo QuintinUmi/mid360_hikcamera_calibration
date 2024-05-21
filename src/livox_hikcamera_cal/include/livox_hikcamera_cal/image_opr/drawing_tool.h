@@ -1,5 +1,5 @@
-#ifndef SPACE_3D_DRAWING_H_
-#define SPACE_3D_DRAWING_H_
+#ifndef _3D_DRAWING_H_
+#define _3D_DRAWING_H_
 
 #include <ros/ros.h>
 #include <stdio.h>

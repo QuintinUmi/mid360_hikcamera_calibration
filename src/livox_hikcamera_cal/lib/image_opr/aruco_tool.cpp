@@ -14,10 +14,16 @@
 #include "opencv2/opencv.hpp"  
 // #include "apriltag/apriltag.h"    
 #include "opencv2/aruco/charuco.hpp"  
+
+#include <Eigen/Geometry>
+#include <Eigen/Dense>
+#include <Eigen/SVD>
   
 #include <yaml-cpp/yaml.h>
 
 #include "image_transport/image_transport.h"
+
+#include "livox_hikcamera_cal/conversion_bridge.h"
 
 #include "livox_hikcamera_cal/image_opr/aruco_tool.h"
 
@@ -248,6 +254,48 @@ void ArucoM::ext_calib_single_arucos(cv::Mat &inputImage, int targetId,
     
 }
 
+void ArucoM::ext_calib_single_arucos(cv::Mat &inputImage, int targetId, 
+                                    vector<cv::Vec3d> &rvecs, vector<cv::Vec3d> &tvecs)
+{
+    vector<vector<cv::Point2f>> markerCorners, selectedCorners;
+    vector<int> markerIds;
+    int indexId;
+    vector<cv::Vec3d> rvecs3d, tvecs3d;
+    cv::Mat vecData;
+    
+    rvecs.clear();
+    tvecs.clear();
+    cv::aruco::detectMarkers(inputImage, this->markerDictionary, markerCorners, markerIds, this->dParameters);
+    if(markerIds.empty())
+    {
+        // printf("No marker detected!\n");
+        return;
+    }
+    for(indexId = 0; indexId < markerIds.size(); indexId++){
+        // printf("Marker %d check!\n", markerIds[indexId]);
+        if(markerIds[indexId] == targetId)
+            selectedCorners.emplace_back(markerCorners[indexId]);
+    }
+    if(!selectedCorners.empty())
+    {
+        // std::cout << this->cameraMatrix << std::endl;
+        std::cout << markerIds[indexId] << std::endl;
+        cv::aruco::estimatePoseSingleMarkers(selectedCorners, this->markerRealLength[this->aruco_map.find(targetId)->second], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
+        int vecSize = selectedCorners.size();
+        for(int j = 0; j < vecSize; j++)
+        {
+            rvecs.emplace_back(rvecs3d[j]);
+            tvecs.emplace_back(rvecs3d[j]);
+        }
+    }
+    else
+    {
+        rvecs = vector<cv::Vec3d>{};
+        tvecs = vector<cv::Vec3d>{};
+    }
+    
+}
+
 
 void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs, vector<int>& detectedIds)
 {
@@ -287,6 +335,7 @@ void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rve
         for(int detectedIds_index = 0; detectedIds_index < detectedIds.size(); detectedIds_index++)
         {
             cv::aruco::estimatePoseSingleMarkers(selectedCorners[detectedIds_index], this->markerRealLength[this->aruco_map.find(markerIds[detectedIds_index])->second], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
+            
             int vecSize = selectedCorners[detectedIds_index].size();
             for(int j = 0; j < vecSize; j++)
             {
@@ -303,6 +352,103 @@ void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rve
         tvecs = vector<cv::Mat>{};
     }
     
+}
+
+void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Vec3d> &rvecs, vector<cv::Vec3d> &tvecs, vector<int>& detectedIds)
+{
+    vector<vector<cv::Point2f>> markerCorners;
+    vector<vector<vector<cv::Point2f>>> selectedCorners;
+    vector<int> markerIds;
+    int indexId;
+    cv::Mat vecData;
+    
+    rvecs.clear();
+    tvecs.clear();
+    detectedIds.clear();
+    cv::aruco::detectMarkers(inputImage, this->markerDictionary, markerCorners, markerIds, this->dParameters);
+    if(markerIds.empty())
+    {
+        printf("No marker detected!\n");
+        rvecs = vector<cv::Vec3d>{};
+        tvecs = vector<cv::Vec3d>{};
+        return;
+    }
+    for(indexId = 0; indexId < markerIds.size(); indexId++){
+        printf("Marker %d find!\n", markerIds[indexId]);
+        if(this->aruco_map.find(markerIds[indexId]) != this->aruco_map.end())
+        {
+            printf("Marker %d is selected!\n", markerIds[indexId]);
+            std::vector<std::vector<cv::Point2f>> temp_markerCorners;
+            temp_markerCorners.emplace_back(markerCorners[indexId]);
+            selectedCorners.emplace_back(temp_markerCorners);
+            detectedIds.emplace_back(markerIds[indexId]);           
+        }
+        
+    }
+    if(!detectedIds.empty())
+    {
+
+        vector<cv::Vec3d> rvecs3d, tvecs3d;
+        for(int detectedIds_index = 0; detectedIds_index < detectedIds.size(); detectedIds_index++)
+        {
+            cv::aruco::estimatePoseSingleMarkers(selectedCorners[detectedIds_index], this->markerRealLength[this->aruco_map.find(markerIds[detectedIds_index])->second], this->cameraMatrix, this->disCoffes, rvecs3d, tvecs3d);
+            
+            int vecSize = selectedCorners[detectedIds_index].size();
+            for(int j = 0; j < vecSize; j++)
+            {
+                rvecs.emplace_back(rvecs3d[j]);
+                tvecs.emplace_back(tvecs3d[j]);
+            }
+        }
+        
+    }
+    else
+    {
+        std::cout << "Detection Empty!\n" << std::endl;
+        rvecs = vector<cv::Vec3d>{};
+        tvecs = vector<cv::Vec3d>{};
+    }
+    
+}
+
+void ArucoM::estimate_average_pose(const vector<cv::Vec3d> &rvecs, const vector<cv::Vec3d> &tvecs, vector<int>& detectedIds, cv::Vec3d& averageRvec, cv::Vec3d& averageTvec)
+{
+    int count = 0;
+    cv::Vec3d sumTvecs(0, 0, 0);
+    for(const auto& tvec : tvecs) 
+    {
+        sumTvecs += tvec;
+        count ++;
+    }
+    averageTvec = cv::Vec3d(sumTvecs[0] / count, sumTvecs[1] / count, sumTvecs[2] / count);
+
+
+    std::vector<Eigen::Quaterniond> quaternions = ConversionBridge::rvecs3dToQuaternions(rvecs);
+
+    Eigen::Matrix4d M = Eigen::Matrix4d::Zero();
+    for (const auto& q : quaternions) {
+        Eigen::Vector4d q_vec(q.w(), q.x(), q.y(), q.z());
+        M += q_vec * q_vec.transpose();
+    }
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix4d> eigen_decomposition(M);
+    auto eigen_vectors = eigen_decomposition.eigenvectors();
+    auto eigen_values = eigen_decomposition.eigenvalues();
+
+    int max_index = 0;
+    double max_eigen_values = eigen_values(0);
+    for(int i = 1; i <= 4; i++)
+    {
+        if(eigen_values(i) > max_eigen_values) 
+        {
+            max_eigen_values = eigen_values(i);
+            max_index = i;
+        }
+    }
+
+    Eigen::Vector4d max_eigen_vector = eigen_vectors.col(max_index);
+
+    averageRvec = ConversionBridge::quaternionToRvec3d(Eigen::Quaterniond(max_eigen_vector(0), max_eigen_vector(1), max_eigen_vector(2), max_eigen_vector(3)).normalized());
+
 }
 
 

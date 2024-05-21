@@ -225,7 +225,7 @@ void Draw3D::transform_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv:
 
 void Draw3D::mirror_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Point3f> &newWorldPoints, cv::Point3f surfaceNorVec)
 {
-    double len = pow(surfaceNorVec.x, 2) + pow(surfaceNorVec.y, 2) + pow(surfaceNorVec.z, 2);
+    float len = pow(surfaceNorVec.x, 2) + pow(surfaceNorVec.y, 2) + pow(surfaceNorVec.z, 2);
     float uX = surfaceNorVec.x / len;
     float uY = surfaceNorVec.y / len;
     float uZ = surfaceNorVec.z / len;
@@ -252,7 +252,7 @@ void Draw3D::mirror_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Po
 void Draw3D::mirror_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv::Point3f> &newWorldPoints, float surNorX, float surNorY, float surNorZ)
 {
     cv::Mat surfaceNorVec;
-    double len = pow(surNorX, 2) + pow(surNorY, 2) + pow(surNorZ, 2);
+    float len = pow(surNorX, 2) + pow(surNorY, 2) + pow(surNorZ, 2);
     float uX = surNorX / len;
     float uY = surNorY / len;
     float uZ = surNorZ / len;

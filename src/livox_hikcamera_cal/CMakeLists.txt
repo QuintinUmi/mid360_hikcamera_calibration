@@ -152,79 +152,6 @@ include_directories(
 
 
 
-# ---------------------------------------- pointcloud2_opr -----------------------------------------------
-
-add_library(point_cloud_subscriber_publisher_lib
-  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
-  lib/pointcloud2_opr/point_cloud_subscriber_publisher.cpp
-)
-
-add_library(point_cloud_process_lib
-  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
-  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h
-  lib/pointcloud2_opr/point_cloud_process.cpp
-)
-
-add_library(pcd_saver_lib
-  include include/livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h
-  lib/pointcloud2_opr/pcd_saver.cpp
-)
-
-
-
-add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(pcd_saver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-target_link_libraries(point_cloud_subscriber_publisher_lib
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(point_cloud_process_lib
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  point_cloud_subscriber_publisher_lib
-)
-target_link_libraries(pcd_saver_lib
-  ${catkin_LIBRARIES}
-)
-
-
-
-
-# ---------------------------------------- image_opr -----------------------------------------------
-
-add_library(image_subscriber_publisher_lib
-  include include/livox_hikcamera_cal/image_opr/image_subscriber_publisher.h
-  lib/image_opr/image_subscriber_publisher.cpp
-)
-add_library(drawing_tool_lib
-  include include/livox_hikcamera_cal/image_opr/drawing_tool.h
-  lib/image_opr/drawing_tool.cpp
-)
-add_library(aruco_tool_lib
-  include include/livox_hikcamera_cal/image_opr/aruco_tool.h
-  lib/image_opr/aruco_tool.cpp
-)
-
-
-add_dependencies(image_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(drawing_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(aruco_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-
-
-target_link_libraries(image_subscriber_publisher_lib
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(drawing_tool_lib
-  ${catkin_LIBRARIES}
-)
-target_link_libraries(aruco_tool_lib
-  ${catkin_LIBRARIES}
-)
-
-
 
 # ------------------------------------- livox_hikcamera_cal -------------------------------------------
 
@@ -281,20 +208,149 @@ target_link_libraries(calibration_tool_lib
   ${OpenCV_LIBRARIES}
 )
 
+
+
+# ---------------------------------------- pointcloud2_opr -----------------------------------------------
+
+add_library(point_cloud_subscriber_publisher_lib
+  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
+  lib/pointcloud2_opr/point_cloud_subscriber_publisher.cpp
+)
+
+add_library(point_cloud_process_lib
+  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
+  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h
+  lib/pointcloud2_opr/point_cloud_process.cpp
+)
+
+add_library(pcd_saver_lib
+  include include/livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h
+  lib/pointcloud2_opr/pcd_saver.cpp
+)
+
+
+
+add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(pcd_saver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
+target_link_libraries(point_cloud_subscriber_publisher_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(point_cloud_process_lib
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+)
+target_link_libraries(pcd_saver_lib
+  ${catkin_LIBRARIES}
+)
+
+
+
+
+# ---------------------------------------- image_opr -----------------------------------------------
+
+add_library(image_subscriber_publisher_lib
+  include include/livox_hikcamera_cal/image_opr/image_subscriber_publisher.h
+  lib/image_opr/image_subscriber_publisher.cpp
+)
+add_library(image_process_lib
+  include include/livox_hikcamera_cal/image_opr/image_process.h
+  lib/image_opr/image_process.cpp
+)
+add_library(drawing_tool_lib
+  include include/livox_hikcamera_cal/image_opr/drawing_tool.h
+  lib/image_opr/drawing_tool.cpp
+)
+add_library(aruco_tool_lib
+  include include/livox_hikcamera_cal/image_opr/aruco_tool.h
+  lib/image_opr/aruco_tool.cpp
+)
+
+
+add_dependencies(image_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(image_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(drawing_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(aruco_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+
+
+target_link_libraries(image_subscriber_publisher_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(image_process_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(drawing_tool_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(aruco_tool_lib
+  ${catkin_LIBRARIES}
+  conversion_bridge_lib
+)
+
+
+
+
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
+
+
+
+add_executable(pointcloud_process_node src/pointcloud_process_node.cpp)
+add_executable(image_process_node src/image_process_node.cpp)
+add_executable(calibration_node src/calibration_node.cpp)
+
+target_link_libraries(pointcloud_process_node
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  dynamic_reconfigure_lib
+  rviz_drawing_3d_lib
+  recorder_lib
+)
+target_link_libraries(image_process_node
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  image_subscriber_publisher_lib
+  drawing_tool_lib
+  aruco_tool_lib
+  dynamic_reconfigure_lib
+  rviz_drawing_3d_lib
+  recorder_lib
+)
+target_link_libraries(calibration_node
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  point_cloud_subscriber_publisher_lib
+  point_cloud_process_lib
+  drawing_tool_lib
+  aruco_tool_lib
+  dynamic_reconfigure_lib
+  rviz_drawing_3d_lib
+  recorder_lib
+)
+
+
+
+
 # add_executable(test1 src/test.cpp)
 # add_executable(test_outer src/test_outer.cpp)
-add_executable(caliboard_cloud_detection src/caliboard_cloud_detection.cpp)
-add_executable(caliboard_cloud_detection_dynamic src/caliboard_cloud_detection_dynamic.cpp)
-add_executable(point_cloud_filter src/point_cloud_filter.cpp)
-add_executable(rosbag_record_example src/rosbag_record_example.cpp)
-add_executable(pcd_saver_example src/pcd_saver_example.cpp)
+add_executable(caliboard_cloud_detection src/demo/caliboard_cloud_detection.cpp)
+add_executable(caliboard_cloud_detection_dynamic src/demo/caliboard_cloud_detection_dynamic.cpp)
+add_executable(point_cloud_filter src/demo/point_cloud_filter.cpp)
+add_executable(rosbag_record_example src/demo/rosbag_record_example.cpp)
+add_executable(pcd_saver_example src/demo/pcd_saver_example.cpp)
 
-add_executable(aruco_detection_example src/aruco_detection_example.cpp)
+add_executable(aruco_detection_example src/demo/aruco_detection_example.cpp)
 
-add_executable(lidar_camera_calibration src/lidar_camera_calibration.cpp)
+add_executable(lidar_camera_calibration src/demo/lidar_camera_calibration.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the

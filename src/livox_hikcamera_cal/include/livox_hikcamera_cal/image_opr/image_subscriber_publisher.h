@@ -2,17 +2,6 @@
 #define _IMAGE_SUBSCRIBER_PUBLISHER_H_
 
 #include <ros/ros.h>
-#include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 
 #include <mutex>
 #include <memory>
