@@ -48,6 +48,14 @@ namespace livox_hikcamera_cal
             static cv::Mat tvecEigenToCv(const Eigen::Vector3f& eg_tvec);
             static std::vector<cv::Mat> rvecEigenToCv(const std::vector<Eigen::Vector3f>& eg_rvecs);
             static std::vector<cv::Mat> tvecEigenToCv(const std::vector<Eigen::Vector3f>& eg_tvecs);
+            static cv::Mat rvec3dToMat_d(const cv::Vec3d& rvec3d);
+            static cv::Mat tvec3dToMat_d(const cv::Vec3d& tvec3d);
+            static std::vector<cv::Mat> rvecs3dToMat_d(const std::vector<cv::Vec3d>& rvec3d);
+            static std::vector<cv::Mat> tvecs3dToMat_d(const std::vector<cv::Vec3d>& tvec3d);
+            static cv::Mat rvec3dToMat_f(const cv::Vec3d& rvec3d);
+            static cv::Mat tvec3dToMat_f(const cv::Vec3d& tvec3d);
+            static std::vector<cv::Mat> rvecs3dToMat_f(const std::vector<cv::Vec3d>& rvecs3d);
+            static std::vector<cv::Mat> tvecs3dToMat_f(const std::vector<cv::Vec3d>& tvecs3d);
             
             static Eigen::Vector3f cv3fToEigen3f(const cv::Vec3f& cv_vec);
             static cv::Vec3f eigen3fToCv3f(const Eigen::Vector3f& eg_vec);
