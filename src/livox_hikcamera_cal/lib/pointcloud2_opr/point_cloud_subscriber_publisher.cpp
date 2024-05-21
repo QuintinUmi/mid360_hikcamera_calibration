@@ -41,11 +41,13 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     void PointCloudSubscriberPublisher::init_subscribers() 
     {
         pointcloud2_SUB = node_handle.subscribe<sensor_msgs::PointCloud2>(this->subscribe_topic, 10, &PointCloudSubscriberPublisher::PC2SubCallBack, this);
+        printf("Init PointCloud2 Subscriber Success!\n");
     }
 
     void PointCloudSubscriberPublisher::init_publishers()
     {
         pointcloud2_PUB = node_handle.advertise<sensor_msgs::PointCloud2>(this->publish_topic, 10);
+        printf("Init PointCloud2 Publisher Success!\n");
     }
 
     

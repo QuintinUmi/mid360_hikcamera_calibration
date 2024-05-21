@@ -113,12 +113,32 @@ std::vector<cv::Mat> ConversionBridge::tvecEigenToCv(const std::vector<Eigen::Ve
     return cv_tvecs;
 }
 
-std::vector<cv::Mat> rvecToRmat(const std::vector<cv::Vec3d>& rvec) {
+static Eigen::Vector3f cv3fToEigen3f(const cv::Vec3f& cv_vec)
+{
+    return Eigen::Vector3f(cv_vec[0], cv_vec[1], cv_vec[2]);
+}
+static cv::Vec3f eigen3fToCv3f(const Eigen::Vector3f& eg_vec)
+{
+    return cv::Vec3f(eg_vec.x(), eg_vec.y(), eg_vec.z());
+}
+
+static cv::Vec3f cv3dToCv3f(const cv::Vec3d& cv_vec)
+{
+    return cv::Vec3f(cv_vec[0], cv_vec[1], cv_vec[2]);
+}
+static cv::Vec3d cv3fToCv3d(const cv::Vec3f& cv_vec)
+{
+    return cv::Vec3d(cv_vec[0], cv_vec[1], cv_vec[2]);
+}
+
+std::vector<cv::Mat> ConversionBridge::rvecToRmat(const std::vector<cv::Vec3d>& rvec) 
+{
     cv::Mat rmat;
     cv::Rodrigues(rvec, rmat);
     return rmat;
 }
-std::vector<cv::Mat> rvecsToRmats(const std::vector<cv::Vec3d>& rvecs) {
+std::vector<cv::Mat> ConversionBridge::rvecsToRmats(const std::vector<cv::Vec3d>& rvecs) 
+{
     std::vector<cv::Mat> rmats;
     for (const auto& rvec : rvecs) {
         cv::Mat R;
@@ -126,4 +146,57 @@ std::vector<cv::Mat> rvecsToRmats(const std::vector<cv::Vec3d>& rvecs) {
         rmats.push_back(R);
     }
     return rmats;
+}
+
+Eigen::Quaterniond ConversionBridge::rvec3dToQuaternion(const cv::Vec3d& rvec) 
+{
+    cv::Mat rotMat;
+    cv::Rodrigues(rvec, rotMat);  
+
+    Eigen::Matrix3d eigenMat;
+    for(int i = 0; i < rotMat.rows; ++i) 
+    {
+        for(int j = 0; j < rotMat.cols; ++j) 
+        {
+            eigenMat(i, j) = rotMat.at<double>(i, j);
+        }
+    }
+    return Eigen::Quaterniond(eigenMat);
+}
+
+std::vector<Eigen::Quaterniond> ConversionBridge::rvecs3dToQuaternions(const std::vector<cv::Vec3d>& rvecs) 
+{
+    std::vector<Eigen::Quaterniond> quaternions;
+    for(const auto& rvec : rvecs) 
+    {
+        quaternions.push_back(ConversionBridge::rvec3dToQuaternion(rvec));
+    }
+    return quaternions;
+}
+
+cv::Vec3d ConversionBridge::quaternionToRvec3d(const Eigen::Quaterniond& quaternion) 
+{
+    Eigen::Matrix3d rotationMatrix = quaternion.toRotationMatrix();
+
+    cv::Mat cvRotationMatrix(3, 3, CV_64FC1);
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            cvRotationMatrix.at<double>(i, j) = rotationMatrix(i, j);
+        }
+    }
+
+    cv::Vec3d rvec;
+    cv::Rodrigues(cvRotationMatrix, rvec);
+
+    return rvec;
+}
+
+std::vector<cv::Vec3d> ConversionBridge::quaternionsToRvecs3d(const std::vector<Eigen::Quaterniond>& quaternions) 
+{
+    std::vector<cv::Vec3d> rvecs;
+    for(const auto& quaternion : quaternions) 
+    {
+        rvecs.push_back(ConversionBridge::quaternionToRvec3d(quaternion));
+    }
+    return rvecs;
 }

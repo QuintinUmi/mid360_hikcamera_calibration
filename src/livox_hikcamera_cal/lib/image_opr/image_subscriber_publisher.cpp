@@ -1,5 +1,4 @@
 #include <ros/ros.h>
-#include <ros/ros.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -32,6 +31,8 @@ ImageSubscriberPublisher::ImageSubscriberPublisher() : node_handle(ros::NodeHand
 
     this->header_ = std_msgs::Header();
 
+    this->image_ = std::make_shared<cv::Mat>();
+
     init_subscribers();
     init_publishers(); 
 }
@@ -42,6 +43,8 @@ ImageSubscriberPublisher::ImageSubscriberPublisher(ros::NodeHandle node_handle, 
     this->publish_topic = publish_topic;
     
     this->header_ = std_msgs::Header();
+
+    this->image_ = std::make_shared<cv::Mat>();
 
     init_subscribers();
     init_publishers();    
@@ -54,11 +57,13 @@ ImageSubscriberPublisher::~ImageSubscriberPublisher()
 void ImageSubscriberPublisher::init_subscribers() 
 {
     this->image_SUB = this->img_it.subscribe(this->subscribe_topic, 1,  &ImageSubscriberPublisher::ImageSubCallBack, this);
+    printf("Init Image Subscriber Success!\n");
 }
 
 void ImageSubscriberPublisher::init_publishers()
 {
     this->image_PUB = this->img_it.advertise(this->publish_topic, 1);
+    printf("Init Image Subscriber Success!\n");
 }
 
 
@@ -82,7 +87,17 @@ void ImageSubscriberPublisher::ImageSubCallBack(const sensor_msgs::ImageConstPtr
 cv::Mat ImageSubscriberPublisher::getImage() const 
 {
         // std::lock_guard<std::mutex> lock(this->mutex_);
-        return this->image_->clone();
+        if(!this->image_->empty() &&
+           this->image_->cols > 0 && this->image_->rows > 0 &&
+           (this->image_->type() == CV_8UC1 || this->image_->type() == CV_8UC3 || this->image_->type() == CV_32FC1 || this->image_->type() == CV_32FC3))
+        {
+            return this->image_->clone();
+        }
+        else
+        {
+            return cv::Mat();
+        }
+            
 }
 
 

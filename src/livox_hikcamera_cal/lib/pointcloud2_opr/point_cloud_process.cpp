@@ -455,7 +455,6 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pcaTransform();
         this->findRectangleCornersInPCAPlane();
         this->transformCornersTo3D();
-        this->sortPointByNormal(this->rect_corners_3d, this->plane_normals);
         this->processedCloudUpdate(this->raw_cloud, this->computeNearestClusterIndices(this->raw_cloud, this->clusters));
 
         return this->rect_corners_3d;

@@ -91,6 +91,7 @@
         "filesystem": "cpp",
         "random": "cpp",
         "dense": "cpp",
-        "svd": "cpp"
+        "svd": "cpp",
+        "geometry": "cpp"
     }
 }

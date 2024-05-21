@@ -49,11 +49,11 @@ using namespace livox_hikcamera_cal;
 using namespace livox_hikcamera_cal::image_opr;
 using namespace livox_hikcamera_cal::pointcloud2_opr;
 
-vector<cv::Point3f> caliboard_corners;
-cv::Point3f caliboard_corner1(-76.5, 40.0, 0);
-cv::Point3f caliboard_corner2(152*3+67, 40.0, 0);
-cv::Point3f caliboard_corner3(152*3+67, -151.5-150, 0);
-cv::Point3f caliboard_corner4(-76.5, -151.5-150, 0);
+// vector<cv::Point3f> caliboard_corners;
+// cv::Point3f caliboard_corner1(-76.5, 40.0, 0);
+// cv::Point3f caliboard_corner2(152*3+67, 40.0, 0);
+// cv::Point3f caliboard_corner3(152*3+67, -151.5-150, 0);
+// cv::Point3f caliboard_corner4(-76.5, -151.5-150, 0);
 // (-76.5, -40.0, 0) (152*3+67, -40.0, 0) (152*3+67, 151.5+150, 0) (-76.5, 151.5+150, 0)
 
 bool g_exit = false;
@@ -91,6 +91,7 @@ void imgStreamReceiveCallBack(const sensor_msgs::ImageConstPtr& pImgStream, ros:
 
     if(!(rvecs.empty() || tvecs.empty()))
     {
+        
         testPoint = tvecs[0];
         // d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
         d3d.draw_ortho_coordinate_2d(image, rvecs, tvecs);
@@ -137,7 +138,7 @@ int main(int argc, char *argv[])
     std::string topicImageStream;
 
     cv::Size chessboardSize;
-    double squareSize;
+    float squareSize;
 
 
     rosHandle.param("yaml_save_path", yamlPath, cv::String("~/"));
@@ -148,16 +149,18 @@ int main(int argc, char *argv[])
 
     int dictionaryName;
     vector<int> ids;
+    int centered_ids;
     int markerSize;
     vector<float> arucoRealLength;
 
     rosHandle.param("dictionary_name", dictionaryName, 10);
     rosHandle.param("selected_ids", ids, vector<int>{});
+    rosHandle.param("centered_id", centered_ids, 12);
     rosHandle.param("aruco_marker_size", markerSize, 500);
     rosHandle.param("aruco_real_length", arucoRealLength, vector<float>{1.0});
 
     cv::String intrinsicsPath = yamlPath + "camera_intrinsics.yaml";
-    boost::filesystem::path p = boost::filesystem::current_path();  // 获取当前路径
+    boost::filesystem::path p = boost::filesystem::current_path();  
     std::cout << "Current working directory: " << p << std::endl;
     std::cout << intrinsicsPath << std::endl;
     cv::FileStorage fs(intrinsicsPath, cv::FileStorage::READ);
@@ -177,34 +180,15 @@ int main(int argc, char *argv[])
     std::cout << disCoffes << std::endl;
     std::cout << image_size << std::endl;
 
-    cv::aruco::DICT_6X6_250;
-    ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, newCameraMatrix, newDisCoffes);
+    cv::aruco::DICT_6X6_1000;
+    ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, cameraMatrix, disCoffes);
     arucoMarker.create();
 
     
-    Draw3D d3d(arucoRealLength[0], 1, 1, 1, newCameraMatrix, newDisCoffes);
-    d3d.setparam_image_perspective_3d(newCameraMatrix, newDisCoffes, cv::Point3f(0, 0, 0), cv::Size(arucoRealLength[0] * 2, arucoRealLength[0] * 2), 
-                                        (cv::Mat_<float>(3, 1) << 0, 0, -PI/2));
+    Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 
 
-    caliboard_corners.emplace_back(caliboard_corner1);
-    caliboard_corners.emplace_back(caliboard_corner2);
-    caliboard_corners.emplace_back(caliboard_corner3);
-    caliboard_corners.emplace_back(caliboard_corner4);
-
-
-    RvizDrawing rviz_drawing("test", "livox_frame");
-
-    // std::string assets_path;
-    // rosHandle.param("assets_path", assets_path, std::string("~/"));
-    // std::string stack_image_path = assets_path + "90885055.jpeg";
-    // cv::Mat stackImage = cv::imread(stack_image_path);
-    // if(stackImage.empty())
-    // {
-    //     ROS_ERROR("Cannot Open stackImage!\n");
-    //     return 0;
-    // }
-    // std::cout << "stackImage.size() = " << stackImage.size() << std::endl;
+    RvizDrawing rviz_drawing("lidar_camera_calibration", "livox_frame");
     
 
     image_transport::ImageTransport imgIt(rosHandle);

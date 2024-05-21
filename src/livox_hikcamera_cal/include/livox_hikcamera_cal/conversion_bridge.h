@@ -39,8 +39,6 @@ namespace livox_hikcamera_cal
     class ConversionBridge
     {
         public:
-            ConversionBridge();
-            ~ConversionBridge();
 
             static Eigen::Vector3f rvecCvToEigen(const cv::Mat& cv_rvec);
             static Eigen::Vector3f tvecCvToEigen(const cv::Mat& cv_tvec);
@@ -50,8 +48,22 @@ namespace livox_hikcamera_cal
             static cv::Mat tvecEigenToCv(const Eigen::Vector3f& eg_tvec);
             static std::vector<cv::Mat> rvecEigenToCv(const std::vector<Eigen::Vector3f>& eg_rvecs);
             static std::vector<cv::Mat> tvecEigenToCv(const std::vector<Eigen::Vector3f>& eg_tvecs);
-
             
+            static Eigen::Vector3f cv3fToEigen3f(const cv::Vec3f& cv_vec);
+            static cv::Vec3f eigen3fToCv3f(const Eigen::Vector3f& eg_vec);
+
+            static cv::Vec3f cv3dToCv3f(const cv::Vec3d& cv_vec);
+            static cv::Vec3d cv3fToCv3d(const cv::Vec3f& cv_vec);
+
+
+            std::vector<cv::Mat> rvecToRmat(const std::vector<cv::Vec3d>& rvec);
+            std::vector<cv::Mat> rvecsToRmats(const std::vector<cv::Vec3d>& rvecs);
+
+            static Eigen::Quaterniond rvec3dToQuaternion(const cv::Vec3d& rvec);
+            static std::vector<Eigen::Quaterniond> rvecs3dToQuaternions(const std::vector<cv::Vec3d>& rvecs);
+            static cv::Vec3d quaternionToRvec3d(const Eigen::Quaterniond& quaternion);
+            static std::vector<cv::Vec3d> quaternionsToRvecs3d(const std::vector<Eigen::Quaterniond>& quaternions);
+
     };
 }
 

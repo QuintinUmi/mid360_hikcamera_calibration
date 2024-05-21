@@ -62,10 +62,13 @@ namespace livox_hikcamera_cal
 
                 void detect_aruco(cv::Mat &inputImage, cv::OutputArrayOfArrays markerCorners, vector<int> markerIds);
 
-                void ext_calib_single_arucos(cv::Mat &inputImage, int targetId, 
-                                            vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs);
+                void ext_calib_single_arucos(cv::Mat &inputImage, int targetId, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs);
+                void ext_calib_single_arucos(cv::Mat &inputImage, int targetId, vector<cv::Vec3d> &rvecs, vector<cv::Vec3d> &tvecs);
                 
                 void ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Mat> &rvecs, vector<cv::Mat> &tvecs, vector<int>& detectedIds);
+                void ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Vec3d> &rvecs, vector<cv::Vec3d> &tvecs, vector<int>& detectedIds);
+
+                void estimate_average_pose(const vector<cv::Vec3d> &rvecs, const vector<cv::Vec3d> &tvecs, vector<int>& detectedIds, cv::Vec3d& averageRvec, cv::Vec3d& averageTvec);
 
                 void aruco_marker_save(cv::String imageSavePath, cv::String imageFormat, vector<cv::Mat> arucoMarkerImages, int dictionaryName, bool showImage);
 
