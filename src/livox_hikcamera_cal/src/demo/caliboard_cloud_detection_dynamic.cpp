@@ -29,6 +29,8 @@
 #include "livox_hikcamera_cal/dynamic_reconfigure.h"
 #include "livox_hikcamera_cal/rviz_drawing.h"
 
+#include "livox_hikcamera_cal/calibration_tool.h"
+
 using namespace livox_hikcamera_cal;
 
 int main(int argc, char *argv[])
@@ -102,6 +104,7 @@ int main(int argc, char *argv[])
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
 		// corners = pc_process.extractNearestRectangleCorners(true, 50, 1.5);
 		corners = pc_process.extractNearestRectangleCorners(false);
+		CalTool::sortPointByNormal(corners, pc_process.getPlaneNormals());
 		// if(pc_process.normalClusterExtraction(0.05235988, 0.1F, 90, 30, 200, 250000).size() == 0)
         // {
         //     continue;

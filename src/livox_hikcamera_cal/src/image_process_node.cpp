@@ -178,6 +178,7 @@ int main(int argc, char *argv[])
 
     cv::aruco::DICT_6X6_1000;
     ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, cameraMatrix, disCoffes);
+    arucoMarker.setDetectionParameters();
     arucoMarker.create();
 
     ImageProc img_process;
@@ -242,7 +243,7 @@ int main(int argc, char *argv[])
 
         std::cout << caliboard_width << " " << caliboard_hight << std::endl;
 
-        ImageProc::transform_3d_points_inv(corners_plane, corners_3d, rvec, tvecs[center_index]);
+        ImageProc::transform_3d_points(corners_plane, corners_3d, rvec, tvecs[center_index]);
         // std::cout << corners_3d << std::endl;
 
         d3d.draw_ortho_coordinate_2d(img, ConversionBridge::rvecs3dToMat_d(rvecs), ConversionBridge::rvecs3dToMat_d(tvecs));
@@ -251,10 +252,10 @@ int main(int argc, char *argv[])
         d3d.draw_line_2d(img, corners_plane[2], corners_plane[3], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
         d3d.draw_line_2d(img, corners_plane[3], corners_plane[0], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
 
-        rviz_drawing.addLine("line1", corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, 0.1, 1.0, 0.0, 0.0);
-        rviz_drawing.addLine("line2", corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, 0.1, 1.0, 0.0, 0.0);
-        rviz_drawing.addLine("line3", corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, 0.1, 1.0, 0.0, 0.0);
-        rviz_drawing.addLine("line4", corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, 0.1, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line1", corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, 0.01, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line2", corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, 0.01, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line3", corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, 0.01, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line4", corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, 0.01, 1.0, 0.0, 0.0);
 
         rviz_drawing.publish();
 

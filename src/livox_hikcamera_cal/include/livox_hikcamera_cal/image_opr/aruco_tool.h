@@ -40,6 +40,9 @@ namespace livox_hikcamera_cal
                 ArucoM(cv::Ptr<cv::aruco::Dictionary> markerDictionary, vector<int> selectedIds, vector<float> markerRealLength = vector<float>{1.0}, cv::Mat cameraMatrix = cv::Mat(), cv::Mat disCoffes = cv::Mat());
                 ~ArucoM();
 
+                void setDetectionParameters(int cornerRefinementMethod = cv::aruco::CORNER_REFINE_APRILTAG, int adaptiveThreshWinSizeMin = 3, int adaptiveThreshWinSizeMax = 23,
+                                            int adaptiveThreshWinSizeStep = 10, int adaptiveThreshConstant = 7, 
+                                            int minMarkerPerimeterRate = 0.03, int maxMarkerPerimeterRate = 0.8);
                 void create();
                 void aruco_map_init();
                 // void release();
