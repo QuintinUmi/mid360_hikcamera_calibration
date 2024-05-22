@@ -3,6 +3,19 @@
 ## This pack is still constructing...
 
 
+### mid360 5hz publish
+
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal1_compressed.gif" alt="lidar_camera_cal1_compressed.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal2_compressed.gif" alt="lidar_camera_cal2_compressed.gif"/>
+</p>
+
+### mid360 2hz publish
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal3_compressed.gif" alt="lidar_camera_cal3_compressed.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal4_compressed.gif" alt="lidar_camera_cal4_compressed.gif"/>
+</p>
+
 
 <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal1_compressed.gif" alt="lidar_camera_cal1_compressed.gif"/>
 
@@ -10,19 +23,7 @@
 
 <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliborad_detection.png" alt="caliborad_detection.gif"/>
 
-### mid360 10hz publish
 
-<p align="center">
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_10hz_1.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_10hz_2.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
-</p>
-
-### mid360 5hz publish
-<p align="center">
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_5hz_1.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_5hz_2.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/lidar_caliboard_detect_demo_5hz_3.gif" alt="lidar_caliboard_detect_demo_10hz_1.gif"/>
-</p>
         
 
 
