@@ -318,6 +318,7 @@ target_link_libraries(image_process_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   image_subscriber_publisher_lib
+  image_process_lib
   drawing_tool_lib
   aruco_tool_lib
   dynamic_reconfigure_lib
@@ -394,6 +395,7 @@ target_link_libraries(caliboard_cloud_detection_dynamic
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  calibration_tool_lib
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
   dynamic_reconfigure_lib

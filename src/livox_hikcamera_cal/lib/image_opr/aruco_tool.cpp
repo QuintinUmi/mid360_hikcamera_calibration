@@ -68,6 +68,21 @@ ArucoM::~ArucoM()
         
 }
 
+void ArucoM::setDetectionParameters(int cornerRefinementMethod, int adaptiveThreshWinSizeMin, int adaptiveThreshWinSizeMax,
+                                    int adaptiveThreshWinSizeStep, int adaptiveThreshConstant, 
+                                    int minMarkerPerimeterRate, int maxMarkerPerimeterRate)
+{
+    this->dParameters->cornerRefinementMethod = cornerRefinementMethod;
+
+    this->dParameters->adaptiveThreshWinSizeMin = adaptiveThreshWinSizeMin;
+    this->dParameters->adaptiveThreshWinSizeMax = adaptiveThreshWinSizeMax;
+    this->dParameters->adaptiveThreshWinSizeStep = adaptiveThreshWinSizeStep;
+    this->dParameters->adaptiveThreshConstant = adaptiveThreshConstant;
+
+    this->dParameters->minMarkerPerimeterRate = minMarkerPerimeterRate;
+    this->dParameters->maxMarkerPerimeterRate = maxMarkerPerimeterRate;
+}
+
 void ArucoM::create()
 {
     this->aruco_map_init();

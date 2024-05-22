@@ -113,20 +113,75 @@ std::vector<cv::Mat> ConversionBridge::tvecEigenToCv(const std::vector<Eigen::Ve
     return cv_tvecs;
 }
 
-static Eigen::Vector3f cv3fToEigen3f(const cv::Vec3f& cv_vec)
+
+cv::Mat ConversionBridge::rvec3dToMat_d(const cv::Vec3d& rvec3d)
+{
+    return cv::Mat(rvec3d);
+}
+cv::Mat ConversionBridge::tvec3dToMat_d(const cv::Vec3d& tvec3d)
+{
+    return cv::Mat(tvec3d);
+}
+std::vector<cv::Mat> ConversionBridge::rvecs3dToMat_d(const std::vector<cv::Vec3d>& rvecs3d)
+{
+    std::vector<cv::Mat> rvecs_mat;
+    for(const auto& rvec3d:rvecs3d)
+    {
+        rvecs_mat.emplace_back((cv::Mat_<double>(3,1) << rvec3d[0], rvec3d[1], rvec3d[2]));
+    }
+    return rvecs_mat;
+}
+std::vector<cv::Mat> ConversionBridge::tvecs3dToMat_d(const std::vector<cv::Vec3d>& tvecs3d)
+{
+    std::vector<cv::Mat> tvecs_mat;
+    for(const auto& tvec3d:tvecs3d)
+    {
+        tvecs_mat.emplace_back((cv::Mat_<double>(3,1) << tvec3d[0], tvec3d[1], tvec3d[2]));
+    }
+    return tvecs_mat;
+}
+cv::Mat ConversionBridge::rvec3dToMat_f(const cv::Vec3d& rvec3d)
+{
+    return (cv::Mat_<float>(3,1) << rvec3d[0], rvec3d[1], rvec3d[2]);
+}
+cv::Mat ConversionBridge::tvec3dToMat_f(const cv::Vec3d& tvec3d)
+{
+    return (cv::Mat_<float>(3,1) << tvec3d[0], tvec3d[1], tvec3d[2]);
+}
+std::vector<cv::Mat> ConversionBridge::rvecs3dToMat_f(const std::vector<cv::Vec3d>& rvecs3d)
+{
+    std::vector<cv::Mat> rvecs_mat;
+    for(const auto& rvec3d:rvecs3d)
+    {
+        rvecs_mat.emplace_back((cv::Mat_<float>(3,1) << rvec3d[0], rvec3d[1], rvec3d[2]));
+    }
+    return rvecs_mat;
+}
+std::vector<cv::Mat> ConversionBridge::tvecs3dToMat_f(const std::vector<cv::Vec3d>& tvecs3d)
+{
+    std::vector<cv::Mat> tvecs_mat;
+    for(const auto& tvec3d:tvecs3d)
+    {
+        tvecs_mat.emplace_back((cv::Mat_<float>(3,1) << tvec3d[0], tvec3d[1], tvec3d[2]));
+    }
+    return tvecs_mat;
+}
+
+
+Eigen::Vector3f ConversionBridge::cv3fToEigen3f(const cv::Vec3f& cv_vec)
 {
     return Eigen::Vector3f(cv_vec[0], cv_vec[1], cv_vec[2]);
 }
-static cv::Vec3f eigen3fToCv3f(const Eigen::Vector3f& eg_vec)
+cv::Vec3f ConversionBridge::eigen3fToCv3f(const Eigen::Vector3f& eg_vec)
 {
     return cv::Vec3f(eg_vec.x(), eg_vec.y(), eg_vec.z());
 }
 
-static cv::Vec3f cv3dToCv3f(const cv::Vec3d& cv_vec)
+cv::Vec3f ConversionBridge::cv3dToCv3f(const cv::Vec3d& cv_vec)
 {
     return cv::Vec3f(cv_vec[0], cv_vec[1], cv_vec[2]);
 }
-static cv::Vec3d cv3fToCv3d(const cv::Vec3f& cv_vec)
+cv::Vec3d ConversionBridge::cv3fToCv3d(const cv::Vec3f& cv_vec)
 {
     return cv::Vec3d(cv_vec[0], cv_vec[1], cv_vec[2]);
 }

@@ -22,6 +22,7 @@
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 
 #include "livox_hikcamera_cal/image_opr/image_subscriber_publisher.h"
+#include "livox_hikcamera_cal/image_opr/image_process.h"
 #include "livox_hikcamera_cal/image_opr/drawing_tool.h"
 #include "livox_hikcamera_cal/image_opr/aruco_tool.h"
 
@@ -138,15 +139,21 @@ int main(int argc, char *argv[])
 
     int dictionaryName;
     vector<int> ids;
-    int centered_ids;
+    int centered_id;
     int markerSize;
     vector<float> arucoRealLength;
 
     rosHandle.param("dictionary_name", dictionaryName, 10);
     rosHandle.param("selected_ids", ids, vector<int>{});
-    rosHandle.param("centered_id", centered_ids, 12);
+    rosHandle.param("centered_id", centered_id, 12);
     rosHandle.param("aruco_marker_size", markerSize, 500);
     rosHandle.param("aruco_real_length", arucoRealLength, vector<float>{1.0});
+
+    float caliboard_width;
+    float caliboard_hight;
+
+    rosHandle.param("caliboard_width", caliboard_width, (float)12.0);
+    rosHandle.param("caliboard_hight", caliboard_hight, (float)12.0);
 
     cv::String intrinsicsPath = yamlPath + "camera_intrinsics.yaml";
     boost::filesystem::path p = boost::filesystem::current_path();  
@@ -171,7 +178,10 @@ int main(int argc, char *argv[])
 
     cv::aruco::DICT_6X6_1000;
     ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, cameraMatrix, disCoffes);
+    arucoMarker.setDetectionParameters();
     arucoMarker.create();
+
+    ImageProc img_process;
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 
@@ -200,7 +210,54 @@ int main(int argc, char *argv[])
         arucoMarker.ext_calib_multipul_arucos(img, rvecs, tvecs, detectedIds);
         cv::Vec3d rvec;
         cv::Vec3d tvec;
-        arucoMarker.estimate_average_pose(rvecs, tvecs, detectedIds, rvec, tvec);
+        ImageProc::estimate_average_pose(rvecs, tvecs, rvec, tvec);
+
+        int center_index = -1;
+        for(int i = 0; i < detectedIds.size(); i ++)
+        {
+            if(detectedIds[i] == centered_id)
+            {
+                center_index = i;
+            }
+        }
+        if(center_index == -1)
+        {
+            rviz_drawing.deleteObject("line1");
+            rviz_drawing.deleteObject("line2");
+            rviz_drawing.deleteObject("line3");
+            rviz_drawing.deleteObject("line4");
+            rviz_drawing.publish();
+            img_SUB_PUB.publish(img);
+            ROS_INFO("Not Detected Center Marker!\n");
+            continue;
+        }
+        
+        cv::Point3f center(tvecs[center_index][0], tvecs[center_index][1], tvecs[center_index][2]);
+
+        std::vector<cv::Point3f> corners_plane;
+        std::vector<cv::Point3f> corners_3d;
+        corners_plane.emplace_back(-caliboard_width/2, +caliboard_hight/2, 0);
+        corners_plane.emplace_back(+caliboard_width/2, +caliboard_hight/2, 0);
+        corners_plane.emplace_back(+caliboard_width/2, -caliboard_hight/2, 0);
+        corners_plane.emplace_back(-caliboard_width/2, -caliboard_hight/2, 0);
+
+        std::cout << caliboard_width << " " << caliboard_hight << std::endl;
+
+        ImageProc::transform_3d_points(corners_plane, corners_3d, rvec, tvecs[center_index]);
+        // std::cout << corners_3d << std::endl;
+
+        d3d.draw_ortho_coordinate_2d(img, ConversionBridge::rvecs3dToMat_d(rvecs), ConversionBridge::rvecs3dToMat_d(tvecs));
+        d3d.draw_line_2d(img, corners_plane[0], corners_plane[1], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+        d3d.draw_line_2d(img, corners_plane[1], corners_plane[2], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+        d3d.draw_line_2d(img, corners_plane[2], corners_plane[3], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+        d3d.draw_line_2d(img, corners_plane[3], corners_plane[0], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+
+        rviz_drawing.addLine("line1", corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, 0.01, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line2", corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, 0.01, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line3", corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, 0.01, 1.0, 0.0, 0.0);
+        rviz_drawing.addLine("line4", corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, 0.01, 1.0, 0.0, 0.0);
+
+        rviz_drawing.publish();
 
         img_SUB_PUB.publish(img);
 
