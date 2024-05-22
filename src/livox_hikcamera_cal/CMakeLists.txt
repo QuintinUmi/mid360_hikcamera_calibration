@@ -308,6 +308,7 @@ target_link_libraries(pointcloud_process_node
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  calibration_tool_lib
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
   dynamic_reconfigure_lib
@@ -317,6 +318,7 @@ target_link_libraries(pointcloud_process_node
 target_link_libraries(image_process_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  calibration_tool_lib
   image_subscriber_publisher_lib
   image_process_lib
   drawing_tool_lib
@@ -329,6 +331,7 @@ target_link_libraries(calibration_node
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
+  calibration_tool_lib
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
   drawing_tool_lib
@@ -343,15 +346,13 @@ target_link_libraries(calibration_node
 
 # add_executable(test1 src/test.cpp)
 # add_executable(test_outer src/test_outer.cpp)
-add_executable(caliboard_cloud_detection src/demo/caliboard_cloud_detection.cpp)
+# add_executable(caliboard_cloud_detection src/demo/caliboard_cloud_detection.cpp)
 add_executable(caliboard_cloud_detection_dynamic src/demo/caliboard_cloud_detection_dynamic.cpp)
 add_executable(point_cloud_filter src/demo/point_cloud_filter.cpp)
 add_executable(rosbag_record_example src/demo/rosbag_record_example.cpp)
 add_executable(pcd_saver_example src/demo/pcd_saver_example.cpp)
 
-add_executable(aruco_detection_example src/demo/aruco_detection_example.cpp)
-
-add_executable(lidar_camera_calibration src/demo/lidar_camera_calibration.cpp)
+# add_executable(aruco_detection_example src/demo/aruco_detection_example.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -382,15 +383,15 @@ add_executable(lidar_camera_calibration src/demo/lidar_camera_calibration.cpp)
 #   dynamic_reconfigure_lib
 #   recorder_lib
 # )
-target_link_libraries(caliboard_cloud_detection
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
-  dynamic_reconfigure_lib
-  recorder_lib
-)
+# target_link_libraries(caliboard_cloud_detection
+#   ${catkin_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   point_cloud_subscriber_publisher_lib
+#   point_cloud_process_lib
+#   dynamic_reconfigure_lib
+#   recorder_lib
+# )
 target_link_libraries(caliboard_cloud_detection_dynamic
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
@@ -427,28 +428,13 @@ target_link_libraries(pcd_saver_example
 )
 
 
-target_link_libraries(aruco_detection_example
-  ${catkin_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  drawing_tool_lib
-  aruco_tool_lib
-)
+# target_link_libraries(aruco_detection_example
+#   ${catkin_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   drawing_tool_lib
+#   aruco_tool_lib
+# )
 
-target_link_libraries(lidar_camera_calibration
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
-  conversion_bridge_lib
-  dynamic_reconfigure_lib
-  image_subscriber_publisher_lib
-  drawing_tool_lib
-  aruco_tool_lib
-  rviz_drawing_3d_lib
-  recorder_lib
-  calibration_tool_lib
-)
 
 #############
 ## Install ##

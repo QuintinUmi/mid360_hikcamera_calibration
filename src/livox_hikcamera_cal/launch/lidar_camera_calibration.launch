@@ -2,5 +2,7 @@
     <param name="package_path" value="$(find livox_hikcamera_cal)"/>
     <rosparam file="$(find livox_hikcamera_cal)/cfg/setup_caliboard.yaml" command="load"/>
     <rosparam file="$(find livox_hikcamera_cal)/cfg/setup_ros.yaml" command="load"/>
+    <node pkg="livox_hikcamera_cal" type="pointcloud_process_node" name="pointcloud_process_node" output="screen"/>
     <node pkg="livox_hikcamera_cal" type="image_process_node" name="image_process_node" output="screen"/>
+
 </launch>
