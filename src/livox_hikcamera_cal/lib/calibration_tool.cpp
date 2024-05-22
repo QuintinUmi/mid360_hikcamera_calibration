@@ -27,6 +27,11 @@ CalTool::~CalTool()
 
 void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal)
 {
+    if(points->empty())
+    {
+        return;
+    }
+
     pcl::PointXYZI center;
     for (const auto& p : points->points) {
         center.x += p.x;

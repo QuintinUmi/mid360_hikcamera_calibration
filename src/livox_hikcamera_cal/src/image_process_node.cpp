@@ -1,11 +1,6 @@
 #include <ros/ros.h>
 #include <boost/filesystem.hpp>
 
-#include <sensor_msgs/PointCloud2.h>
-#include <pcl_conversions/pcl_conversions.h>
-#include <pcl/point_types.h>
-#include <pcl/PCLPointCloud2.h>
-
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>  
 #include <aruco/aruco.h>  
@@ -17,9 +12,6 @@
 #include <yaml-cpp/yaml.h>
 
 #include "image_transport/image_transport.h"
-
-#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
-#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
 
 #include "livox_hikcamera_cal/image_opr/image_subscriber_publisher.h"
 #include "livox_hikcamera_cal/image_opr/image_process.h"
@@ -37,7 +29,6 @@
 using namespace std;
 using namespace livox_hikcamera_cal;
 using namespace livox_hikcamera_cal::image_opr;
-using namespace livox_hikcamera_cal::pointcloud2_opr;
 
 // vector<cv::Point3f> caliboard_corners;
 // cv::Point3f caliboard_corner1(-76.5, 40.0, 0);
@@ -256,6 +247,30 @@ int main(int argc, char *argv[])
         rviz_drawing.addLine("line2", corners_3d[1].z /1000, -corners_3d[1].x /1000, -corners_3d[1].y /1000, corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, 0.01, 1.0, 0.0, 0.0);
         rviz_drawing.addLine("line3", corners_3d[2].z /1000, -corners_3d[2].x /1000, -corners_3d[2].y /1000, corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, 0.01, 1.0, 0.0, 0.0);
         rviz_drawing.addLine("line4", corners_3d[3].z /1000, -corners_3d[3].x /1000, -corners_3d[3].y /1000, corners_3d[0].z /1000, -corners_3d[0].x /1000, -corners_3d[0].y /1000, 0.01, 1.0, 0.0, 0.0);
+
+        cv::Mat rotation_matrix;
+        cv::Rodrigues(rvec, rotation_matrix);
+
+        cv::Mat z_axis_vector = rotation_matrix.col(2);
+        Eigen::Vector3f plane_normal;
+        plane_normal << -z_axis_vector.at<double>(0), -z_axis_vector.at<double>(1), -z_axis_vector.at<double>(2);
+
+        CalTool::sortPointByNormal(corners_3d, plane_normal);
+
+        std::vector<geometry_msgs::Point> ros_corners;
+		for (const auto& corner : corners_3d) 
+		{
+			geometry_msgs::Point ros_point;
+			ros_point.x = corner.z / 1000;
+			ros_point.y = -corner.x / 1000;
+			ros_point.z = -corner.y / 1000;
+			ros_corners.push_back(ros_point);
+    	}
+
+        rviz_drawing.addText("corner_1", ros_corners.at(0), "1", 0.3, 1.0, 0.0, 0.0);
+        rviz_drawing.addText("corner_2", ros_corners.at(1), "2", 0.3, 1.0, 0.0, 0.0);
+        rviz_drawing.addText("corner_3", ros_corners.at(2), "3", 0.3, 1.0, 0.0, 0.0);
+        rviz_drawing.addText("corner_4", ros_corners.at(3), "4", 0.3, 1.0, 0.0, 0.0);
 
         rviz_drawing.publish();
 

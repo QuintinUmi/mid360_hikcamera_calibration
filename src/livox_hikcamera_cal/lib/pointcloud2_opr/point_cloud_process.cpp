@@ -20,6 +20,10 @@
 #include <pcl/common/pca.h>
 #include <pcl/common/transforms.h>
 
+#include <pcl/surface/mls.h>
+
+
+
 #include <opencv2/opencv.hpp>
 
 #include <Eigen/Core>
@@ -254,6 +258,9 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         sor.setStddevMulThresh(stddev_mul); 
         sor.setNegative(false);
         sor.filter(*cloud_filtered);
+
+        pcl::search::KdTree<pcl::PointXYZ>::Ptr tree(new pcl::search::KdTree<pcl::PointXYZ>);
+
         if(cloud_filtered->size() == 0)
         {
             return 0;
@@ -385,15 +392,63 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
     void PointCloud2Proc::findRectangleCornersInPCAPlane()
     {
-        std::vector<cv::Point2f> pca_points;
+        this->pca_points_.clear();
         for (const auto& point : *this->processed_cloud) {
-            pca_points.emplace_back(point.x, point.y);
+            this->pca_points_.emplace_back(point.x, point.y);
         }
 
-        this->pointcloud_rect_box = cv::minAreaRect(cv::Mat(pca_points));
-        pointcloud_rect_box.points(this->rect_corners_2d);
+        this->pointcloud_rect_box = cv::minAreaRect(cv::Mat(this->pca_points_));
+        this->pointcloud_rect_box.points(this->rect_corners_2d);
 
         return;
+    }
+
+    void PointCloud2Proc::optimizeRectangleCornersInPCAPlane(float constraint_width, float constraint_height, float optimize_offset_ratio, float optimize_precision)
+    {
+        if (this->pointcloud_rect_box.size.area() == 0 || this->pca_points_.empty())
+        {
+            return;
+        }
+
+        std::cout << "constraint: " << cv::Size2f(constraint_width, constraint_height) << " || pointcloud_rect_box: " << this->pointcloud_rect_box.size << std::endl;
+        cv::Size2f newSize(constraint_width, constraint_height);
+        if (constraint_width > constraint_height && this->pointcloud_rect_box.size.width < this->pointcloud_rect_box.size.height || 
+            constraint_width < constraint_height && this->pointcloud_rect_box.size.width > this->pointcloud_rect_box.size.height)
+        {
+            newSize = cv::Size2f(constraint_height, constraint_width);
+        }
+
+        int minLoss = INT_MAX;
+        cv::RotatedRect optimized_rect;
+
+        float x_offset = optimize_offset_ratio * this->pointcloud_rect_box.size.width;
+        float y_offset = optimize_offset_ratio * this->pointcloud_rect_box.size.height;
+        for (float dx = -x_offset / 2; dx <= x_offset / 2; dx += optimize_precision) 
+        {
+            for (float dy = -y_offset / 2; dy <= y_offset / 2; dy += optimize_precision) 
+            {
+                cv::Point2f newCenter(this->pointcloud_rect_box.center.x + dx, this->pointcloud_rect_box.center.y + dy);
+                cv::RotatedRect testRect(newCenter, newSize, this->pointcloud_rect_box.angle);
+                cv::Point2f testCorners[4];
+                testRect.points(testCorners);
+
+                int loss = 0;
+                for (const auto& point : this->pca_points_) {
+                    if (!isPointInQuad(testCorners, point)) {
+                        loss++;
+                    }
+                }
+
+                if (loss < minLoss) 
+                {
+                    minLoss = loss;
+                    optimized_rect = testRect;
+                }
+            }
+        }
+
+        this->pointcloud_rect_box = optimized_rect;
+        this->pointcloud_rect_box.points(this->rect_corners_2d);
     }
 
     void PointCloud2Proc::transformCornersTo3D()
@@ -429,7 +484,9 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, int mean_k, float stddev_mul)
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, bool optimizeRectangleCorners,
+                                                                                        float constraint_width, float constraint_height, 
+                                                                                        float optimize_offset_ratio, float optimize_precision)
     {
         
         if(this->normalClusterExtraction().size() == 0)
@@ -454,6 +511,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         // this->planeProjection();
         this->pcaTransform();
         this->findRectangleCornersInPCAPlane();
+
+        if(optimizeRectangleCorners && constraint_width != 0.0 && constraint_width != 0.0)
+        {
+            this->optimizeRectangleCornersInPCAPlane(constraint_width, constraint_height, optimize_offset_ratio, optimize_precision);
+        }
+        
         this->transformCornersTo3D();
         this->processedCloudUpdate(this->raw_cloud, this->computeNearestClusterIndices(this->raw_cloud, this->clusters));
 

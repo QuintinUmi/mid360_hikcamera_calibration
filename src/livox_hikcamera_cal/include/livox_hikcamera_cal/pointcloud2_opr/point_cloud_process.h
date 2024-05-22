@@ -78,10 +78,13 @@ namespace livox_hikcamera_cal
                 void transform(Eigen::Matrix4f transform_matrix);
                 void transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
                 void findRectangleCornersInPCAPlane();
+                void optimizeRectangleCornersInPCAPlane(float constraint_width, float constraint_height, float optimize_offset_ratio = 0.05, float optimize_precision = 0.001);
                 void transformCornersTo3D();
                 void transformCornersTo3D(Eigen::Matrix4f transform_matrix);
 
-                pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, int mean_k=50, float stddev_mul=1.0);
+                pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, bool optimizeRectangleCorners=false,
+                                                                                    float constraint_width = 0.0, float constraint_height = 0.0, 
+                                                                                    float optimize_offset_ratio = (0.05F), float optimize_precision = (0.001F));
 
 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr getFilterBoxCorners(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
@@ -116,6 +119,7 @@ namespace livox_hikcamera_cal
                 pcl::ModelCoefficients::Ptr plane_coefficients;
                 Eigen::Vector3f plane_normals;
                 Eigen::Matrix4f pca_transform_matrix;
+                std::vector<cv::Point2f> pca_points_;
                 cv::RotatedRect pointcloud_rect_box;
                 cv::Point2f rect_corners_2d[4];
                 pcl::PointCloud<pcl::PointXYZI>::Ptr rect_corners_3d;
@@ -129,6 +133,31 @@ namespace livox_hikcamera_cal
                 bool remove_origin_point_;
                 int k_search_;
                 pcl::search::Search<pcl::PointXYZI>::Ptr search_method_;
+
+                bool isPointInQuad(const cv::Point2f testCorners[4], const cv::Point2f& P) 
+                {
+                    return isPointInTriangle(testCorners[0], testCorners[1], testCorners[2], P) || isPointInTriangle(testCorners[2], testCorners[3], testCorners[0], P);
+                }
+
+                bool isPointInTriangle(const cv::Point2f& A, const cv::Point2f& B, const cv::Point2f& C, const cv::Point2f& P) 
+                {
+                    cv::Point2f AB = B - A;
+                    cv::Point2f BC = C - B;
+                    cv::Point2f CA = A - C;
+
+                    cv::Point2f AP = P - A;
+                    cv::Point2f BP = P - B;
+                    cv::Point2f CP = P - C;
+
+                    float cross1 = AB.x * AP.y - AB.y * AP.x;
+                    float cross2 = BC.x * BP.y - BC.y * BP.x;
+                    float cross3 = CA.x * CP.y - CA.y * CP.x;
+
+                    bool has_neg = (cross1 < 0) || (cross2 < 0) || (cross3 < 0);
+                    bool has_pos = (cross1 > 0) || (cross2 > 0) || (cross3 > 0);
+
+                    return !(has_neg && has_pos);
+                }
 
         };
 
