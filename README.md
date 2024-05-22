@@ -42,87 +42,107 @@
 ```
 mid360_hikcamera_calibration
     ├── doc
-    │   └── img
-    │       ├── caliboard_cloud_detection_2.png
-    │       ├── caliboard_cloud_detection_detailed_1.png
-    │       ├── caliboard_cloud_detection_detailed_2.png
-    │       ├── caliboard_cloud_detection.png
-    │       ├── caliborad_detection.png
-    │       ├── lidar_caliboard_detect_demo_10hz_1.gif
-    │       ├── lidar_caliboard_detect_demo_10hz_2.gif
-    │       ├── lidar_caliboard_detect_demo_5hz_1.gif
-    │       ├── lidar_caliboard_detect_demo_5hz_2.gif
-    │       ├── lidar_caliboard_detect_demo_5hz_3.gif
-    │       ├── readme.txt
-    │       └── rviz_caliboard_cloud_collection.png
+    │   └── img
+    │       ├── cal2.gif
+    │       ├── caliboard_cloud_detection_2.png
+    │       ├── caliboard_cloud_detection_detailed_1.png
+    │       ├── caliboard_cloud_detection_detailed_2.png
+    │       ├── caliboard_cloud_detection.png
+    │       ├── caliborad_detection.png
+    │       ├── lidar_caliboard_detect_demo_10hz_1.gif
+    │       ├── lidar_caliboard_detect_demo_10hz_2.gif
+    │       ├── lidar_caliboard_detect_demo_5hz_1.gif
+    │       ├── lidar_caliboard_detect_demo_5hz_2.gif
+    │       ├── lidar_caliboard_detect_demo_5hz_3.gif
+    │       ├── lidar_camera_cal1_compressed.gif
+    │       ├── lidar_camera_cal2_compressed.gif
+    │       ├── lidar_camera_cal3_compressed.gif
+    │       ├── lidar_camera_cal4_compressed.gif
+    │       ├── readme.txt
+    │       └── rviz_caliboard_cloud_collection.png
     ├── README.md
     └── src
         ├── livox_hikcamera_cal
-        │   ├── aruco_img
-        │   │   ├── id_150--dictName_10.png
-        │   │   ├── id_230--dictName_10.png
-        │   │   ├── id_4--dictName_10.png
-        │   │   └── id_80--dictName_10.png
-        │   ├── bag
-        │   ├── cfg
-        │   │   ├── calibration_param.yaml
-        │   │   ├── PointcloudFilter.cfg
-        │   │   ├── setup_aruco.yaml
-        │   │   └── setup_ros.yaml
-        │   ├── CMakeLists.txt
-        │   ├── include
-        │   │   └── livox_hikcamera_cal
-        │   │       ├── calibration_solver.h
-        │   │       ├── dynamic_reconfigure.h
-        │   │       ├── image_opr
-        │   │       │   ├── aruco_tool.h
-        │   │       │   └── drawing_tool.h
-        │   │       ├── pointcloud2_opr
-        │   │       │   ├── pcd_saver.h
-        │   │       │   ├── point_cloud_process.h
-        │   │       │   └── point_cloud_subscriber_publisher.h
-        │   │       ├── recorder.h
-        │   │       └── rviz_drawing.h
-        │   ├── launch
-        │   │   └── aruco_video_ext_calib.launch
-        │   ├── lib
-        │   │   ├── calibration_solver.cpp
-        │   │   ├── dynamic_reconfigure.cpp
-        │   │   ├── image_opr
-        │   │   │   ├── aruco_tool.cpp
-        │   │   │   └── drawing_tool.cpp
-        │   │   ├── pointcloud2_opr
-        │   │   │   ├── pcd_saver.cpp
-        │   │   │   ├── point_cloud_process.cpp
-        │   │   │   └── point_cloud_subscriber_publisher.cpp
-        │   │   ├── recorder.cpp
-        │   │   └── rviz_drawing.cpp
-        │   ├── miscellaneous
-        │   │   └── 90885055.jpeg
-        │   ├── package.xml
-        │   ├── pcd
-        │   │   ├── 20240509061323.pcd
-        │   │   ├── 20240509061325.pcd
-        │   │   ├── 20240509061326.pcd
-        │   │   ├── 20240509061327.pcd
-        │   │   ├── 20240509061328.pcd
-        │   │   ├── 20240509061333.pcd
-        │   │   ├── 20240509061340.pcd
-        │   │   ├── 20240509061346.pcd
-        │   │   ├── 20240509061349.pcd
-        │   │   ├── 20240509061354.pcd
-        │   │   └── 20240509061358.pcd
-        │   └── src
-        │       ├── aruco_detection_example.cpp
-        │       ├── caliboard_cloud_detection.cpp
-        │       ├── caliboard_cloud_detection_dynamic.cpp
-        │       ├── pcd_saver_example.cpp
-        │       ├── point_cloud_filter.cpp
-        │       ├── rosbag_record_example.cpp
-        │       ├── test.cpp
-        │       ├── test_outer2.cpp
-        │       └── test_outer.cpp
+        │   ├── aruco_img
+        │   │   ├── id_12--dictName_11.png
+        │   │   ├── id_150--dictName_11.png
+        │   │   ├── id_364--dictName_11.png
+        │   │   ├── id_544--dictName_11.png
+        │   │   └── id_712--dictName_11.png
+        │   ├── bag
+        │   ├── cfg
+        │   │   ├── camera_intrinsics.yaml
+        │   │   ├── PointcloudFilter.cfg
+        │   │   ├── setup_aruco.yaml
+        │   │   ├── setup_caliboard.yaml
+        │   │   └── setup_ros.yaml
+        │   ├── CMakeLists.txt
+        │   ├── include
+        │   │   └── livox_hikcamera_cal
+        │   │       ├── calibration_tool.h
+        │   │       ├── conversion_bridge.h
+        │   │       ├── dynamic_reconfigure.h
+        │   │       ├── image_opr
+        │   │       │   ├── aruco_tool.h
+        │   │       │   ├── drawing_tool.h
+        │   │       │   ├── image_process.h
+        │   │       │   └── image_subscriber_publisher.h
+        │   │       ├── pointcloud2_opr
+        │   │       │   ├── pcd_saver.h
+        │   │       │   ├── point_cloud_process.h
+        │   │       │   └── point_cloud_subscriber_publisher.h
+        │   │       ├── recorder.h
+        │   │       └── rviz_drawing.h
+        │   ├── launch
+        │   │   ├── aruco_video_ext_calib.launch
+        │   │   └── lidar_camera_calibration.launch
+        │   ├── lib
+        │   │   ├── calibration_tool.cpp
+        │   │   ├── conversion_bridge.cpp
+        │   │   ├── dynamic_reconfigure.cpp
+        │   │   ├── image_opr
+        │   │   │   ├── aruco_tool.cpp
+        │   │   │   ├── drawing_tool.cpp
+        │   │   │   ├── image_process.cpp
+        │   │   │   └── image_subscriber_publisher.cpp
+        │   │   ├── pointcloud2_opr
+        │   │   │   ├── pcd_saver.cpp
+        │   │   │   ├── point_cloud_process.cpp
+        │   │   │   └── point_cloud_subscriber_publisher.cpp
+        │   │   ├── recorder.cpp
+        │   │   └── rviz_drawing.cpp
+        │   ├── miscellaneous
+        │   │   └── 90885055.jpeg
+        │   ├── package.xml
+        │   ├── pcd
+        │   │   ├── 20240509061323.pcd
+        │   │   ├── 20240509061325.pcd
+        │   │   ├── 20240509061326.pcd
+        │   │   ├── 20240509061327.pcd
+        │   │   ├── 20240509061328.pcd
+        │   │   ├── 20240509061333.pcd
+        │   │   ├── 20240509061340.pcd
+        │   │   ├── 20240509061346.pcd
+        │   │   ├── 20240509061349.pcd
+        │   │   ├── 20240509061354.pcd
+        │   │   └── 20240509061358.pcd
+        │   └── src
+        │       ├── calibration_node.cpp
+        │       ├── demo
+        │       │   ├── aruco_detection_example.cpp
+        │       │   ├── caliboard_cloud_detection.cpp
+        │       │   ├── caliboard_cloud_detection_dynamic.cpp
+        │       │   ├── lidar_camera_calibration.cpp
+        │       │   ├── pcd_saver_example.cpp
+        │       │   ├── point_cloud_filter.cpp
+        │       │   ├── rosbag_record_example.cpp
+        │       │   ├── test.cpp
+        │       │   ├── test_outer2.cpp
+        │       │   └── test_outer.cpp
+        │       ├── image_process_node.cpp
+        │       └── pointcloud_process_node.cpp
         └── readme.md
+
 
 
 ```
