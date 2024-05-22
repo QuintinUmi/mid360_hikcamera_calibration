@@ -3,6 +3,9 @@
 ## This pack is still constructing...
 
 
+
+<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal1_compressed.gif" alt="lidar_camera_cal1_compressed.gif"/>
+
 <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/cal2.gif" alt="caliborad_detection.gif"/>
 
 <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliborad_detection.png" alt="caliborad_detection.gif"/>
