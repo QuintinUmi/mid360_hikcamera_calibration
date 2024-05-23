@@ -1,4 +1,29 @@
 
+frame_id: livox_frame
+
+
+pointcloud_process_pc_sub_topic: /livox/lidar
+pointcloud_process_pc_pub_topic: /livox/lidar_proc
+
+pointcloud_process_corners_sub_topic: /livox_hikcamera_cal/calibration_corners
+pointcloud_process_corners_pub_topic: /livox_hikcamera_cal/pointcloud_corners
+
+
+
+image_process_img_sub_topic: /hikcamera/img_stream
+image_process_img_pub_topic: /hikcamera/img_stream_proc
+
+image_process_corners_sub_topic: /livox_hikcamera_cal/calibration_corners
+image_process_corners_pub_topic: /livox_hikcamera_cal/image_corners
+
+
+
+calibration_pc_pub_topic: /livox_hikcamera_cal/pointcloud
+calibration_img_pub_topic: /livox_hikcamera_cal/image
+calibration_corners_pub_topic: /livox_hikcamera_cal/calibration_corners
+
+
+
 topic_image_stream: /hikcamera/img_stream
 
 assets_path: /home/quintinumi/project/ws_mid360_hikcamera_calibration/src/mid360_hikcamera_calibration/src/livox_hikcamera_cal/miscellaneous/
