@@ -178,14 +178,14 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         boxFilter.setMax(Eigen::Vector4f(length_x/2, length_y/2, length_z/2, 1.0));
 
         Eigen::Quaternionf q;
-        q = Eigen::AngleAxisf(angle_x / 360 * M_PI, Eigen::Vector3f::UnitX()) *
-            Eigen::AngleAxisf(angle_y / 360 * M_PI, Eigen::Vector3f::UnitY()) *
-            Eigen::AngleAxisf(angle_z / 360 * M_PI, Eigen::Vector3f::UnitZ());
+        q = Eigen::AngleAxisf(angle_x / 180 * M_PI, Eigen::Vector3f::UnitX()) *
+            Eigen::AngleAxisf(angle_y / 180 * M_PI, Eigen::Vector3f::UnitY()) *
+            Eigen::AngleAxisf(angle_z / 180 * M_PI, Eigen::Vector3f::UnitZ());
         Eigen::Affine3f rotate(q);
         
         Eigen::Translation3f translate_to_center(box_center);
         
-        boxFilter.setTransform(translate_to_center * rotate);
+        boxFilter.setTransform((translate_to_center * rotate).inverse());
 
         boxFilter.setNegative(negetive);
 
@@ -410,7 +410,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             return;
         }
 
-        std::cout << "constraint: " << cv::Size2f(constraint_width, constraint_height) << " || pointcloud_rect_box: " << this->pointcloud_rect_box.size << std::endl;
+        // std::cout << "constraint: " << cv::Size2f(constraint_width, constraint_height) << " || pointcloud_rect_box: " << this->pointcloud_rect_box.size << std::endl;
         cv::Size2f newSize(constraint_width, constraint_height);
         if (constraint_width > constraint_height && this->pointcloud_rect_box.size.width < this->pointcloud_rect_box.size.height || 
             constraint_width < constraint_height && this->pointcloud_rect_box.size.width > this->pointcloud_rect_box.size.height)
@@ -578,12 +578,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         std::vector<Eigen::Vector3f> corners_at_origin;
         corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, -length_y/2, -length_z/2));
         corners_at_origin.push_back(Eigen::Vector3f(length_x/2, -length_y/2, -length_z/2));
-        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, -length_z/2));
         corners_at_origin.push_back(Eigen::Vector3f(length_x/2, length_y/2, -length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, -length_z/2));
         corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, -length_y/2, length_z/2));
         corners_at_origin.push_back(Eigen::Vector3f(length_x/2, -length_y/2, length_z/2));
-        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, length_z/2));
         corners_at_origin.push_back(Eigen::Vector3f(length_x/2, length_y/2, length_z/2));
+        corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, length_z/2));
 
         pcl::PointCloud<pcl::PointXYZI>::Ptr corners(new pcl::PointCloud<pcl::PointXYZI>);
         for (const auto& corner_at_origin : corners_at_origin) 

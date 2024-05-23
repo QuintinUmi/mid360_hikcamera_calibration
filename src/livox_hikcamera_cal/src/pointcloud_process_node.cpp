@@ -29,13 +29,14 @@
 #include "livox_hikcamera_cal/dynamic_reconfigure.h"
 #include "livox_hikcamera_cal/rviz_drawing.h"
 
+#include "livox_hikcamera_cal/corners_subscriber_publisher.h"
 #include "livox_hikcamera_cal/calibration_tool.h"
 
 using namespace livox_hikcamera_cal;
 
 int main(int argc, char *argv[])
 {
-	ros::init(argc, argv, "caliboard_cloud_detection_dynamic");
+	ros::init(argc, argv, "pointcloud_process_node");
 	ros::NodeHandle rosHandle;
 
 	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));		
@@ -43,6 +44,8 @@ int main(int argc, char *argv[])
 	PointcloudFilterReconfigure filterRecfg;
     RQTConfig rqtCfg;
 	RvizDrawing rviz_drawing;
+
+	CornersPublisherSubscriber corners_SUB_PUB(rosHandle, "livox_frame", "livox_hikcamera_cal/pointcloud_corners", "livox_hikcamera_cal/calibration_corners");
 
 
 	ros::Rate rate(30);
@@ -58,21 +61,24 @@ int main(int argc, char *argv[])
 		}
 		pc_process.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
 		// ROS_INFO("%ld\n", pointcloud_SUB_PUB.getPointcloudXYZI()->size());
-		rqtCfg.FilterConfig = filterRecfg.getConfigure();
-		float x_max = rqtCfg.FilterConfig.x_max;
-		float y_max = rqtCfg.FilterConfig.y_max;
-		float z_max = rqtCfg.FilterConfig.z_max;
-		float x_min = rqtCfg.FilterConfig.x_min;
-		float y_min = rqtCfg.FilterConfig.y_min;
-		float z_min = rqtCfg.FilterConfig.z_min;
-		pc_process.boxFilter(Eigen::Vector4f(x_min, y_min, z_min, 1.0), Eigen::Vector4f(x_max, y_max, z_max, 1.0));
+		rqtCfg.TransformFilterConfig = filterRecfg.getTransformConfigure();
+		float center_x = rqtCfg.TransformFilterConfig.center_x;
+		float center_y = rqtCfg.TransformFilterConfig.center_y;
+		float center_z = rqtCfg.TransformFilterConfig.center_z;
+		float length_x = rqtCfg.TransformFilterConfig.length_x;
+		float length_y = rqtCfg.TransformFilterConfig.length_y;
+		float length_z = rqtCfg.TransformFilterConfig.length_z;
+		float rotate_x = rqtCfg.TransformFilterConfig.rotate_x;
+		float rotate_y = rqtCfg.TransformFilterConfig.rotate_y;
+		float rotate_z = rqtCfg.TransformFilterConfig.rotate_z;
+		pc_process.boxFilter(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
 
 		pointcloud_SUB_PUB.publish(pc_process.getProcessedPointcloud());
 
 		if(filterRecfg.isUpdated())
 		{
 			pcl::PointCloud<pcl::PointXYZI>::Ptr box_corners(new pcl::PointCloud<pcl::PointXYZI>);
-			box_corners = pc_process.getFilterBoxCorners(Eigen::Vector4f(x_min, y_min, z_min, 1.0), Eigen::Vector4f(x_max, y_max, z_max, 1.0));
+			box_corners = pc_process.getFilterBoxCorners(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
 			
 			std::vector<geometry_msgs::Point> ros_box_corners;
 			for (const auto& box_corner : *box_corners) 
@@ -99,37 +105,10 @@ int main(int argc, char *argv[])
 			rviz_drawing.addLine("box_line_middle4", ros_box_corners.at(3), ros_box_corners.at(3 + 4), 0.05, 1.0, 1.0, 0.0);
 		}
 		
-
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
-		// corners = pc_process.extractNearestRectangleCorners(true, 50, 1.5);
 		corners = pc_process.extractNearestRectangleCorners(false, true, 0.6, 0.8, 0.01);
 		CalTool::sortPointByNormal(corners, pc_process.getPlaneNormals());
-		// if(pc_process.normalClusterExtraction(0.05235988, 0.1F, 90, 30, 200, 250000).size() == 0)
-        // {
-        //     continue;
-        // }
-        // if(pc_process.extractNearestClusterCloud().indices.size() == 0)
-        // {
-        //     continue;
-        // }
-        // // if(useStatisticalOutlierFilter)
-        // // {
-        // //     if(this->statisticalOutlierFilter() == 0)
-        // //     {
-        // //         return this->NOCLOUD();
-        // //     }
-        // // }
-        // if(pc_process.planeSegmentation().indices.size() == 0)
-        // {
-        //     continue;
-        // }
-        // // this->planeProjection();
-        // pc_process.pcaTransform();
-        // pc_process.findRectangleCornersInPCAPlane();
-        // pc_process.transformCornersTo3D();
-		// corners = pc_process.get3DRectCorners();
-
 
 		std::vector<geometry_msgs::Point> ros_corners;
 		for (const auto& corner : *corners) 
@@ -141,6 +120,8 @@ int main(int argc, char *argv[])
 			ros_corners.push_back(ros_point);
     	}
 
+		std_msgs::Header header;
+        corners_SUB_PUB.publish(ros_corners, corners_SUB_PUB.nowHeader());
 		
 
 		if(corners->size() == 0)

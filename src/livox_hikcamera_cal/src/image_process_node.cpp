@@ -21,6 +21,8 @@
 #include "livox_hikcamera_cal/conversion_bridge.h"
 #include "livox_hikcamera_cal/dynamic_reconfigure.h"
 #include "livox_hikcamera_cal/rviz_drawing.h"
+
+#include "livox_hikcamera_cal/corners_subscriber_publisher.h"
 #include "livox_hikcamera_cal/calibration_tool.h"
 
 #define PI 3.14159265358979324
@@ -30,74 +32,15 @@ using namespace std;
 using namespace livox_hikcamera_cal;
 using namespace livox_hikcamera_cal::image_opr;
 
-// vector<cv::Point3f> caliboard_corners;
-// cv::Point3f caliboard_corner1(-76.5, 40.0, 0);
-// cv::Point3f caliboard_corner2(152*3+67, 40.0, 0);
-// cv::Point3f caliboard_corner3(152*3+67, -151.5-150, 0);
-// cv::Point3f caliboard_corner4(-76.5, -151.5-150, 0);
-// (-76.5, -40.0, 0) (152*3+67, -40.0, 0) (152*3+67, 151.5+150, 0) (-76.5, 151.5+150, 0)
-
-bool g_exit = false;
-
 int fps(int deltaTime) 
 {
     int fps = static_cast<int>(1.f / deltaTime * 1000); 
     return fps;
 }
 
-cv::Mat testPoint;
-
-void imgStreamReceiveCallBack(const sensor_msgs::ImageConstPtr& pImgStream, ros::NodeHandle& rosHandle, image_transport::Publisher& imgStreamPub, ArucoM& arucoMarker, Draw3D& d3d)
-{
-    
-    struct timeval time;
-    time_t startTime, endTime;
-
-    gettimeofday(&time, NULL);
-    startTime = time.tv_sec*1000 + time.tv_usec/1000;
-
-    vector<cv::Mat> rvecs, tvecs;
-    pcl::Indices detectedIds;
-    cv_bridge::CvImagePtr cvPtr = cv_bridge::toCvCopy(pImgStream, std::string("bgr8"));
-    cv::Mat image = cvPtr->image;
-
-    
-    arucoMarker.ext_calib_multipul_arucos(image, rvecs, tvecs, detectedIds);
-
-    
-
-    // d3d.draw_ortho_coordinate_2d(image, d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs, tvecs);
-    
-    // arucoMarker.ext_calib_single_arucos(image, 544, rvecs, tvecs);
-
-    if(!(rvecs.empty() || tvecs.empty()))
-    {
-        
-        testPoint = tvecs[0];
-        // d3d.paste_image_perspective_3d(stackImage, image, true, true, rvecs, tvecs);
-        d3d.draw_ortho_coordinate_2d(image, rvecs, tvecs);
-        // d3d.draw_line_2d(image, tvecs[0].at<float>(0, 0), tvecs[0].at<float>(1, 0), tvecs[0].at<float>(2, 0), tvecs[1].at<float>(0, 0), tvecs[1].at<float>(1, 0), tvecs[1].at<float>(2, 0), cv::Scalar(0, 255, 0), d3d.getCameraMatrix(), d3d.getDisCoffes(), rvecs[0], tvecs[0]);
-        // d3d.draw_line_2d(image, caliboard_corner2, caliboard_corner3, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-        // d3d.draw_line_2d(image, caliboard_corner3, caliboard_corner4, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-        // d3d.draw_line_2d(image, caliboard_corner4, caliboard_corner1, cv::Scalar(0, 255, 0), rvecs[0], tvecs[0]);
-    }
-    
-    sensor_msgs::ImagePtr msg = cv_bridge::CvImage(cvPtr->header, "bgr8", image).toImageMsg();
-    imgStreamPub.publish(msg);
-    
-    gettimeofday(&time, NULL);
-    endTime = time.tv_sec*1000 + time.tv_usec/1000;
-
-    printf("FPS: %d\n", fps(endTime - startTime));
-    // cv::imshow("AR_image_stream", image);
-    // char keyInput = (char)cv::waitKey(1);
-    // if(keyInput == 27)
-    //     g_exit = true;
-}
-
 int main(int argc, char *argv[])
 {
-    ros::init(argc, argv, "Aruco_Video_Ext_Calib");
+    ros::init(argc, argv, "image_process_node");
     ros::NodeHandle rosHandle;
 
     cv::String packagePath;
@@ -172,14 +115,16 @@ int main(int argc, char *argv[])
     arucoMarker.setDetectionParameters();
     arucoMarker.create();
 
-    ImageProc img_process;
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 
     RvizDrawing rviz_drawing("image_process_node", "livox_frame");
     
     ImageSubscriberPublisher img_SUB_PUB;
+
+    CornersPublisherSubscriber corners_SUB_PUB(rosHandle, "livox_frame", "livox_hikcamera_cal/calibration_corners", "livox_hikcamera_cal/image_corners");
     
+
     ros::Rate rate(30);
 
 
@@ -232,7 +177,7 @@ int main(int argc, char *argv[])
         corners_plane.emplace_back(+caliboard_width/2, -caliboard_hight/2, 0);
         corners_plane.emplace_back(-caliboard_width/2, -caliboard_hight/2, 0);
 
-        std::cout << caliboard_width << " " << caliboard_hight << std::endl;
+        // std::cout << caliboard_width << " " << caliboard_hight << std::endl;
 
         ImageProc::transform_3d_points(corners_plane, corners_3d, rvec, tvecs[center_index]);
         // std::cout << corners_3d << std::endl;
@@ -266,6 +211,8 @@ int main(int argc, char *argv[])
 			ros_point.z = -corner.y / 1000;
 			ros_corners.push_back(ros_point);
     	}
+
+        corners_SUB_PUB.publish(ros_corners, corners_SUB_PUB.nowHeader());
 
         rviz_drawing.addText("corner_1", ros_corners.at(0), "1", 0.3, 1.0, 0.0, 0.0);
         rviz_drawing.addText("corner_2", ros_corners.at(1), "2", 0.3, 1.0, 0.0, 0.0);

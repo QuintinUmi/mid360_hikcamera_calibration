@@ -58,13 +58,13 @@ int main(int argc, char *argv[])
 		}
 		pc_process.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
 		// ROS_INFO("%ld\n", pointcloud_SUB_PUB.getPointcloudXYZI()->size());
-		rqtCfg.FilterConfig = filterRecfg.getConfigure();
-		float x_max = rqtCfg.FilterConfig.x_max;
-		float y_max = rqtCfg.FilterConfig.y_max;
-		float z_max = rqtCfg.FilterConfig.z_max;
-		float x_min = rqtCfg.FilterConfig.x_min;
-		float y_min = rqtCfg.FilterConfig.y_min;
-		float z_min = rqtCfg.FilterConfig.z_min;
+		rqtCfg.OrthoFilterConfig = filterRecfg.getOrthoConfigure();
+		float x_max = rqtCfg.OrthoFilterConfig.x_max;
+		float y_max = rqtCfg.OrthoFilterConfig.y_max;
+		float z_max = rqtCfg.OrthoFilterConfig.z_max;
+		float x_min = rqtCfg.OrthoFilterConfig.x_min;
+		float y_min = rqtCfg.OrthoFilterConfig.y_min;
+		float z_min = rqtCfg.OrthoFilterConfig.z_min;
 		pc_process.boxFilter(Eigen::Vector4f(x_min, y_min, z_min, 1.0), Eigen::Vector4f(x_max, y_max, z_max, 1.0));
 
 		pointcloud_SUB_PUB.publish(pc_process.getProcessedPointcloud());

@@ -389,10 +389,10 @@ void ArucoM::ext_calib_multipul_arucos(cv::Mat &inputImage, vector<cv::Vec3d> &r
         return;
     }
     for(indexId = 0; indexId < markerIds.size(); indexId++){
-        printf("Marker %d find!\n", markerIds[indexId]);
+        // printf("Marker %d find!\n", markerIds[indexId]);
         if(this->aruco_map.find(markerIds[indexId]) != this->aruco_map.end())
         {
-            printf("Marker %d is selected!\n", markerIds[indexId]);
+            // printf("Marker %d is selected!\n", markerIds[indexId]);
             std::vector<std::vector<cv::Point2f>> temp_markerCorners;
             temp_markerCorners.emplace_back(markerCorners[indexId]);
             selectedCorners.emplace_back(temp_markerCorners);

@@ -6,7 +6,7 @@
 #include <pcl/conversions.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <livox_hikcamera_cal/PointcloudFilterConfig.h>
+#include <livox_hikcamera_cal/OrthoFilterConfig.h>
 
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
@@ -42,12 +42,12 @@ int main(int argc, char *argv[])
             continue;
         }
 
-        rqtCfg.FilterConfig =  box_filter_reconfigure.getConfigure();
+        rqtCfg.OrthoFilterConfig =  box_filter_reconfigure.getOrthoConfigure();
 
         processed_pointcloud.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
         // processed_pointcloud.filter(Eigen::Vector4f(0.0f, 0.0f, 0.0f, 1.0f), Eigen::Vector4f(100.0f, 100.0f, 100.0f, 1.0f));
-        processed_pointcloud.boxFilter(Eigen::Vector4f(rqtCfg.FilterConfig.x_min, rqtCfg.FilterConfig.y_min, rqtCfg.FilterConfig.z_min, 1.0f), 
-                    Eigen::Vector4f(rqtCfg.FilterConfig.x_max, rqtCfg.FilterConfig.y_max, rqtCfg.FilterConfig.z_max, 1.0f));
+        processed_pointcloud.boxFilter(Eigen::Vector4f(rqtCfg.OrthoFilterConfig.x_min, rqtCfg.OrthoFilterConfig.y_min, rqtCfg.OrthoFilterConfig.z_min, 1.0f), 
+                    Eigen::Vector4f(rqtCfg.OrthoFilterConfig.x_max, rqtCfg.OrthoFilterConfig.y_max, rqtCfg.OrthoFilterConfig.z_max, 1.0f));
         // std::cout << pointcloud_SUB_PUB.getPointcloud()->header.frame_id << std::endl;
         pointcloud_SUB_PUB.publish(processed_pointcloud.getProcessedPointcloud());
 
