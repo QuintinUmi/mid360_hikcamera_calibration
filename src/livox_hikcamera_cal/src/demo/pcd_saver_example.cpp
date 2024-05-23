@@ -8,7 +8,7 @@
 #include <pcl/conversions.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <livox_hikcamera_cal/PointcloudFilterConfig.h>
+#include <livox_hikcamera_cal/OrthoFilterConfig.h>
 
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
 #include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
@@ -42,7 +42,7 @@ int main(int argc, char *argv[])
 
     pointcloud2_opr::PointCloud2Proc pcProc;
 
-    PointcloudFilterReconfigure filterRecfg;
+    PointcloudFilterReconfigure filterRecfg();
     RQTConfig rqtCfg;
 
     int loopRate = 20;

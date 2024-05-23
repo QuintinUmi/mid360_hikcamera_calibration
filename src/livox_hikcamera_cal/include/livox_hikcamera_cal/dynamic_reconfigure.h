@@ -10,14 +10,15 @@
 #include <pcl/conversions.h>
 
 #include <dynamic_reconfigure/server.h>
-#include <livox_hikcamera_cal/PointcloudFilterConfig.h>
+#include <livox_hikcamera_cal/OrthoFilterConfig.h>
+#include <livox_hikcamera_cal/TransformFilterConfig.h>
 
 
 namespace livox_hikcamera_cal
 {
     struct RQTConfig
     {
-        struct _FilterConfig_
+        struct _OrthoFilterConfig_
         {
             float x_min; 
             float x_max;
@@ -25,7 +26,20 @@ namespace livox_hikcamera_cal
             float y_max;
             float z_min;
             float z_max;
-        }FilterConfig;
+        }OrthoFilterConfig;
+
+        struct _TransformFilterConfig_
+        {
+            float center_x;
+            float center_y;
+            float center_z;
+            float length_x;
+            float length_y;
+            float length_z;
+            float rotate_x;
+            float rotate_y;
+            float rotate_z;
+        }TransformFilterConfig;
 
         // struct LidarConfig
         // {
@@ -38,18 +52,26 @@ namespace livox_hikcamera_cal
     class PointcloudFilterReconfigure 
     {
         public:
+
             PointcloudFilterReconfigure();
 
-            RQTConfig::_FilterConfig_ getConfigure();
+            RQTConfig::_OrthoFilterConfig_ getOrthoConfigure();
+            RQTConfig::_TransformFilterConfig_ getTransformConfigure();
             bool isUpdated();
 
         private:
-            void FilterReconfigureCallBack(livox_hikcamera_cal::PointcloudFilterConfig &pcFilterConfig, uint32_t level);
+
+            void OrthoFilterReconfigureCallBack(livox_hikcamera_cal::OrthoFilterConfig &pcOrthoFilterConfig, uint32_t level);
+            void TransformFilterReconfigureCallBack(livox_hikcamera_cal::TransformFilterConfig &pcTransformFilterConfig, uint32_t level);
 
         private:
-            RQTConfig::_FilterConfig_ filterCfg;
-            dynamic_reconfigure::Server<livox_hikcamera_cal::PointcloudFilterConfig> server;
-            dynamic_reconfigure::Server<livox_hikcamera_cal::PointcloudFilterConfig>::CallbackType f;
+
+            RQTConfig::_OrthoFilterConfig_ OrthoFilterCfg;
+            RQTConfig::_TransformFilterConfig_ TransformFilterConfig;
+            dynamic_reconfigure::Server<livox_hikcamera_cal::OrthoFilterConfig> ortho_filter_server;
+            dynamic_reconfigure::Server<livox_hikcamera_cal::OrthoFilterConfig>::CallbackType ortho_filter_f;
+            dynamic_reconfigure::Server<livox_hikcamera_cal::TransformFilterConfig> transform_filter_server;
+            dynamic_reconfigure::Server<livox_hikcamera_cal::TransformFilterConfig>::CallbackType transform_filter_f;
 
             bool is_updated_ = false;
             

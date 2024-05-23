@@ -31,7 +31,8 @@ find_package(aruco REQUIRED)
 find_package(PCL REQUIRED)
 
 generate_dynamic_reconfigure_options(
-  cfg/PointcloudFilter.cfg
+  cfg/OrthoFilter.cfg
+  cfg/TransformFilter.cfg
 )
 
 ## System dependencies are found with CMake's conventions
@@ -175,6 +176,11 @@ add_library(conversion_bridge_lib
   lib/conversion_bridge.cpp
 )
 
+add_library(corners_subscriber_publisher_lib
+  include include/livox_hikcamera_cal/corners_subscriber_publisher.h
+  lib/corners_subscriber_publisher.cpp
+)
+
 add_library(calibration_tool_lib
   include include/livox_hikcamera_cal/calibration_tool.h
   lib/calibration_tool.cpp
@@ -185,6 +191,7 @@ add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${c
 add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(rviz_drawing_3d_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(conversion_bridge_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(corners_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(calibration_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
@@ -201,6 +208,9 @@ target_link_libraries(conversion_bridge_lib
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
+)
+target_link_libraries(corners_subscriber_publisher_lib
+  ${catkin_LIBRARIES}
 )
 target_link_libraries(calibration_tool_lib
   ${catkin_LIBRARIES}
@@ -309,6 +319,7 @@ target_link_libraries(pointcloud_process_node
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
   calibration_tool_lib
+  corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
   dynamic_reconfigure_lib
@@ -319,6 +330,7 @@ target_link_libraries(image_process_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   calibration_tool_lib
+  corners_subscriber_publisher_lib
   image_subscriber_publisher_lib
   image_process_lib
   drawing_tool_lib
@@ -332,6 +344,7 @@ target_link_libraries(calibration_node
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
   calibration_tool_lib
+  corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   point_cloud_process_lib
   drawing_tool_lib
