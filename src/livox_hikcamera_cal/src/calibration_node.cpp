@@ -51,14 +51,6 @@ using namespace livox_hikcamera_cal;
 using namespace livox_hikcamera_cal::image_opr;
 using namespace livox_hikcamera_cal::pointcloud2_opr;
 
-// vector<cv::Point3f> caliboard_corners;
-// cv::Point3f caliboard_corner1(-76.5, 40.0, 0);
-// cv::Point3f caliboard_corner2(152*3+67, 40.0, 0);
-// cv::Point3f caliboard_corner3(152*3+67, -151.5-150, 0);
-// cv::Point3f caliboard_corner4(-76.5, -151.5-150, 0);
-// (-76.5, -40.0, 0) (152*3+67, -40.0, 0) (152*3+67, 151.5+150, 0) (-76.5, 151.5+150, 0)
-
-bool g_exit = false;
 
 int fps(int deltaTime) 
 {
@@ -66,12 +58,137 @@ int fps(int deltaTime)
     return fps;
 }
 
-cv::Mat testPoint;
+
+Eigen::Vector3d computeCentroid(const std::vector<geometry_msgs::Point32>& points) {
+    Eigen::Vector3d centroid(0, 0, 0);
+    for (const auto& p : points) {
+        centroid += Eigen::Vector3d(p.x, p.y, p.z);
+    }
+    centroid /= points.size();
+    return centroid;
+}
+void alignPointsToCentroid(const std::vector<geometry_msgs::Point32>& points, const Eigen::Vector3d& centroid, Eigen::MatrixXd& out) {
+    out.resize(3, points.size());
+    for (size_t i = 0; i < points.size(); ++i) {
+        out.col(i) = Eigen::Vector3d(points[i].x, points[i].y, points[i].z) - centroid;
+    }
+}
+Eigen::Matrix3d findRotation(const Eigen::MatrixXd& P, const Eigen::MatrixXd& Q) {
+    Eigen::Matrix3d H = P * Q.transpose();
+    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3d U = svd.matrixU();
+    Eigen::Matrix3d V = svd.matrixV();
+    return V * U.transpose();
+}
+Eigen::Vector3d findTranslation(const Eigen::Vector3d& centroidP, const Eigen::Vector3d& centroidQ, const Eigen::Matrix3d& R) {
+    return centroidQ - R * centroidP;
+}
+
+void transformPointCloud(const pcl::PointCloud<pcl::PointXYZI>& input,
+                         pcl::PointCloud<pcl::PointXYZI>& output,
+                         const Eigen::Matrix3f& R,
+                         const Eigen::Vector3f& t) {
+    output = input; // 复制原始点云结构
+    for (size_t i = 0; i < input.points.size(); i++) {
+        Eigen::Vector3f p(input.points[i].x, input.points[i].y, input.points[i].z);
+        p = R * p + t; // 应用旋转和平移
+        output.points[i].x = p.x();
+        output.points[i].y = p.y();
+        output.points[i].z = p.z();
+    }
+}
+
+void projectToImage(const pcl::PointCloud<pcl::PointXYZI>& cloud,
+                    const cv::Mat& cameraMatrix,
+                    const cv::Mat& distCoeffs,
+                    std::vector<cv::Point2f>& imagePoints) {
+    std::vector<cv::Point3f> cvPoints;
+    for (const auto& p : cloud.points) {
+        cvPoints.push_back(cv::Point3f(p.x, p.y, p.z));
+    }
+
+    cv::projectPoints(cvPoints, cv::Vec3d(0,0,0), cv::Vec3d(0,0,0), cameraMatrix, distCoeffs, imagePoints);
+}
+
+cv::Scalar intensityToColor(float intensity) {
+    int blue = std::max(0.0f, 255.0f - intensity*10);
+    int red = std::min(255.0f, intensity*10);
+    return cv::Scalar(blue, 0, red); // BGR格式
+}
+
+cv::Scalar zToColor(float z, float z_min, float z_max) {
+    // 将z值归一化到[0, 1]区间
+    float normalized = (z - z_min) / (z_max - z_min);
+
+    // 将归一化的值映射到Hue值（色调），这里使用240到0的范围，对应从蓝色到红色
+    // HSV中H的范围通常是0-360，但在OpenCV中Hue的范围是0-180
+    float hue = 240 - normalized * 240;
+
+    // 创建HSV颜色
+    cv::Mat hsvColor(1, 1, CV_8UC3, cv::Scalar(hue, 255, 255));
+
+    // 将HSV转换为RGB
+    cv::Mat rgbColor;
+    cvtColor(hsvColor, rgbColor, cv::COLOR_HSV2BGR);
+
+    // 返回RGB颜色
+    return cv::Scalar(rgbColor.at<cv::Vec3b>(0,0)[0], rgbColor.at<cv::Vec3b>(0,0)[1], rgbColor.at<cv::Vec3b>(0,0)[2]);
+}
+
+void drawPointsOnImage(const pcl::PointCloud<pcl::PointXYZI>& cloud,
+                       const std::vector<cv::Point2f>& points,
+                       cv::Mat& image) {
+    for (size_t i = 0; i < points.size(); i++) {
+        // auto color = intensityToColor(cloud.points[i].intensity);
+        auto color = zToColor(cloud.points[i].z, 0, 2500);
+        cv::circle(image, points[i], 3, color, -1); // 根据强度填充颜色
+    }
+}
+
+
+Eigen::Matrix4f createTransformMatrix() {
+    
+    float scale = 1000.0f;
+
+    Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+    transform(0, 0) = 0;
+    transform(0, 1) = -1 * scale;
+    transform(0, 2) = 0;
+    transform(1, 0) = 0;
+    transform(1, 1) = 0;
+    transform(1, 2) = -1 * scale;
+    transform(2, 0) = 1 * scale;
+    transform(2, 1) = 0;
+    transform(2, 2) = 0;
+    return transform;
+}
+
 
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "calibration_node");
     ros::NodeHandle rosHandle;
+
+    
+
+    std::string frame_id;
+    std::string topic_pc_sub;
+    std::string topic_pc_pub;
+    std::string topic_img_sub;
+    std::string topic_img_pub;
+	std::string topic_pc_corners_sub;
+    std::string topic_img_corners_sub;
+    std::string topic_corners_pub;
+    rosHandle.param("frame_id", frame_id, std::string("livox_frame"));
+	rosHandle.param("pointcloud_process_pc_sub_topic", topic_pc_sub, std::string("/livox/lidar"));
+    rosHandle.param("calibration_pc_pub_topic", topic_pc_pub, std::string("/livox_hikcamera_cal/pointcloud"));
+	rosHandle.param("image_process_img_sub_topic", topic_img_sub, std::string("/hikcamera/img_stream"));
+    rosHandle.param("calibration_img_pub_topic", topic_img_pub, std::string("/livox_hikcamera_cal/image"));
+    rosHandle.param("pointcloud_process_corners_pub_topic", topic_pc_corners_sub, std::string("/livox_hikcamera_cal/pointcloud_corners"));
+    rosHandle.param("image_process_img_pub_topic", topic_img_corners_sub, std::string("/livox_hikcamera_cal/image_corners"));
+    rosHandle.param("calibration_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/calibration_corners"));
+
+
 
     cv::String packagePath;
     if (!rosHandle.getParam("package_path", packagePath)) {
@@ -89,7 +206,6 @@ int main(int argc, char *argv[])
     std::string imageFormat;
     cv::String imageSavePath;
     cv::String imageLoadPath;
-    std::string topicImageStream;
 
     cv::Size chessboardSize;
     float squareSize;
@@ -99,7 +215,8 @@ int main(int argc, char *argv[])
     rosHandle.param("image_save_path", imageSavePath, cv::String("~/"));
     rosHandle.param("image_load_path", imageLoadPath, cv::String("~/"));
     rosHandle.param("image_format", imageFormat, cv::String("png"));
-    rosHandle.param("topic_image_stream", topicImageStream, std::string("/hikcamera/img_stream"));
+    rosHandle.param("topic_image_stream", topic_img_sub, std::string("/hikcamera/img_stream"));
+    // rosHandle.param("topic_image_stream", topicImageStream, std::string("/hikcamera/img_stream_proc"));
 
     int dictionaryName;
     vector<int> ids;
@@ -134,20 +251,26 @@ int main(int argc, char *argv[])
     std::cout << disCoffes << std::endl;
     std::cout << image_size << std::endl;
 
-    cv::aruco::DICT_6X6_1000;
-    ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, cameraMatrix, disCoffes);
-    arucoMarker.create();
+
+    PointCloudSubscriberPublisher pc_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);
+
+    ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub);
+
+    CornersPublisherSubscriber pc_corners_SUB_PUB(rosHandle, frame_id, topic_pc_corners_sub, topic_corners_pub);
+
+    CornersPublisherSubscriber img_corners_SUB_PUB(rosHandle, frame_id, topic_img_corners_sub, topic_corners_pub);
+
+
+    PointCloud2Proc pc_process(true);
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
-
-    RvizDrawing rviz_drawing("lidar_camera_calibration", "livox_frame");
-
-    PointCloud2Proc pc_process;
-    
-    PointCloudSubscriberPublisher pc_SUB_PUB;
     
     ros::Rate rate(30);
 
+
+    pcl::PointCloud<pcl::PointXYZI> originalCloud; // 填充你的点云数据
+    Eigen::Matrix3f R = Eigen::Matrix3f::Identity(); // 示例旋转矩阵
+    Eigen::Vector3f t(0.0f, -125.0f, 0.0f); // 示例平移向量
 
     while(ros::ok())
     {
@@ -161,7 +284,32 @@ int main(int argc, char *argv[])
 			continue;
 		}
 
-        // pcl::PointCloud<pcl::PointXYZI>::Ptr pc_corners = pc_process.extractNearestRectangleCorners(false);
+        auto img = img_SUB_PUB.getImage();
+
+        if(img.empty())
+        {
+            ROS_INFO("Waiting For Image Subscribe\n");
+            continue;
+        }
+
+        Eigen::Matrix4f transform = createTransformMatrix();
+
+        pcl::PointCloud<pcl::PointXYZI>::Ptr axis_transformedCloud(new pcl::PointCloud<pcl::PointXYZI>());
+
+        pcl::transformPointCloud(*pc_process.getProcessedPointcloud(), *axis_transformedCloud, transform);
+
+        pcl::PointCloud<pcl::PointXYZI> transformedCloud;
+        transformPointCloud(*axis_transformedCloud, transformedCloud, R, t);
+
+        std::vector<cv::Point2f> imagePoints;
+        projectToImage(transformedCloud, cameraMatrix, disCoffes, imagePoints);
+
+        drawPointsOnImage(transformedCloud, imagePoints, img);
+
+        // 显示图像
+        cv::imshow("Projected Points", img);
+        int key = cv::waitKey(1); // 毫秒级延时，非阻塞
+        if (key == 27) break; // 按 'ESC' 键退出
 
 
 

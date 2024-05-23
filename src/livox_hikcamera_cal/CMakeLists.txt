@@ -346,6 +346,7 @@ target_link_libraries(calibration_node
   calibration_tool_lib
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
+  image_subscriber_publisher_lib
   point_cloud_process_lib
   drawing_tool_lib
   aruco_tool_lib

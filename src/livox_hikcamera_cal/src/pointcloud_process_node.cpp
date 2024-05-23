@@ -39,13 +39,26 @@ int main(int argc, char *argv[])
 	ros::init(argc, argv, "pointcloud_process_node");
 	ros::NodeHandle rosHandle;
 
-	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));		
+
+	std::string frame_id;
+	std::string topic_pc_sub;
+    std::string topic_pc_pub;
+	std::string topic_corners_sub;
+    std::string topic_corners_pub;
+	rosHandle.param("frame_id", frame_id, std::string("livox_frame"));
+	rosHandle.param("pointcloud_process_pc_sub_topic", topic_pc_sub, std::string("/livox/lidar"));
+    rosHandle.param("pointcloud_process_pc_pub_topic", topic_pc_pub, std::string("/livox/lidar_proc"));
+	rosHandle.param("pointcloud_process_corners_sub_topic", topic_corners_sub, std::string("/livox_hikcamera_cal/calibration_corners"));
+    rosHandle.param("pointcloud_process_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/pointcloud_corners"));
+
+
+	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);		
 	pointcloud2_opr::PointCloud2Proc pc_process(true); // Remove Origin Point Published by livox_ros_driver2
 	PointcloudFilterReconfigure filterRecfg;
     RQTConfig rqtCfg;
 	RvizDrawing rviz_drawing;
 
-	CornersPublisherSubscriber corners_SUB_PUB(rosHandle, "livox_frame", "livox_hikcamera_cal/pointcloud_corners", "livox_hikcamera_cal/calibration_corners");
+	CornersPublisherSubscriber corners_SUB_PUB(rosHandle, frame_id, topic_corners_sub, topic_corners_pub);
 
 
 	ros::Rate rate(30);

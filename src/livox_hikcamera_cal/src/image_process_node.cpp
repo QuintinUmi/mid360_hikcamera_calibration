@@ -43,6 +43,21 @@ int main(int argc, char *argv[])
     ros::init(argc, argv, "image_process_node");
     ros::NodeHandle rosHandle;
 
+
+
+    std::string frame_id;
+    std::string topic_img_sub;
+    std::string topic_img_pub;
+	std::string topic_corners_sub;
+    std::string topic_corners_pub;
+    rosHandle.param("frame_id", frame_id, std::string("livox_frame"));
+	rosHandle.param("image_process_img_sub_topic", topic_img_sub, std::string("/hikcamera/img_stream"));
+    rosHandle.param("image_process_img_pub_topic", topic_img_pub, std::string("/hikcamera/img_stream_proc"));
+	rosHandle.param("image_process_corners_sub_topic", topic_corners_sub, std::string("/livox_hikcamera_cal/calibration_corners"));
+    rosHandle.param("image_process_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/image_corners"));
+
+
+
     cv::String packagePath;
     if (!rosHandle.getParam("package_path", packagePath)) {
         ROS_ERROR("Failed to get 'package_path' from the parameter server.");
@@ -59,7 +74,6 @@ int main(int argc, char *argv[])
     std::string imageFormat;
     cv::String imageSavePath;
     cv::String imageLoadPath;
-    std::string topicImageStream;
 
     cv::Size chessboardSize;
     float squareSize;
@@ -69,7 +83,6 @@ int main(int argc, char *argv[])
     rosHandle.param("image_save_path", imageSavePath, cv::String("~/"));
     rosHandle.param("image_load_path", imageLoadPath, cv::String("~/"));
     rosHandle.param("image_format", imageFormat, cv::String("png"));
-    rosHandle.param("topic_image_stream", topicImageStream, std::string("/hikcamera/img_stream"));
 
     int dictionaryName;
     vector<int> ids;
@@ -120,9 +133,9 @@ int main(int argc, char *argv[])
 
     RvizDrawing rviz_drawing("image_process_node", "livox_frame");
     
-    ImageSubscriberPublisher img_SUB_PUB;
+    ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub);
 
-    CornersPublisherSubscriber corners_SUB_PUB(rosHandle, "livox_frame", "livox_hikcamera_cal/calibration_corners", "livox_hikcamera_cal/image_corners");
+    CornersPublisherSubscriber corners_SUB_PUB(rosHandle, frame_id, topic_corners_sub, topic_corners_pub);
     
 
     ros::Rate rate(30);
