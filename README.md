@@ -3,6 +3,28 @@
 ## This pack is still constructing...
 
 
+### mid360 2hz publish
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_2hz_demo.gif" alt="Lidar_Camera_Joint_cal_2hz_demo.gif"/>
+</p>
+
+### mid360 5hz publish
+
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_5hz_demo.gif" alt="Lidar_Camera_Joint_cal_5hz_demo.gif"/>
+</p>
+
+### mid360 10hz publish
+
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_10hz_demo.gif" alt="Lidar_Camera_Joint_cal_10hz_demo.gif"/>
+</p>
+
+
+
+
+
+
 ### mid360 5hz publish
 
 <p align="center">
@@ -17,11 +39,7 @@
 </p>
 
 
-<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/lidar_camera_cal1_compressed.gif" alt="lidar_camera_cal1_compressed.gif"/>
-
-<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/cal2.gif" alt="caliborad_detection.gif"/>
-
-<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliborad_detection.png" alt="caliborad_detection.gif"/>
+<img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/QuintinUmi/doc/img/caliborad_detection.png" alt="caliborad_detection.png"/>
 
 
         
