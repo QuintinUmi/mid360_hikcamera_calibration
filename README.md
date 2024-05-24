@@ -3,18 +3,19 @@
 ## This pack is still constructing...
 
 
-### mid360 2hz publish
+### ONLINE Joint Calibration -- mid360 2hz publish
+##### Calibration is completed immediately after pressing enter
 <p align="center">
         <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_2hz_demo.gif" alt="Lidar_Camera_Joint_cal_2hz_demo.gif"/>
 </p>
 
-### mid360 5hz publish
+### ONLINE Joint Calibration -- mid360 5hz publish
 
 <p align="center">
         <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_5hz_demo.gif" alt="Lidar_Camera_Joint_cal_5hz_demo.gif"/>
 </p>
 
-### mid360 10hz publish
+### ONLINE Joint Calibration -- mid360 10hz publish
 
 <p align="center">
         <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_10hz_demo.gif" alt="Lidar_Camera_Joint_cal_10hz_demo.gif"/>
