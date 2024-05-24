@@ -8,7 +8,7 @@ namespace livox_hikcamera_cal
 {
     CornersPublisherSubscriber::CornersPublisherSubscriber()
     {
-        this->node_handle = ros::NodeHandle();
+        this->node_handle = ros::NodeHandle("CornersPublisherSubscriber");
         this->frame_id = std::string("livox_frame");
         this->subscribe_topic = std::string("/livox_hikcamera_cal/corners_sub");
         this->publish_topic = std::string("/livox_hikcamera_cal/corners_pub");
@@ -35,13 +35,13 @@ namespace livox_hikcamera_cal
     {
         
         this->corners_SUB = node_handle.subscribe<geometry_msgs::PolygonStamped>(this->subscribe_topic, 10, &CornersPublisherSubscriber::CornersSubCallBack, this);
-        printf("Init Corners Subscriber Success!\n");
+        printf("Init Corners Subscriber [%s] Success!\n", this->subscribe_topic.c_str());
     }
 
     void CornersPublisherSubscriber::init_publishers()
     {
         this->corners_PUB = node_handle.advertise<geometry_msgs::PolygonStamped>(this->publish_topic, 10);
-        printf("Init Corners Publisher Success!\n");
+        printf("Init Corners Publisher [%s] Success!\n", this->subscribe_topic.c_str());
     }
 
     geometry_msgs::Point CornersPublisherSubscriber::convertPoint32ToPoint(const geometry_msgs::Point32& point32)
@@ -83,7 +83,6 @@ namespace livox_hikcamera_cal
     }
     std::vector<geometry_msgs::Point32> CornersPublisherSubscriber::getCornersPoints32()
     {
-
         return this->received_corners_.polygon.points;
     }
     std::vector<geometry_msgs::Point> CornersPublisherSubscriber::getCornersPoints()

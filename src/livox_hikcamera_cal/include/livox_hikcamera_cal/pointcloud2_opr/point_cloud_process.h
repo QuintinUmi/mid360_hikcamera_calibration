@@ -57,6 +57,7 @@ namespace livox_hikcamera_cal
                 pcl::PointCloud<pcl::PointXYZI>::Ptr get3DRectCorners();
 
 
+                void PassThroughFilter(std::string axis, float min, float max);
                 void boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive=false);
                 void boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
                                 float angle_x=0.0, float angle_y=0.0, float angle_z=0.0, bool negetive=false);

@@ -1,15 +1,4 @@
 #include <ros/ros.h>
-#include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 #include <boost/filesystem.hpp>
 
 #include <sensor_msgs/PointCloud2.h>
@@ -59,30 +48,52 @@ int fps(int deltaTime)
 }
 
 
-Eigen::Vector3d computeCentroid(const std::vector<geometry_msgs::Point32>& points) {
-    Eigen::Vector3d centroid(0, 0, 0);
+void TransformCorners(std::vector<geometry_msgs::Point32>& points)
+{
+    float scale = 1000.0f;
+
+    for(auto& point:points)
+    {
+        geometry_msgs::Point32 transPoint;
+        transPoint.x = -point.y * scale;
+        transPoint.y = -point.z * scale;
+        transPoint.z = point.x * scale;
+        point = transPoint;
+    }
+}
+
+Eigen::Vector3f computeCentroid(const std::vector<geometry_msgs::Point32>& points) {
+    Eigen::Vector3f centroid(0, 0, 0);
     for (const auto& p : points) {
-        centroid += Eigen::Vector3d(p.x, p.y, p.z);
+        centroid += Eigen::Vector3f(p.x, p.y, p.z);
     }
     centroid /= points.size();
     return centroid;
 }
-void alignPointsToCentroid(const std::vector<geometry_msgs::Point32>& points, const Eigen::Vector3d& centroid, Eigen::MatrixXd& out) {
+void alignPointsToCentroid(const std::vector<geometry_msgs::Point32>& points, const Eigen::Vector3f& centroid, Eigen::MatrixXf& out) {
     out.resize(3, points.size());
     for (size_t i = 0; i < points.size(); ++i) {
-        out.col(i) = Eigen::Vector3d(points[i].x, points[i].y, points[i].z) - centroid;
+        out.col(i) = Eigen::Vector3f(points[i].x, points[i].y, points[i].z) - centroid;
     }
 }
-Eigen::Matrix3d findRotation(const Eigen::MatrixXd& P, const Eigen::MatrixXd& Q) {
-    Eigen::Matrix3d H = P * Q.transpose();
-    Eigen::JacobiSVD<Eigen::MatrixXd> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    Eigen::Matrix3d U = svd.matrixU();
-    Eigen::Matrix3d V = svd.matrixV();
+Eigen::Matrix3f findRotation(const Eigen::MatrixXf& P, const Eigen::MatrixXf& Q) {
+    Eigen::Matrix3f H = P * Q.transpose();
+    Eigen::JacobiSVD<Eigen::MatrixXf> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3f U = svd.matrixU();
+    Eigen::Matrix3f V = svd.matrixV();
+
+    // Check and correct for reflection
+    if (U.determinant() * V.determinant() < 0) {
+        U.col(2) *= -1;  // V.col(2) *= -1
+    }
+
     return V * U.transpose();
 }
-Eigen::Vector3d findTranslation(const Eigen::Vector3d& centroidP, const Eigen::Vector3d& centroidQ, const Eigen::Matrix3d& R) {
+Eigen::Vector3f findTranslation(const Eigen::Vector3f& centroidP, const Eigen::Vector3f& centroidQ, const Eigen::Matrix3f& R) {
     return centroidQ - R * centroidP;
 }
+
+
 
 void transformPointCloud(const pcl::PointCloud<pcl::PointXYZI>& input,
                          pcl::PointCloud<pcl::PointXYZI>& output,
@@ -185,7 +196,7 @@ int main(int argc, char *argv[])
 	rosHandle.param("image_process_img_sub_topic", topic_img_sub, std::string("/hikcamera/img_stream"));
     rosHandle.param("calibration_img_pub_topic", topic_img_pub, std::string("/livox_hikcamera_cal/image"));
     rosHandle.param("pointcloud_process_corners_pub_topic", topic_pc_corners_sub, std::string("/livox_hikcamera_cal/pointcloud_corners"));
-    rosHandle.param("image_process_img_pub_topic", topic_img_corners_sub, std::string("/livox_hikcamera_cal/image_corners"));
+    rosHandle.param("image_process_corners_pub_topic", topic_img_corners_sub, std::string("/livox_hikcamera_cal/image_corners"));
     rosHandle.param("calibration_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/calibration_corners"));
 
 
@@ -268,9 +279,9 @@ int main(int argc, char *argv[])
     ros::Rate rate(30);
 
 
-    pcl::PointCloud<pcl::PointXYZI> originalCloud; // 填充你的点云数据
-    Eigen::Matrix3f R = Eigen::Matrix3f::Identity(); // 示例旋转矩阵
-    Eigen::Vector3f t(0.0f, -125.0f, 0.0f); // 示例平移向量
+    pcl::PointCloud<pcl::PointXYZI> originalCloud; 
+    Eigen::Matrix3f R = Eigen::Matrix3f::Identity(); 
+    Eigen::Vector3f t(0.0f, 0.0f, 0.0f); 
 
     while(ros::ok())
     {
@@ -292,27 +303,62 @@ int main(int argc, char *argv[])
             continue;
         }
 
+
+        
+
+
         Eigen::Matrix4f transform = createTransformMatrix();
 
         pcl::PointCloud<pcl::PointXYZI>::Ptr axis_transformedCloud(new pcl::PointCloud<pcl::PointXYZI>());
 
         pcl::transformPointCloud(*pc_process.getProcessedPointcloud(), *axis_transformedCloud, transform);
 
-        pcl::PointCloud<pcl::PointXYZI> transformedCloud;
-        transformPointCloud(*axis_transformedCloud, transformedCloud, R, t);
+        pcl::PointCloud<pcl::PointXYZI>::Ptr transformedCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        transformPointCloud(*axis_transformedCloud, *transformedCloud, R, t);
+
+        pc_process.setCloud(transformedCloud);
+        pc_process.PassThroughFilter("z", 0, 4000);
 
         std::vector<cv::Point2f> imagePoints;
-        projectToImage(transformedCloud, cameraMatrix, disCoffes, imagePoints);
+        projectToImage(*pc_process.getProcessedPointcloud(), cameraMatrix, disCoffes, imagePoints);
 
-        drawPointsOnImage(transformedCloud, imagePoints, img);
+        drawPointsOnImage(*pc_process.getProcessedPointcloud(), imagePoints, img);
 
         // 显示图像
         cv::imshow("Projected Points", img);
         int key = cv::waitKey(1); // 毫秒级延时，非阻塞
         if (key == 27) break; // 按 'ESC' 键退出
+        if (key == 13)
+        {
+            std::vector<geometry_msgs::Point32> pc_corners_raw = pc_corners_SUB_PUB.getCornersPoints32();
+            std::vector<geometry_msgs::Point32> img_corners_raw = img_corners_SUB_PUB.getCornersPoints32();
+
+            if(pc_corners_raw.empty() || img_corners_raw.empty())
+            {
+                ROS_INFO("No Corners Found\n");
+                continue;
+            }
+
+            TransformCorners(pc_corners_raw);
+            TransformCorners(img_corners_raw);
+
+            Eigen::Vector3f center_pc = computeCentroid(pc_corners_raw);
+            Eigen::Vector3f center_img = computeCentroid(img_corners_raw);
+
+            Eigen::MatrixXf pc_center_refer;
+            Eigen::MatrixXf img_center_refer;
+
+            alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
+            alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
+
+            R = findRotation(pc_center_refer, img_center_refer);
+            t = findTranslation(center_pc, center_img, R);
+
+            std::cout << R << std::endl << t << std::endl;
+        }
 
 
-
+        
         
 
         rate.sleep();

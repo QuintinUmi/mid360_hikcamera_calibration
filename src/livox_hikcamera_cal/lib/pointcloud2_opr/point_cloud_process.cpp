@@ -5,6 +5,7 @@
 #include <pcl/point_types.h>
 #include <pcl/PCLPointCloud2.h>
 #include <pcl/conversions.h>
+#include <pcl/filters/passthrough.h>
 #include <pcl/filters/crop_box.h>
 
 #include <pcl/search/impl/search.hpp>
@@ -155,6 +156,19 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
+    void PointCloud2Proc::PassThroughFilter(std::string axis, float min, float max)
+    {
+        pcl::PassThrough<pcl::PointXYZI> pass;
+        pass.setInputCloud(this->processed_cloud);          
+        pass.setFilterFieldName(axis);      
+        pass.setFilterLimits(0.0, FLT_MAX); 
+
+        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        pass.filter(*tempCloud);
+        this->processedCloudUpdate(tempCloud);
+
+        return;
+    }
     void PointCloud2Proc::boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive)
     {
         pcl::CropBox<pcl::PointXYZI> boxFilter;
@@ -307,7 +321,16 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->plane_coefficients->values = coefficients->values;
         this->processedCloudUpdate(cloud_plane);
 
-        this->plane_normals = Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]).normalized();
+
+
+        Eigen::Vector3f normal_(Eigen::Vector3f(coefficients->values[0], coefficients->values[1], coefficients->values[2]).normalized());
+
+        if (coefficients->values[3] < 0) 
+        {
+            normal_ = -normal_;
+        }
+
+        this->plane_normals = normal_;
             
         return inliers_;
     }
