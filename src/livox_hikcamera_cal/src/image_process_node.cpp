@@ -138,7 +138,7 @@ int main(int argc, char *argv[])
     CornersPublisherSubscriber corners_SUB_PUB(rosHandle, frame_id, topic_corners_sub, topic_corners_pub);
     
 
-    ros::Rate rate(30);
+    ros::Rate rate(50);
 
 
     while(ros::ok())
@@ -231,6 +231,30 @@ int main(int argc, char *argv[])
         rviz_drawing.addText("corner_2", ros_corners.at(1), "2", 0.3, 1.0, 0.0, 0.0);
         rviz_drawing.addText("corner_3", ros_corners.at(2), "3", 0.3, 1.0, 0.0, 0.0);
         rviz_drawing.addText("corner_4", ros_corners.at(3), "4", 0.3, 1.0, 0.0, 0.0);
+
+        Eigen::Vector3f plane_normal_(plane_normal.z(), -plane_normal.x(), -plane_normal.y());
+        plane_normal_ = plane_normal_.normalized();
+
+        Eigen::Vector3f center_point(0.0, 0.0, 0.0);
+        for(const auto& corner:ros_corners)
+        {
+            center_point[0] += corner.x;
+            center_point[1] += corner.y;
+            center_point[2] += corner.z;
+        }
+        center_point /= ros_corners.size();
+
+        float dotProduct = plane_normal_.dot(center_point);
+
+        if (dotProduct > 0) 
+        {
+            plane_normal_ = -plane_normal_;
+        }
+        rviz_drawing.addArrow("plane_normals", 
+                            center_point.x(),
+                            center_point.y(),
+                            center_point.z(),
+                            plane_normal_, 0.03, 0.06, 0.06, 1.0, 0.0, 0.0);
 
         rviz_drawing.publish();
 
