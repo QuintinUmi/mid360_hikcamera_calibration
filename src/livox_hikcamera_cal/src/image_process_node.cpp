@@ -149,7 +149,7 @@ int main(int argc, char *argv[])
 
         if(img.empty())
         {
-            ROS_INFO("Waiting For Image Subscribe\n");
+            // ROS_INFO("Waiting For Image Subscribe\n");
             continue;
         }
 

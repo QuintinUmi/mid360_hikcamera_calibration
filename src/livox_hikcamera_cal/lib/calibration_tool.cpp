@@ -25,11 +25,39 @@ CalTool::~CalTool()
 
 }
 
-void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal)
+void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, 
+                                bool negetive, const Eigen::Vector3f& ref_point)
 {
     if(points->empty())
     {
         return;
+    }
+
+    Eigen::Vector3f normal_;
+    Eigen::Vector3f center_point(0.0, 0.0, 0.0);
+
+    for(const auto& point:*points)
+    {
+        center_point[0] += point.x;
+        center_point[1] += point.y;
+        center_point[2] += point.z;
+    }
+    center_point /= points->size();
+
+    float dotProduct = normal.dot(center_point - ref_point);
+
+    if (dotProduct < 0) 
+    {
+        normal_ = -normal;
+    }
+    else
+    {
+        normal_ = normal;
+    }
+
+    if(negetive)
+    {
+        normal_ = -normal_;
     }
 
     pcl::PointXYZI center;
@@ -43,9 +71,9 @@ void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, con
     center.z /= points->points.size();
 
     Eigen::Vector3f orthogonal_vector;
-    float x_abs = std::abs(normal.x());
-    float y_abs = std::abs(normal.y());
-    float z_abs = std::abs(normal.z());
+    float x_abs = std::abs(normal_.x());
+    float y_abs = std::abs(normal_.y());
+    float z_abs = std::abs(normal_.z());
 
     if (x_abs <= y_abs && x_abs <= z_abs) {
         orthogonal_vector = Eigen::Vector3f(1.0, 0.0, 0.0);  
@@ -55,8 +83,8 @@ void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, con
         orthogonal_vector = Eigen::Vector3f(0.0, 0.0, 1.0);  
     }
 
-    Eigen::Vector3f ref_vector = normal.cross(orthogonal_vector).normalized(); 
-    Eigen::Vector3f plane_vector = normal.cross(ref_vector).normalized(); 
+    Eigen::Vector3f ref_vector = normal_.cross(orthogonal_vector).normalized(); 
+    Eigen::Vector3f plane_vector = normal_.cross(ref_vector).normalized(); 
 
     std::vector<std::pair<float, int>> angle_indices;
     float max_z = -std::numeric_limits<float>::max();
@@ -86,8 +114,36 @@ void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, con
     *points = sorted_cloud;
 
 }
-void CalTool::sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal)
+void CalTool::sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
+                                bool negetive, const Eigen::Vector3f& ref_point)
 {
+    Eigen::Vector3f normal_;
+    Eigen::Vector3f center_point(0.0, 0.0, 0.0);
+
+    for(const auto& point:points)
+    {
+        center_point[0] += point.x;
+        center_point[1] += point.y;
+        center_point[2] += point.z;
+    }
+    center_point /= points.size();
+
+    float dotProduct = normal.dot(center_point - ref_point);
+
+    if (dotProduct < 0) 
+    {
+        normal_ = -normal;
+    }
+    else
+    {
+        normal_ = normal;
+    }
+
+    if(negetive)
+    {
+        normal_ = -normal_;
+    }
+
     cv::Point3f center;
     for (const auto& p : points) {
         center.x += p.x;
@@ -99,9 +155,9 @@ void CalTool::sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::V
     center.z /= points.size();
 
     Eigen::Vector3f orthogonal_vector;
-    float x_abs = std::abs(normal.x());
-    float y_abs = std::abs(normal.y());
-    float z_abs = std::abs(normal.z());
+    float x_abs = std::abs(normal_.x());
+    float y_abs = std::abs(normal_.y());
+    float z_abs = std::abs(normal_.z());
 
     if (z_abs <= x_abs && z_abs <= y_abs) {
         orthogonal_vector = Eigen::Vector3f(0.0, 0.0, 1.0);  
@@ -111,8 +167,8 @@ void CalTool::sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::V
         orthogonal_vector = Eigen::Vector3f(1.0, 0.0, 0.0);  
     }
 
-    Eigen::Vector3f ref_vector = normal.cross(orthogonal_vector).normalized(); 
-    Eigen::Vector3f plane_vector = normal.cross(ref_vector).normalized(); 
+    Eigen::Vector3f ref_vector = normal_.cross(orthogonal_vector).normalized(); 
+    Eigen::Vector3f plane_vector = normal_.cross(ref_vector).normalized(); 
 
     std::vector<std::pair<float, int>> angle_indices;
     float min_y = std::numeric_limits<float>::max();

@@ -25,8 +25,10 @@ namespace livox_hikcamera_cal
             CalTool();
             ~CalTool();
 
-            static void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal);
-            static void sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal);
+            static void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal,
+                                            bool negetive=false, const Eigen::Vector3f& ref_point=Eigen::Vector3f(0.0, 0.0, 0.0));
+            static void sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
+                                            bool negetive=false, const Eigen::Vector3f& ref_point=Eigen::Vector3f(0.0, 0.0, 0.0));
 
             static int SolveSVD(pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud_point_list, vector<cv::Point3f> image_points_list,
                         Eigen::Matrix3d &R_output, Eigen::Vector3d &t_output);

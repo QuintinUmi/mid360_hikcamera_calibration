@@ -69,7 +69,7 @@ int main(int argc, char *argv[])
 
 		if(pointcloud_SUB_PUB.getPointcloudXYZI()->size() == 0 || !pointcloud_SUB_PUB.getPointcloudXYZI())
 		{
-			ROS_INFO("Waiting For Point Cloud Subscribe\n");
+			// ROS_INFO("Waiting For Point Cloud Subscribe\n");
 			continue;
 		}
 		pc_process.setCloud(pointcloud_SUB_PUB.getPointcloudXYZI());
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 		
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
-		corners = pc_process.extractNearestRectangleCorners(false, true, 0.6, 0.8, 0.01);
+		corners = pc_process.extractNearestRectangleCorners(false, true, 0.6, 0.8, 0.05);
 		CalTool::sortPointByNormal(corners, pc_process.getPlaneNormals());
 
 		std::vector<geometry_msgs::Point> ros_corners;
