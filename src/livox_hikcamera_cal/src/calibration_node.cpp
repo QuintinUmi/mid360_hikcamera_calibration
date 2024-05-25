@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 
 
 
-    cv::String packagePath;
+    std::string packagePath;
     if (!rosHandle.getParam("package_path", packagePath)) {
         ROS_ERROR("Failed to get 'package_path' from the parameter server.");
         return 1;
@@ -265,7 +265,57 @@ int main(int argc, char *argv[])
             pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
 
             std::cout << R << std::endl << t << std::endl;
+
+            command_handler.sendCommand("capture_complete");
+            command_handler.resetReceivedStatus();
         }
+        if(command_received == "undo" || command_received == "delete_once")
+        {
+            std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
+            std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
+
+            std::vector<geometry_msgs::Point32> pc_corners_raw;
+            std::vector<geometry_msgs::Point32> img_corners_raw;
+
+            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+
+            if(pc_corners_raw.empty() || img_corners_raw.empty())
+            {
+                ROS_INFO("No Corners Found\n");
+                continue;
+            }
+
+            Eigen::Vector3f center_pc = CalTool::computeCentroid(pc_corners_raw);
+            Eigen::Vector3f center_img = CalTool::computeCentroid(img_corners_raw);
+
+            Eigen::MatrixXf pc_center_refer;
+            Eigen::MatrixXf img_center_refer;
+
+            CalTool::alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
+            CalTool::alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
+
+            R = CalTool::findRotationByICP(pc_center_refer, img_center_refer);
+            t = CalTool::findTranslation(center_pc, center_img, R);
+
+            yaml_operator.writeExtrinsicsToYaml(R, t);
+
+            for(auto& pc_corner: pc_corners_rcv)
+            {
+                Eigen::Vector3f corner_trans(pc_corner.x, pc_corner.y, pc_corner.z);
+                corner_trans = R * corner_trans + t;
+                pc_corner.x = corner_trans.x();
+                pc_corner.y = corner_trans.y();
+                pc_corner.z = corner_trans.z();
+            }
+
+            pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
+
+            std::cout << R << std::endl << t << std::endl;
+
+            command_handler.sendCommand("undo_complete");
+            command_handler.resetReceivedStatus();
+        }
+
 
         cv::imshow("Projected Points", img);
         int key = cv::waitKey(1); 
@@ -279,6 +329,58 @@ int main(int argc, char *argv[])
 
             std::vector<geometry_msgs::Point32> pc_corners_raw;
             std::vector<geometry_msgs::Point32> img_corners_raw;
+
+            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+
+            if(pc_corners_raw.empty() || img_corners_raw.empty())
+            {
+                ROS_INFO("No Corners Found\n");
+                continue;
+            }
+
+            Eigen::Vector3f center_pc = CalTool::computeCentroid(pc_corners_raw);
+            Eigen::Vector3f center_img = CalTool::computeCentroid(img_corners_raw);
+
+            Eigen::MatrixXf pc_center_refer;
+            Eigen::MatrixXf img_center_refer;
+
+            CalTool::alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
+            CalTool::alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
+
+            R = CalTool::findRotationByICP(pc_center_refer, img_center_refer);
+            t = CalTool::findTranslation(center_pc, center_img, R);
+
+            yaml_operator.writeExtrinsicsToYaml(R, t);
+
+            for(auto& pc_corner: pc_corners_rcv)
+            {
+                Eigen::Vector3f corner_trans(pc_corner.x, pc_corner.y, pc_corner.z);
+                corner_trans = R * corner_trans + t;
+                pc_corner.x = corner_trans.x();
+                pc_corner.y = corner_trans.y();
+                pc_corner.z = corner_trans.z();
+            }
+
+            pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
+
+            std::cout << R << std::endl << t << std::endl;
+        }
+        if (key == 8)          // Press 'Enter' For Calibration
+        {
+            std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
+            std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
+
+            std::vector<geometry_msgs::Point32> pc_corners_raw;
+            std::vector<geometry_msgs::Point32> img_corners_raw;
+
+            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+
+            if (!pc_corners_raw.empty()) {
+                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-0);
+                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-1);
+                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-2);
+                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-3);
+            }
 
             csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
 

@@ -1,0 +1,7 @@
+<launch>
+    <param name="package_path" value="$(find livox_hikcamera_cal)"/>
+    <rosparam file="$(find livox_hikcamera_cal)/cfg/setup_caliboard.yaml" command="load"/>
+    <rosparam file="$(find livox_hikcamera_cal)/cfg/setup_ros.yaml" command="load"/>
+    <node pkg="livox_hikcamera_cal" type="controller_menu" name="controller_menu" output="screen"/>
+
+</launch>
