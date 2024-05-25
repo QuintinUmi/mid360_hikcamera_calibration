@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
 
 
 
-    cv::String packagePath;
+    std::string packagePath;
     if (!rosHandle.getParam("package_path", packagePath)) {
         ROS_ERROR("Failed to get 'package_path' from the parameter server.");
         return 1;

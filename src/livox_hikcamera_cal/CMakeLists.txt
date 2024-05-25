@@ -336,6 +336,9 @@ add_executable(pointcloud_process_node src/pointcloud_process_node.cpp)
 add_executable(image_process_node src/image_process_node.cpp)
 add_executable(calibration_node src/calibration_node.cpp)
 
+add_executable(controller_menu src/controller_menu.cpp)
+
+
 target_link_libraries(pointcloud_process_node
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
@@ -378,6 +381,13 @@ target_link_libraries(calibration_node
   CommandHandle_lib
   file_operator_lib
 )
+
+target_link_libraries(controller_menu
+  ${catkin_LIBRARIES}
+  CommandHandle_lib
+  file_operator_lib
+)
+
 
 
 

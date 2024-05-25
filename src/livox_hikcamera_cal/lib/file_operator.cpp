@@ -23,7 +23,6 @@ CsvOperator::~CsvOperator(){}
 void CsvOperator::setPath(std::string file_path)
 {
     this->file_path_ = file_path;
-    this->writePointsToCSVOverwrite(std::vector<geometry_msgs::Point32>(), std::vector<geometry_msgs::Point32>());
 }
 
 void CsvOperator::writePointsToCSVOverwrite(const std::vector<geometry_msgs::Point32>& group1, const std::vector<geometry_msgs::Point32>& group2) 
@@ -108,6 +107,9 @@ void CsvOperator::deleteRowFromCSV(size_t rowIndex)
 
 void CsvOperator::readPointsFromCSV(std::vector<geometry_msgs::Point32>& group1, std::vector<geometry_msgs::Point32>& group2) 
 {
+    group1.clear();
+    group2.clear();
+
     std::ifstream inFile(this->file_path_);
     if (!inFile.is_open()) 
     {

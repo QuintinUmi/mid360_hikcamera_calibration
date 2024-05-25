@@ -1,5 +1,5 @@
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 
 #include "livox_hikcamera_cal/CommandHandler.h"
 
@@ -25,10 +25,10 @@ CommandHandler::CommandHandler(ros::NodeHandle node_handle, std::string subscrib
     nh_ = node_handle;
 
     // Initialize subscriber
-    sub_ = nh_.subscribe(subscribe_topic, 10, &CommandHandler::CommandCallback, this);
+    sub_ = nh_.subscribe(subscribe_topic, 1000, &CommandHandler::CommandCallback, this);
 
     // Initialize publisher
-    pub_ = nh_.advertise<std_msgs::String>(publish_topic, 10);
+    pub_ = nh_.advertise<std_msgs::String>(publish_topic, 1000);
 
     received_status_ = false;
 }
@@ -43,9 +43,17 @@ void CommandHandler::sendCommand(const std::string &content)
 
 void CommandHandler::CommandCallback(const std_msgs::String::ConstPtr& msg)
 {
+    // latest_command_ = msg->data;
+    // ROS_INFO("Received command: %s", msg->data.c_str());
+    // this->received_status_ = true;
     latest_command_ = msg->data;
-    ROS_INFO("Received command: %s", msg->data.c_str());
+    ROS_INFO("Received command: %s", latest_command_.c_str());
     this->received_status_ = true;
+
+    // Debugging output
+    if (msg->data == "capture_complete") {
+        ROS_INFO("Capture complete received");
+    }
 }
 
 std::string CommandHandler::getCommand() const
