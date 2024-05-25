@@ -22,6 +22,12 @@ calibration_pc_pub_topic: /livox_hikcamera_cal/pointcloud
 calibration_img_pub_topic: /livox_hikcamera_cal/image
 calibration_corners_pub_topic: /livox_hikcamera_cal/calibration_corners
 
+calibration_command_sub_topic: /livox_hikcamera_cal/command_controller
+calibration_command_pub_topic: /livox_hikcamera_cal/command_cal_node
+
+
+pointset_save_path: data/point_set.csv
+extrinsics_save_path: cfg/extrinsics.yaml
 
 
 topic_image_stream: /hikcamera/img_stream

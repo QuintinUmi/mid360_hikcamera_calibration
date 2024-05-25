@@ -1,19 +1,12 @@
 #include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include "opencv2/opencv.hpp"  
 // #include "apriltag/apriltag.h"      
 #include <aruco/aruco.h>  
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -588,4 +581,195 @@ void Draw3D::draw_line_2d(cv::Mat &imgInputOutput, cv::Point3f point1, cv::Point
     cv::projectPoints(p3d, rvec, tvec, cameraMatrix, disCoffes, p2d);
     
     cv::line(imgInputOutput, p2d[0], p2d[1], color, 3);
+}
+
+
+cv::Scalar Draw3D::intensityToRainbowColor(float intensity, float min_intensity, float max_intensity) 
+{
+    const float span = max_intensity - min_intensity;
+    const float value = (span != 0) ? (intensity - min_intensity) / span : 1.0;
+
+    float h = (1.0 - value) * 280.0;  
+    float s = 1.0;
+    float v = 1.0;
+
+    int i = int(h / 60.0) % 6;
+    float f = h / 60.0 - i;
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+    float r, g, b;
+    switch (i) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return cv::Scalar(b * 255, g * 255, r * 255);  
+}
+cv::Scalar Draw3D::xToRainbowColor(float x, float min_x, float max_x) 
+{
+    const float span = max_x - min_x;
+    const float value = (span != 0) ? (x - min_x) / span : 1.0;
+
+    float h = (1.0 - value) * 280.0;  
+    float s = 1.0;
+    float v = 1.0;
+
+    int i = int(h / 60.0) % 6;
+    float f = h / 60.0 - i;
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+    float r, g, b;
+    switch (i) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return cv::Scalar(b * 255, g * 255, r * 255);  
+}
+cv::Scalar Draw3D::yToRainbowColor(float y, float min_y, float max_y) 
+{
+    const float span = max_y - min_y;
+    const float value = (span != 0) ? (y - min_y) / span : 1.0;
+
+    float h = (1.0 - value) * 280.0;  
+    float s = 1.0;
+    float v = 1.0;
+
+    int i = int(h / 60.0) % 6;
+    float f = h / 60.0 - i;
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+    float r, g, b;
+    switch (i) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return cv::Scalar(b * 255, g * 255, r * 255);  
+}
+cv::Scalar Draw3D::zToRainbowColor(float z, float min_z, float max_z) 
+{
+    const float span = max_z - min_z;
+    const float value = (span != 0) ? (z - min_z) / span : 1.0;
+
+    float h = (1.0 - value) * 280.0;  
+    float s = 1.0;
+    float v = 1.0;
+
+    int i = int(h / 60.0) % 6;
+    float f = h / 60.0 - i;
+    float p = v * (1 - s);
+    float q = v * (1 - s * f);
+    float t = v * (1 - s * (1 - f));
+    float r, g, b;
+    switch (i) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return cv::Scalar(b * 255, g * 255, r * 255);  
+}
+
+
+void Draw3D::projectPointsToImage(const pcl::PointCloud<pcl::PointXYZI>& cloud, std::vector<cv::Point2f>& imagePoints) 
+{
+    std::vector<cv::Point3f> cvPoints;
+    for (const auto& p : cloud.points) 
+    {
+        cvPoints.push_back(cv::Point3f(p.x, p.y, p.z));
+    }
+
+    cv::projectPoints(cvPoints, cv::Vec3d(0,0,0), cv::Vec3d(0,0,0), this->setCameraMatrix, this->setDisCoffes, imagePoints);
+}
+
+void Draw3D::drawPointsOnImageIntensity(const pcl::PointCloud<pcl::PointXYZI>& cloud,
+                                const std::vector<cv::Point2f>& points,
+                                cv::Mat& image) 
+{
+    float min_intensity = std::numeric_limits<float>::max();
+    float max_intensity = -std::numeric_limits<float>::max();
+
+    for (const auto& point : cloud.points) 
+    {
+        min_intensity = std::min(min_intensity, point.intensity);
+        max_intensity = std::max(max_intensity, point.intensity);
+    }
+
+    for (size_t i = 0; i < points.size(); i++) 
+    {
+        cv::Scalar color = Draw3D::intensityToRainbowColor(cloud.points[i].intensity, min_intensity, max_intensity);
+        cv::circle(image, points[i], 3, color, -1); 
+    }
+}
+void Draw3D::drawPointsOnImageX(const pcl::PointCloud<pcl::PointXYZI>& cloud,
+                                const std::vector<cv::Point2f>& points,
+                                cv::Mat& image) 
+{
+    float min_x = std::numeric_limits<float>::max();
+    float max_x = -std::numeric_limits<float>::max();
+
+    for (const auto& point : cloud.points) 
+    {
+        min_x = std::min(min_x, point.x);
+        max_x = std::max(max_x, point.x);
+    }
+
+    for (size_t i = 0; i < points.size(); i++) 
+    {
+        cv::Scalar color = Draw3D::intensityToRainbowColor(cloud.points[i].x, min_x, max_x);
+        cv::circle(image, points[i], 3, color, -1); 
+    }
+}
+void Draw3D::drawPointsOnImageY(const pcl::PointCloud<pcl::PointXYZI>& cloud,
+                                const std::vector<cv::Point2f>& points,
+                                cv::Mat& image) 
+{
+    float min_y = std::numeric_limits<float>::max();
+    float max_y = -std::numeric_limits<float>::max();
+
+    for (const auto& point : cloud.points) 
+    {
+        min_y = std::min(min_y, point.y);
+        max_y = std::max(max_y, point.y);
+    }
+
+    for (size_t i = 0; i < points.size(); i++) 
+    {
+        cv::Scalar color = Draw3D::intensityToRainbowColor(cloud.points[i].y, min_y, max_y);
+        cv::circle(image, points[i], 3, color, -1); 
+    }
+}
+void Draw3D::drawPointsOnImageZ(const pcl::PointCloud<pcl::PointXYZI>& cloud,
+                                const std::vector<cv::Point2f>& points,
+                                cv::Mat& image) 
+{
+    float min_z = std::numeric_limits<float>::max();
+    float max_z = -std::numeric_limits<float>::max();
+
+    for (const auto& point : cloud.points) 
+    {
+        min_z = std::min(min_z, point.z);
+        max_z = std::max(max_z, point.z);
+    }
+
+    for (size_t i = 0; i < points.size(); i++) 
+    {
+        cv::Scalar color = Draw3D::intensityToRainbowColor(cloud.points[i].z, min_z, max_z);
+        cv::circle(image, points[i], 3, color, -1); 
+    }
 }

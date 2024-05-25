@@ -147,6 +147,7 @@ include_directories(
   include
   ${catkin_INCLUDE_DIRS}
   ${OpenCV_INCLUDE_DIRS}
+  ${YAML_CPP_INCLUDE_DIR}
   ./include/livox_hikcamera_cal/
   /usr/local/include/
 )
@@ -186,6 +187,17 @@ add_library(calibration_tool_lib
   lib/calibration_tool.cpp
 )
 
+add_library(CommandHandle_lib
+  include include/livox_hikcamera_cal/CommandHandler.h
+  lib/CommandHandler.cpp
+)
+
+add_library(file_operator_lib
+  include include/livox_hikcamera_cal/file_operator.h
+  lib/file_operator.cpp
+)
+
+
 
 add_dependencies(dynamic_reconfigure_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
@@ -193,6 +205,8 @@ add_dependencies(rviz_drawing_3d_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catki
 add_dependencies(conversion_bridge_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(corners_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(calibration_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(CommandHandle_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+add_dependencies(file_operator_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 target_link_libraries(dynamic_reconfigure_lib
@@ -216,6 +230,13 @@ target_link_libraries(calibration_tool_lib
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
+)
+target_link_libraries(CommandHandle_lib
+  ${catkin_LIBRARIES}
+)
+target_link_libraries(file_operator_lib
+  ${catkin_LIBRARIES}
+  ${YAML_CPP_LIBRARIES}
 )
 
 
@@ -295,6 +316,7 @@ target_link_libraries(image_process_lib
 )
 target_link_libraries(drawing_tool_lib
   ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
 )
 target_link_libraries(aruco_tool_lib
   ${catkin_LIBRARIES}
@@ -353,6 +375,8 @@ target_link_libraries(calibration_node
   dynamic_reconfigure_lib
   rviz_drawing_3d_lib
   recorder_lib
+  CommandHandle_lib
+  file_operator_lib
 )
 
 

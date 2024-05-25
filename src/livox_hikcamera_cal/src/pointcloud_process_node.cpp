@@ -52,6 +52,14 @@ int main(int argc, char *argv[])
     rosHandle.param("pointcloud_process_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/pointcloud_corners"));
 
 
+	float caliboard_width;
+	float caliboard_height;
+	rosHandle.param("caliboard_width", caliboard_width, 800.0f);
+	rosHandle.param("caliboard_height", caliboard_height, 600.0f);
+	caliboard_width /= 1000;
+	caliboard_height /= 1000;
+
+
 	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);		
 	pointcloud2_opr::PointCloud2Proc pc_process(true); // Remove Origin Point Published by livox_ros_driver2
 	PointcloudFilterReconfigure filterRecfg;
@@ -120,8 +128,8 @@ int main(int argc, char *argv[])
 		
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
-		corners = pc_process.extractNearestRectangleCorners(false, true, 0.6, 0.8, 0.05);
-		CalTool::sortPointByNormal(corners, pc_process.getPlaneNormals());
+		corners = pc_process.extractNearestRectangleCorners(false, true, caliboard_width, caliboard_height, 0.05);
+		CalTool::sortPointByNormalWorldFrame(corners, pc_process.getPlaneNormals());
 
 		std::vector<geometry_msgs::Point> ros_corners;
 		for (const auto& corner : *corners) 

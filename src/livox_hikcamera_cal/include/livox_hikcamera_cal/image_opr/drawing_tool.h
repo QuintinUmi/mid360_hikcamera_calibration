@@ -2,21 +2,14 @@
 #define _3D_DRAWING_H_
 
 #include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include "opencv2/opencv.hpp"   
 // #include "apriltag/apriltag.h" 
 #include "opencv2/aruco/charuco.hpp"    
+
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_types.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -83,6 +76,18 @@ namespace livox_hikcamera_cal
                                     cv::Mat rvec, cv::Mat tvec, cv::Scalar color, cv::Mat cameraMatrix=cv::Mat(), cv::Mat disCoffes=cv::Mat());
                 void draw_line_2d(cv::Mat &imgInputOutput, cv::Point3f point1, cv::Point3f point2,
                                     cv::Mat rvec, cv::Mat tvec, cv::Scalar color, cv::Mat cameraMatrix=cv::Mat(), cv::Mat disCoffes=cv::Mat());
+
+
+                static cv::Scalar intensityToRainbowColor(float intensity, float min_intensity, float max_intensity);
+                static cv::Scalar xToRainbowColor(float x, float min_x, float max_x);
+                static cv::Scalar yToRainbowColor(float y, float min_y, float max_y);
+                static cv::Scalar zToRainbowColor(float z, float min_z, float max_z);
+
+                void projectPointsToImage(const pcl::PointCloud<pcl::PointXYZI>& cloud, std::vector<cv::Point2f>& imagePoints);
+                void drawPointsOnImageIntensity(const pcl::PointCloud<pcl::PointXYZI>& cloud, const std::vector<cv::Point2f>& points, cv::Mat& image);
+                void drawPointsOnImageX(const pcl::PointCloud<pcl::PointXYZI>& cloud, const std::vector<cv::Point2f>& points, cv::Mat& image);
+                void drawPointsOnImageY(const pcl::PointCloud<pcl::PointXYZI>& cloud, const std::vector<cv::Point2f>& points, cv::Mat& image);
+                void drawPointsOnImageZ(const pcl::PointCloud<pcl::PointXYZI>& cloud, const std::vector<cv::Point2f>& points, cv::Mat& image);
 
 
 

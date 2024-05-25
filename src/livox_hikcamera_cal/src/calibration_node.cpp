@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <geometry_msgs/Point32.h>
 #include <boost/filesystem.hpp>
 
 #include <sensor_msgs/PointCloud2.h>
@@ -32,6 +33,10 @@
 #include "livox_hikcamera_cal/corners_subscriber_publisher.h"
 #include "livox_hikcamera_cal/calibration_tool.h"
 
+#include "livox_hikcamera_cal/file_operator.h"
+
+#include "livox_hikcamera_cal/CommandHandler.h"
+
 #define PI 3.14159265358979324
 
 
@@ -48,133 +53,6 @@ int fps(int deltaTime)
 }
 
 
-void TransformCorners(std::vector<geometry_msgs::Point32>& points)
-{
-    float scale = 1000.0f;
-
-    for(auto& point:points)
-    {
-        geometry_msgs::Point32 transPoint;
-        transPoint.x = -point.y * scale;
-        transPoint.y = -point.z * scale;
-        transPoint.z = point.x * scale;
-        point = transPoint;
-    }
-}
-
-Eigen::Vector3f computeCentroid(const std::vector<geometry_msgs::Point32>& points) {
-    Eigen::Vector3f centroid(0, 0, 0);
-    for (const auto& p : points) {
-        centroid += Eigen::Vector3f(p.x, p.y, p.z);
-    }
-    centroid /= points.size();
-    return centroid;
-}
-void alignPointsToCentroid(const std::vector<geometry_msgs::Point32>& points, const Eigen::Vector3f& centroid, Eigen::MatrixXf& out) {
-    out.resize(3, points.size());
-    for (size_t i = 0; i < points.size(); ++i) {
-        out.col(i) = Eigen::Vector3f(points[i].x, points[i].y, points[i].z) - centroid;
-    }
-}
-Eigen::Matrix3f findRotation(const Eigen::MatrixXf& P, const Eigen::MatrixXf& Q) {
-    Eigen::Matrix3f H = P * Q.transpose();
-    Eigen::JacobiSVD<Eigen::MatrixXf> svd(H, Eigen::ComputeFullU | Eigen::ComputeFullV);
-    Eigen::Matrix3f U = svd.matrixU();
-    Eigen::Matrix3f V = svd.matrixV();
-
-    // Check and correct for reflection
-    if (U.determinant() * V.determinant() < 0) {
-        U.col(2) *= -1;  // V.col(2) *= -1
-    }
-
-    return V * U.transpose();
-}
-Eigen::Vector3f findTranslation(const Eigen::Vector3f& centroidP, const Eigen::Vector3f& centroidQ, const Eigen::Matrix3f& R) {
-    return centroidQ - R * centroidP;
-}
-
-
-
-void transformPointCloud(const pcl::PointCloud<pcl::PointXYZI>& input,
-                         pcl::PointCloud<pcl::PointXYZI>& output,
-                         const Eigen::Matrix3f& R,
-                         const Eigen::Vector3f& t) {
-    output = input; // 复制原始点云结构
-    for (size_t i = 0; i < input.points.size(); i++) {
-        Eigen::Vector3f p(input.points[i].x, input.points[i].y, input.points[i].z);
-        p = R * p + t; // 应用旋转和平移
-        output.points[i].x = p.x();
-        output.points[i].y = p.y();
-        output.points[i].z = p.z();
-    }
-}
-
-void projectToImage(const pcl::PointCloud<pcl::PointXYZI>& cloud,
-                    const cv::Mat& cameraMatrix,
-                    const cv::Mat& distCoeffs,
-                    std::vector<cv::Point2f>& imagePoints) {
-    std::vector<cv::Point3f> cvPoints;
-    for (const auto& p : cloud.points) {
-        cvPoints.push_back(cv::Point3f(p.x, p.y, p.z));
-    }
-
-    cv::projectPoints(cvPoints, cv::Vec3d(0,0,0), cv::Vec3d(0,0,0), cameraMatrix, distCoeffs, imagePoints);
-}
-
-cv::Scalar intensityToColor(float intensity) {
-    int blue = std::max(0.0f, 255.0f - intensity*10);
-    int red = std::min(255.0f, intensity*10);
-    return cv::Scalar(blue, 0, red); // BGR格式
-}
-
-cv::Scalar zToColor(float z, float z_min, float z_max) {
-    // 将z值归一化到[0, 1]区间
-    float normalized = (z - z_min) / (z_max - z_min);
-
-    // 将归一化的值映射到Hue值（色调），这里使用240到0的范围，对应从蓝色到红色
-    // HSV中H的范围通常是0-360，但在OpenCV中Hue的范围是0-180
-    float hue = 240 - normalized * 240;
-
-    // 创建HSV颜色
-    cv::Mat hsvColor(1, 1, CV_8UC3, cv::Scalar(hue, 255, 255));
-
-    // 将HSV转换为RGB
-    cv::Mat rgbColor;
-    cvtColor(hsvColor, rgbColor, cv::COLOR_HSV2BGR);
-
-    // 返回RGB颜色
-    return cv::Scalar(rgbColor.at<cv::Vec3b>(0,0)[0], rgbColor.at<cv::Vec3b>(0,0)[1], rgbColor.at<cv::Vec3b>(0,0)[2]);
-}
-
-void drawPointsOnImage(const pcl::PointCloud<pcl::PointXYZI>& cloud,
-                       const std::vector<cv::Point2f>& points,
-                       cv::Mat& image) {
-    for (size_t i = 0; i < points.size(); i++) {
-        // auto color = intensityToColor(cloud.points[i].intensity);
-        auto color = zToColor(cloud.points[i].z, 0, 2500);
-        cv::circle(image, points[i], 3, color, -1); // 根据强度填充颜色
-    }
-}
-
-
-Eigen::Matrix4f createTransformMatrix() {
-    
-    float scale = 1000.0f;
-
-    Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
-    transform(0, 0) = 0;
-    transform(0, 1) = -1 * scale;
-    transform(0, 2) = 0;
-    transform(1, 0) = 0;
-    transform(1, 1) = 0;
-    transform(1, 2) = -1 * scale;
-    transform(2, 0) = 1 * scale;
-    transform(2, 1) = 0;
-    transform(2, 2) = 0;
-    return transform;
-}
-
-
 int main(int argc, char *argv[])
 {
     ros::init(argc, argv, "calibration_node");
@@ -183,21 +61,34 @@ int main(int argc, char *argv[])
     
 
     std::string frame_id;
+
     std::string topic_pc_sub;
     std::string topic_pc_pub;
+
     std::string topic_img_sub;
     std::string topic_img_pub;
+
 	std::string topic_pc_corners_sub;
     std::string topic_img_corners_sub;
     std::string topic_corners_pub;
+
+    std::string topic_command_sub;
+    std::string topic_command_pub;
+
     rosHandle.param("frame_id", frame_id, std::string("livox_frame"));
+
 	rosHandle.param("pointcloud_process_pc_sub_topic", topic_pc_sub, std::string("/livox/lidar"));
     rosHandle.param("calibration_pc_pub_topic", topic_pc_pub, std::string("/livox_hikcamera_cal/pointcloud"));
+
 	rosHandle.param("image_process_img_sub_topic", topic_img_sub, std::string("/hikcamera/img_stream"));
     rosHandle.param("calibration_img_pub_topic", topic_img_pub, std::string("/livox_hikcamera_cal/image"));
+
     rosHandle.param("pointcloud_process_corners_pub_topic", topic_pc_corners_sub, std::string("/livox_hikcamera_cal/pointcloud_corners"));
     rosHandle.param("image_process_corners_pub_topic", topic_img_corners_sub, std::string("/livox_hikcamera_cal/image_corners"));
     rosHandle.param("calibration_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/calibration_corners"));
+
+    rosHandle.param("calibration_command_sub_topic", topic_command_sub, std::string("/livox_hikcamera_cal/command_controller"));
+    rosHandle.param("calibration_command_pub_topic", topic_command_pub, std::string("/livox_hikcamera_cal/command_cal_node"));
 
 
 
@@ -263,6 +154,13 @@ int main(int argc, char *argv[])
     std::cout << image_size << std::endl;
 
 
+    std::string csv_path;
+    std::string extrinsics_path;
+    rosHandle.param("pointset_save_path", csv_path, std::string("src/livox_hikcamera_cal/data/point_set.csv"));
+    rosHandle.param("extrinsics_save_path", extrinsics_path, std::string("src/livox_hikcamera_cal/cfg/extrinsics.yaml"));
+    
+
+
     PointCloudSubscriberPublisher pc_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);
 
     ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub);
@@ -275,6 +173,12 @@ int main(int argc, char *argv[])
     PointCloud2Proc pc_process(true);
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
+
+    CsvOperator csv_operator(csv_path);
+    YamlOperator yaml_operator(extrinsics_path);
+
+    CommandHandler command_handler(rosHandle, topic_command_sub, topic_command_pub);
+
     
     ros::Rate rate(30);
 
@@ -291,7 +195,7 @@ int main(int argc, char *argv[])
 
         if(pc_SUB_PUB.getPointcloudXYZI()->size() == 0 || !pc_SUB_PUB.getPointcloudXYZI())
 		{
-			ROS_INFO("Waiting For Point Cloud Subscribe\n");
+			// ROS_INFO("Waiting For Point Cloud Subscribe\n");
 			continue;
 		}
 
@@ -299,39 +203,35 @@ int main(int argc, char *argv[])
 
         if(img.empty())
         {
-            ROS_INFO("Waiting For Image Subscribe\n");
+            // ROS_INFO("Waiting For Image Subscribe\n");
             continue;
         }
 
-
-        
-
-
-        Eigen::Matrix4f transform = createTransformMatrix();
-
-        pcl::PointCloud<pcl::PointXYZI>::Ptr axis_transformedCloud(new pcl::PointCloud<pcl::PointXYZI>());
-
-        pcl::transformPointCloud(*pc_process.getProcessedPointcloud(), *axis_transformedCloud, transform);
-
-        pcl::PointCloud<pcl::PointXYZI>::Ptr transformedCloud(new pcl::PointCloud<pcl::PointXYZI>);
-        transformPointCloud(*axis_transformedCloud, *transformedCloud, R, t);
-
-        pc_process.setCloud(transformedCloud);
+        pc_process.transform(R, t);
+        pc_process.scaleTo(1000.0f);
         pc_process.PassThroughFilter("z", 0, 4000);
 
         std::vector<cv::Point2f> imagePoints;
-        projectToImage(*pc_process.getProcessedPointcloud(), cameraMatrix, disCoffes, imagePoints);
 
-        drawPointsOnImage(*pc_process.getProcessedPointcloud(), imagePoints, img);
+        d3d.projectPointsToImage(*pc_process.getProcessedPointcloud(), imagePoints);
 
-        // 显示图像
-        cv::imshow("Projected Points", img);
-        int key = cv::waitKey(1); // 毫秒级延时，非阻塞
-        if (key == 27) break; // 按 'ESC' 键退出
-        if (key == 13)
+        d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img);
+
+
+
+        std::string command_received = command_handler.getCommand();
+
+        if(command_received == "capture")
         {
-            std::vector<geometry_msgs::Point32> pc_corners_raw = pc_corners_SUB_PUB.getCornersPoints32();
-            std::vector<geometry_msgs::Point32> img_corners_raw = img_corners_SUB_PUB.getCornersPoints32();
+            std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
+            std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
+
+            csv_operator.writePointsToCSVAppend(pc_corners_rcv, img_corners_rcv);
+
+            std::vector<geometry_msgs::Point32> pc_corners_raw;
+            std::vector<geometry_msgs::Point32> img_corners_raw;
+
+            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
 
             if(pc_corners_raw.empty() || img_corners_raw.empty())
             {
@@ -339,20 +239,79 @@ int main(int argc, char *argv[])
                 continue;
             }
 
-            TransformCorners(pc_corners_raw);
-            TransformCorners(img_corners_raw);
-
-            Eigen::Vector3f center_pc = computeCentroid(pc_corners_raw);
-            Eigen::Vector3f center_img = computeCentroid(img_corners_raw);
+            Eigen::Vector3f center_pc = CalTool::computeCentroid(pc_corners_raw);
+            Eigen::Vector3f center_img = CalTool::computeCentroid(img_corners_raw);
 
             Eigen::MatrixXf pc_center_refer;
             Eigen::MatrixXf img_center_refer;
 
-            alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
-            alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
+            CalTool::alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
+            CalTool::alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
 
-            R = findRotation(pc_center_refer, img_center_refer);
-            t = findTranslation(center_pc, center_img, R);
+            R = CalTool::findRotationByICP(pc_center_refer, img_center_refer);
+            t = CalTool::findTranslation(center_pc, center_img, R);
+
+            yaml_operator.writeExtrinsicsToYaml(R, t);
+
+            for(auto& pc_corner: pc_corners_rcv)
+            {
+                Eigen::Vector3f corner_trans(pc_corner.x, pc_corner.y, pc_corner.z);
+                corner_trans = R * corner_trans + t;
+                pc_corner.x = corner_trans.x();
+                pc_corner.y = corner_trans.y();
+                pc_corner.z = corner_trans.z();
+            }
+
+            pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
+
+            std::cout << R << std::endl << t << std::endl;
+        }
+
+        cv::imshow("Projected Points", img);
+        int key = cv::waitKey(1); 
+        if (key == 27) break;   // Press 'ESC' For Exit
+        if (key == 13)          // Press 'Enter' For Calibration
+        {
+            std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
+            std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
+
+            csv_operator.writePointsToCSVAppend(pc_corners_rcv, img_corners_rcv);
+
+            std::vector<geometry_msgs::Point32> pc_corners_raw;
+            std::vector<geometry_msgs::Point32> img_corners_raw;
+
+            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+
+            if(pc_corners_raw.empty() || img_corners_raw.empty())
+            {
+                ROS_INFO("No Corners Found\n");
+                continue;
+            }
+
+            Eigen::Vector3f center_pc = CalTool::computeCentroid(pc_corners_raw);
+            Eigen::Vector3f center_img = CalTool::computeCentroid(img_corners_raw);
+
+            Eigen::MatrixXf pc_center_refer;
+            Eigen::MatrixXf img_center_refer;
+
+            CalTool::alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
+            CalTool::alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
+
+            R = CalTool::findRotationByICP(pc_center_refer, img_center_refer);
+            t = CalTool::findTranslation(center_pc, center_img, R);
+
+            yaml_operator.writeExtrinsicsToYaml(R, t);
+
+            for(auto& pc_corner: pc_corners_rcv)
+            {
+                Eigen::Vector3f corner_trans(pc_corner.x, pc_corner.y, pc_corner.z);
+                corner_trans = R * corner_trans + t;
+                pc_corner.x = corner_trans.x();
+                pc_corner.y = corner_trans.y();
+                pc_corner.z = corner_trans.z();
+            }
+
+            pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
 
             std::cout << R << std::endl << t << std::endl;
         }

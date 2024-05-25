@@ -156,6 +156,40 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr PointCloud2Proc::getColorPointCloudIntensity() 
+    {
+        pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+        if (this->processed_cloud->empty())
+            return colored_cloud;
+
+        float min_intensity = std::numeric_limits<float>::max();
+        float max_intensity = -std::numeric_limits<float>::max();
+
+        colored_cloud->reserve(this->processed_cloud->size());
+        for (const auto& point : this->processed_cloud->points) 
+        {
+            min_intensity = std::min(min_intensity, point.intensity);
+            max_intensity = std::max(max_intensity, point.intensity);
+        }
+
+        float range = max_intensity - min_intensity;
+        if (range == 0.0f) range = 1.0f;  
+
+        for (const auto& point : this->processed_cloud->points) {
+            uint8_t intensity_value = static_cast<uint8_t>((point.intensity - min_intensity) / range * 255.0);
+            pcl::PointXYZRGB colored_point;
+            colored_point.x = point.x;
+            colored_point.y = point.y;
+            colored_point.z = point.z;
+            colored_point.r = colored_point.g = colored_point.b = intensity_value;  
+            colored_cloud->push_back(colored_point);
+        }
+
+        return colored_cloud;
+    }
+
+
+
     void PointCloud2Proc::PassThroughFilter(std::string axis, float min, float max)
     {
         pcl::PassThrough<pcl::PointXYZI> pass;
@@ -398,8 +432,30 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
+    void PointCloud2Proc::scaleTo(float scale)
+    {
+        Eigen::Matrix4f scaleMatrix = Eigen::Matrix4f::Zero(); 
+        scaleMatrix(0,0) = scale;     
+        scaleMatrix(1,1) = scale;    
+        scaleMatrix(2,2) = scale;    
+        scaleMatrix(3,3) = 1;      
+
+        this->processedCloudTransform(this->processed_cloud, scaleMatrix);
+    }
+
     void PointCloud2Proc::transform(Eigen::Matrix4f transform_matrix)
     {
+        this->processedCloudTransform(this->processed_cloud, transform_matrix);
+
+        return;
+    }
+    void PointCloud2Proc::transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector3f translation_vector)
+    {
+        Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+        transform.linear() = rotation_matrix;
+        transform.translation() = translation_vector;
+
+        Eigen::Matrix4f transform_matrix = transform.matrix();
         this->processedCloudTransform(this->processed_cloud, transform_matrix);
 
         return;
@@ -411,6 +467,16 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->processedCloudTransform(this->processed_cloud, transform_matrix);
 
         return;
+    }
+    
+
+    void PointCloud2Proc::transformWorldToImg()
+    {
+        this->processedCloudTransform(this->processed_cloud, this->computeTransformMatrixWorldToImg());
+    }
+    void PointCloud2Proc::transformImgToWorld()
+    {
+        this->processedCloudTransform(this->processed_cloud, this->computeTransformMatrixImgToWorld());
     }
 
     void PointCloud2Proc::findRectangleCornersInPCAPlane()
@@ -676,6 +742,35 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return transform;
     }
 
+    Eigen::Matrix4f PointCloud2Proc::computeTransformMatrixWorldToImg()
+    {
+        float scale = 1000.0f;
+
+        Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+        transform(0, 0) = 0;
+        transform(0, 1) = -1 * scale;
+        transform(0, 2) = 0;
+        transform(1, 0) = 0;
+        transform(1, 1) = 0;
+        transform(1, 2) = -1 * scale;
+        transform(2, 0) = 1 * scale;
+        transform(2, 1) = 0;
+        transform(2, 2) = 0;
+        return transform;
+    }
+    Eigen::Matrix4f PointCloud2Proc::computeTransformMatrixImgToWorld()
+    {
+        float scale = 1 / 1000.0f;
+
+        Eigen::Matrix4f transform = Eigen::Matrix4f::Zero(); 
+        transform(0, 2) = 1 * scale;    
+        transform(1, 0) = -1 * scale;   
+        transform(2, 1) = -1 * scale;   
+        transform(3, 3) = 1;        
+
+        return transform;
+    }
+
     void PointCloud2Proc::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal)
     {
         pcl::PointXYZI center;
@@ -801,7 +896,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
     void PointCloud2Proc::processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix)
     {
-        if(cloud == this->processed_cloud)
+        if (cloud == this->processed_cloud)
         {
             pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
@@ -811,7 +906,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         {
             this->processed_cloud->clear();
             pcl::transformPointCloud(*cloud, *this->processed_cloud, transform_matrix);
-        }       
+        }
     }
 
     std::vector<std::string> PointCloud2Proc::iterateFilesFromPath(std::string folderPath)
