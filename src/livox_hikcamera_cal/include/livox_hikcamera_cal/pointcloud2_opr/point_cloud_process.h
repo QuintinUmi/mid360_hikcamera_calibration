@@ -56,6 +56,8 @@ namespace livox_hikcamera_cal
                 cv::Point2f* getPCAPlaneRectCorners();
                 pcl::PointCloud<pcl::PointXYZI>::Ptr get3DRectCorners();
 
+                pcl::PointCloud<pcl::PointXYZRGB>::Ptr getColorPointCloudIntensity();
+
 
                 void PassThroughFilter(std::string axis, float min, float max);
                 void boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive=false);
@@ -76,8 +78,12 @@ namespace livox_hikcamera_cal
                 void planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients);
                 void planeProjection(Eigen::Vector4f coefficient);
                 void pcaTransform();
+                void scaleTo(float scale);
                 void transform(Eigen::Matrix4f transform_matrix);
+                void transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector3f translation_matrix);
                 void transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
+                void transformWorldToImg();
+                void transformImgToWorld();
                 void findRectangleCornersInPCAPlane();
                 void optimizeRectangleCornersInPCAPlane(float constraint_width, float constraint_height, float optimize_offset_ratio = 0.05, float optimize_precision = 0.001);
                 void transformCornersTo3D();
@@ -95,7 +101,11 @@ namespace livox_hikcamera_cal
                 pcl::PointIndices computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters, Eigen::Vector4f referencePoint = Eigen::Vector4f(0.0, 0.0, 0.0, 0.0));
                 void computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector);
                 Eigen::Matrix4f computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix);
+                Eigen::Matrix4f computeTransformMatrixWorldToImg();
+                Eigen::Matrix4f computeTransformMatrixImgToWorld();
                 void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal);
+
+
             
                 void rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);
                 void processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);

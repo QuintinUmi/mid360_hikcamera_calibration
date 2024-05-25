@@ -1,14 +1,4 @@
 #include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include "opencv2/opencv.hpp"  

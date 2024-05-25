@@ -1,15 +1,4 @@
 #include <ros/ros.h>
-#include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 #include <boost/filesystem.hpp>
 
 #include <sensor_msgs/PointCloud2.h>

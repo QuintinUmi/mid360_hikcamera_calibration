@@ -1,4 +1,8 @@
+#include <fstream>
+
 #include <ros/ros.h>
+#include <geometry_msgs/Point.h>
+#include <geometry_msgs/Point32.h>
 
 #include <sensor_msgs/PointCloud2.h>
 #include <pcl_conversions/pcl_conversions.h>
@@ -10,6 +14,8 @@
 
 #include <Eigen/Dense>
 #include <Eigen/SVD>
+
+#include <yaml-cpp/yaml.h>
 
 #include "livox_hikcamera_cal/calibration_tool.h"
 
@@ -25,7 +31,11 @@ CalTool::~CalTool()
 
 }
 
-void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, 
+
+
+
+
+void CalTool::sortPointByNormalWorldFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, 
                                 bool negetive, const Eigen::Vector3f& ref_point)
 {
     if(points->empty())
@@ -114,91 +124,180 @@ void CalTool::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, con
     *points = sorted_cloud;
 
 }
-// void CalTool::sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
-//                                 bool negetive, const Eigen::Vector3f& ref_point)
-// {
-//     Eigen::Vector3f normal_;
-//     Eigen::Vector3f center_point(0.0, 0.0, 0.0);
+void CalTool::sortPointByNormalWorldFrame(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
+                                bool negetive, const Eigen::Vector3f& ref_point)
+{
+    Eigen::Vector3f normal_;
+    Eigen::Vector3f center_point(0.0, 0.0, 0.0);
 
-//     for(const auto& point:points)
-//     {
-//         center_point[0] += point.x;
-//         center_point[1] += point.y;
-//         center_point[2] += point.z;
-//     }
-//     center_point /= points.size();
+    for(const auto& point:points)
+    {
+        center_point[0] += point.x;
+        center_point[1] += point.y;
+        center_point[2] += point.z;
+    }
+    center_point /= points.size();
 
-//     float dotProduct = normal.dot(center_point - ref_point);
+    float dotProduct = normal.dot(center_point - ref_point);
 
-//     if (dotProduct < 0) 
-//     {
-//         normal_ = -normal;
-//     }
-//     else
-//     {
-//         normal_ = normal;
-//     }
+    if (dotProduct < 0) 
+    {
+        normal_ = -normal;
+    }
+    else
+    {
+        normal_ = normal;
+    }
 
-//     if(negetive)
-//     {
-//         normal_ = -normal_;
-//     }
+    if(negetive)
+    {
+        normal_ = -normal_;
+    }
 
-//     cv::Point3f center;
-//     for (const auto& p : points) {
-//         center.x += p.x;
-//         center.y += p.y;
-//         center.z += p.z;
-//     }
-//     center.x /= points.size();
-//     center.y /= points.size();
-//     center.z /= points.size();
+    cv::Point3f center;
+    for (const auto& p : points) {
+        center.x += p.x;
+        center.y += p.y;
+        center.z += p.z;
+    }
+    center.x /= points.size();
+    center.y /= points.size();
+    center.z /= points.size();
 
-//     Eigen::Vector3f orthogonal_vector;
-//     float x_abs = std::abs(normal_.x());
-//     float y_abs = std::abs(normal_.y());
-//     float z_abs = std::abs(normal_.z());
+    Eigen::Vector3f orthogonal_vector;
+    float x_abs = std::abs(normal_.x());
+    float y_abs = std::abs(normal_.y());
+    float z_abs = std::abs(normal_.z());
 
-//     if (x_abs <= y_abs && x_abs <= z_abs) {
-//         orthogonal_vector = Eigen::Vector3f(1.0, 0.0, 0.0);  
-//     } else if (y_abs <= x_abs && y_abs <= z_abs) {
-//         orthogonal_vector = Eigen::Vector3f(0.0, 1.0, 0.0);  
-//     } else {
-//         orthogonal_vector = Eigen::Vector3f(0.0, 0.0, 1.0);  
-//     }
+    if (x_abs <= y_abs && x_abs <= z_abs) {
+        orthogonal_vector = Eigen::Vector3f(1.0, 0.0, 0.0);  
+    } else if (y_abs <= x_abs && y_abs <= z_abs) {
+        orthogonal_vector = Eigen::Vector3f(0.0, 1.0, 0.0);  
+    } else {
+        orthogonal_vector = Eigen::Vector3f(0.0, 0.0, 1.0);  
+    }
 
-//     Eigen::Vector3f ref_vector = normal_.cross(orthogonal_vector).normalized(); 
-//     Eigen::Vector3f plane_vector = normal_.cross(ref_vector).normalized(); 
+    Eigen::Vector3f ref_vector = normal_.cross(orthogonal_vector).normalized(); 
+    Eigen::Vector3f plane_vector = normal_.cross(ref_vector).normalized(); 
 
-//     std::vector<std::pair<float, int>> angle_indices;
-//     float min_z = -std::numeric_limits<float>::max();
-//     int min_z_index = 0;
-//     for (int i = 0; i < points.size(); ++i) {
-//         const auto& p = points[i];
-//         if (p.y < min_z) {
-//             min_z = p.z;
-//             min_z_index = i;
-//         }
-//         Eigen::Vector3f vec(p.x - center.x, p.y - center.y, p.z - center.z);
-//         float angle = atan2(vec.dot(ref_vector), vec.dot(plane_vector)); 
-//         angle_indices.emplace_back(angle, i);
-//     }
+    std::vector<std::pair<float, int>> angle_indices;
+    float max_z = -std::numeric_limits<float>::max();
+    int max_z_index = 0;
+    for (int i = 0; i < points.size(); ++i) {
+        const auto& p = points[i];
+        if (p.y < max_z) {
+            max_z = p.z;
+            max_z_index = i;
+        }
+        Eigen::Vector3f vec(p.x - center.x, p.y - center.y, p.z - center.z);
+        float angle = atan2(vec.dot(ref_vector), vec.dot(plane_vector)); 
+        angle_indices.emplace_back(angle, i);
+    }
 
-//     std::sort(angle_indices.begin(), angle_indices.end());
+    std::sort(angle_indices.begin(), angle_indices.end());
 
-//     while (angle_indices.front().second != min_z_index) {
-//         std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
-//     }
+    while (angle_indices.front().second != max_z_index) {
+        std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
+    }
 
-//     std::vector<cv::Point3f> sorted_points;
-//     for (const auto& angle_index : angle_indices) {
-//         sorted_points.push_back(points[angle_index.second]);
-//     }
+    std::vector<cv::Point3f> sorted_points;
+    for (const auto& angle_index : angle_indices) {
+        sorted_points.push_back(points[angle_index.second]);
+    }
 
-//     points = sorted_points;
+    points = sorted_points;
 
-// }
-void CalTool::sortPointByNormal(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
+}
+void CalTool::sortPointByNormalImgFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, 
+                                bool negetive, const Eigen::Vector3f& ref_point)
+{
+    if(points->empty())
+    {
+        return;
+    }
+
+    Eigen::Vector3f normal_;
+    Eigen::Vector3f center_point(0.0, 0.0, 0.0);
+
+    for(const auto& point:*points)
+    {
+        center_point[0] += point.x;
+        center_point[1] += point.y;
+        center_point[2] += point.z;
+    }
+    center_point /= points->size();
+
+    float dotProduct = normal.dot(center_point - ref_point);
+
+    if (dotProduct < 0) 
+    {
+        normal_ = -normal;
+    }
+    else
+    {
+        normal_ = normal;
+    }
+
+    if(negetive)
+    {
+        normal_ = -normal_;
+    }
+
+    pcl::PointXYZI center;
+    for (const auto& p : points->points) {
+        center.x += p.x;
+        center.y += p.y;
+        center.z += p.z;
+    }
+    center.x /= points->points.size();
+    center.y /= points->points.size();
+    center.z /= points->points.size();
+
+    Eigen::Vector3f orthogonal_vector;
+    float x_abs = std::abs(normal_.x());
+    float y_abs = std::abs(normal_.y());
+    float z_abs = std::abs(normal_.z());
+
+    if (z_abs <= x_abs && z_abs <= y_abs) {
+        orthogonal_vector = Eigen::Vector3f(0.0, 0.0, 1.0);  
+    } else if (y_abs <= x_abs && y_abs <= z_abs) {
+        orthogonal_vector = Eigen::Vector3f(0.0, 1.0, 0.0);  
+    } else {
+        orthogonal_vector = Eigen::Vector3f(1.0, 0.0, 0.0);  
+    }
+
+    Eigen::Vector3f ref_vector = normal_.cross(orthogonal_vector).normalized(); 
+    Eigen::Vector3f plane_vector = normal_.cross(ref_vector).normalized(); 
+
+    std::vector<std::pair<float, int>> angle_indices;
+    float min_y = std::numeric_limits<float>::max();
+    int min_y_index = 0;
+    for (int i = 0; i < points->size(); ++i) {
+        const auto& p = points->points[i];
+        if (p.y < min_y) {
+            min_y = p.y;
+            min_y_index = i;
+        }
+        Eigen::Vector3f vec(p.x - center.x, p.y - center.y, p.z - center.z);
+        float angle = atan2(vec.dot(ref_vector), vec.dot(plane_vector)); 
+        angle_indices.emplace_back(angle, i);
+    }
+
+    std::sort(angle_indices.begin(), angle_indices.end());
+
+    while (angle_indices.front().second != min_y_index) {
+        std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
+    }
+
+    pcl::PointCloud<pcl::PointXYZI> sorted_cloud;
+    for (const auto& angle_index : angle_indices) {
+        sorted_cloud.push_back(points->points[angle_index.second]);
+    }
+
+    *points = sorted_cloud;
+
+}
+void CalTool::sortPointByNormalImgFrame(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
                                 bool negetive, const Eigen::Vector3f& ref_point)
 {
     Eigen::Vector3f normal_;
@@ -310,6 +409,81 @@ Eigen::Quaterniond CalTool::averageQuaternions(const std::vector<Eigen::Quaterni
 
     return Eigen::Quaterniond(max_eigen_vector(0), max_eigen_vector(1), max_eigen_vector(2), max_eigen_vector(3)).normalized();
 }
+
+
+
+
+
+
+void CalTool::transformPointsImgToWorld(std::vector<geometry_msgs::Point32>& points)
+{
+    float scale =  1 / 1000.0f;
+
+    for(auto& point:points)
+    {
+        geometry_msgs::Point32 world_point;
+        world_point.x = point.z * scale;
+        world_point.y = -point.x * scale;
+        world_point.z = -point.y * scale;
+        point = world_point;
+    }
+}
+void CalTool::transformPointsWorldToImg(std::vector<geometry_msgs::Point32>& points)
+{
+    float scale = 1000.0f;
+
+    for(auto& point:points)
+    {
+        geometry_msgs::Point32 image_point;
+        image_point.x = -point.y * scale;
+        image_point.y = -point.z * scale;
+        image_point.z = point.x * scale;
+        point = image_point;
+    }
+}
+
+
+Eigen::Vector3f CalTool::computeCentroid(const std::vector<geometry_msgs::Point32>& points) 
+{
+    Eigen::Vector3f centroid(0, 0, 0);
+    for(const auto& p : points) 
+    {
+        centroid += Eigen::Vector3f(p.x, p.y, p.z);
+    }
+    centroid /= points.size();
+    return centroid;
+}
+
+void CalTool::alignPointsToCentroid(const std::vector<geometry_msgs::Point32>& points, const Eigen::Vector3f& centroid, Eigen::MatrixXf& points_matrix) 
+{
+    points_matrix.resize(3, points.size());
+    for (size_t i = 0; i < points.size(); ++i) 
+    {
+        points_matrix.col(i) = Eigen::Vector3f(points[i].x, points[i].y, points[i].z) - centroid;
+    }
+}
+
+Eigen::Matrix3f CalTool::findRotationByICP(const Eigen::MatrixXf& X, const Eigen::MatrixXf& Y) 
+{
+    Eigen::Matrix3f S = X * Y.transpose();
+    Eigen::JacobiSVD<Eigen::MatrixXf> svd(S, Eigen::ComputeFullU | Eigen::ComputeFullV);
+    Eigen::Matrix3f U = svd.matrixU();
+    Eigen::Matrix3f V = svd.matrixV();
+
+    if (U.determinant() * V.determinant() < 0) {
+        U.col(2) *= -1;  
+    }
+
+    return V * U.transpose();
+}
+
+Eigen::Vector3f CalTool::findTranslation(const Eigen::Vector3f& centroidX, const Eigen::Vector3f& centroidY, const Eigen::Matrix3f& R) 
+{
+    return centroidY - R * centroidX;
+}
+
+
+
 
 
 int CalTool::SolveSVD(pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud_point_list, vector<cv::Point3f> image_points_list,

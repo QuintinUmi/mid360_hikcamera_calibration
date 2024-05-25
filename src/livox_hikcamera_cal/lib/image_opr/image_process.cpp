@@ -1,14 +1,4 @@
 #include <ros/ros.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <pthread.h>
-#include <iostream>
-#include <fstream>
-#include <ctime>
-#include <unistd.h>
-#include <stdlib.h>
 
 
 #include <cv_bridge/cv_bridge.h>
@@ -176,7 +166,6 @@ void ImageProc::mirror_3d_points(vector<cv::Point3f> &srcWorldPoints, vector<cv:
         }
     }
 }
-
 
 
 void ImageProc::estimate_average_pose(const vector<cv::Vec3d> &rvecs, const vector<cv::Vec3d> &tvecs, cv::Vec3d& averageRvec, cv::Vec3d& averageTvec)
