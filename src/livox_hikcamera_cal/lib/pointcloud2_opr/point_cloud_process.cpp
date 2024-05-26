@@ -581,7 +581,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
                 optimized_rect = testRect;
             }
         }
-
+        // std::cout << "constraint: " << cv::Size2f(constraint_width, constraint_height) << " || pointcloud_rect_box: " << this->pointcloud_rect_box.size << std::endl;
         this->pointcloud_rect_box = optimized_rect;
         this->pointcloud_rect_box.points(this->rect_corners_2d);
     }
@@ -616,6 +616,28 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return;
     }
+
+    void PointCloud2Proc::extractConcaveHull(double alpha)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+
+        cloud_hull = this->calculateConcaveHull(this->processed_cloud, alpha);
+
+        this->processedCloudUpdate(cloud_hull);
+
+        return;
+    }
+    void PointCloud2Proc::extractConvexHull()
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+
+        cloud_hull = this->calculateConvexHull(this->processed_cloud);
+
+        this->processedCloudUpdate(cloud_hull);
+
+        return;
+    }
+
 
 
 
@@ -877,6 +899,33 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         *points = sorted_cloud;
 
     }
+
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::calculateConcaveHull(const pcl::PointCloud<pcl::PointXYZI>::Ptr &input_cloud, double alpha)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+
+        pcl::ConcaveHull<pcl::PointXYZI> concave_hull;
+        concave_hull.setInputCloud(input_cloud);
+        concave_hull.setAlpha(alpha);  
+        concave_hull.reconstruct(*cloud_hull);
+
+        return cloud_hull;
+    }
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::calculateConvexHull(const pcl::PointCloud<pcl::PointXYZI>::Ptr &input_cloud)
+    {
+        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+        pcl::ConvexHull<pcl::PointXYZI> convex_hull;
+        convex_hull.setInputCloud(input_cloud);
+        convex_hull.reconstruct(*cloud_hull);
+
+        return cloud_hull;
+    }
+
+
+
+
+
 
     void PointCloud2Proc::rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
     {

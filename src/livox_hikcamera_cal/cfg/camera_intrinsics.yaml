@@ -1,7 +1,7 @@
 %YAML:1.0
 ---
-calibrationTimeChar: "Sun May 26 16:31:00 2024\n"
-calibrationTime_t: 1716712260
+calibrationTimeChar: "Sun May 26 20:21:29 2024\n"
+calibrationTime_t: 1716726089
 imageWidth: 1280
 imageHeight: 1024
 cameraMatrix: !!opencv-matrix
@@ -17,16 +17,30 @@ disCoffes: !!opencv-matrix
    data: [ -9.3578985363918982e-02, 7.3018505781808796e-02,
        -3.8644741900791793e-04, -9.8636591357284249e-05,
        1.4049603863372971e-02 ]
-newCameraMatrix: !!opencv-matrix
+newCameraMatrixAlpha1: !!opencv-matrix
    rows: 3
    cols: 3
    dt: d
    data: [ 8.5681836548890794e+02, 0., 6.4135126096624094e+02, 0.,
        8.5612924539197581e+02, 5.0472873206422679e+02, 0., 0., 1. ]
-newDisCoffes: !!opencv-matrix
+newDisCoffesAlpha1: !!opencv-matrix
    rows: 1
    cols: 5
    dt: d
    data: [ -1.8139423750434592e-04, 8.0422815548505239e-04,
        -3.5311314814390710e-05, -4.3912675602818084e-05,
        -1.1367697881842806e-03 ]
+newCameraMatrixAlpha0: !!opencv-matrix
+   rows: 3
+   cols: 3
+   dt: d
+   data: [ 8.6723233031300583e+02, 0., 6.4115444510450868e+02, 0.,
+       8.6646758284465625e+02, 5.0496035028440627e+02, 0., 0., 1. ]
+newDisCoffesAlpha0: !!opencv-matrix
+   rows: 1
+   cols: 5
+   dt: d
+   data: [ 2.9854187376649919e-04, -1.9004592112405066e-03,
+       -3.4211507436041484e-05, -8.1349283674984270e-05,
+       2.2906097179296848e-03 ]
+
