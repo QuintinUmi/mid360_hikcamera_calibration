@@ -492,7 +492,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
-    void PointCloud2Proc::optimizeRectangleCornersInPCAPlane(float constraint_width, float constraint_height, float optimize_offset_ratio, float optimize_precision)
+    void PointCloud2Proc::optimizeRectangleAdjustCentroid(float constraint_width, float constraint_height, float optimize_offset_ratio, float optimize_precision)
     {
         if (this->pointcloud_rect_box.size.area() == 0 || this->pca_points_.empty())
         {
@@ -539,6 +539,52 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pointcloud_rect_box = optimized_rect;
         this->pointcloud_rect_box.points(this->rect_corners_2d);
     }
+    void PointCloud2Proc::optimizeRectangleAngleAtCentroid(float constraint_width, float constraint_height, float angle_range_ratio, float angle_precision)
+    {
+        if (this->pointcloud_rect_box.size.area() == 0 || this->pca_points_.empty())
+        {
+            return;
+        }
+
+        cv::Size2f newSize(constraint_width, constraint_height);
+        if ((constraint_width > constraint_height && this->pointcloud_rect_box.size.width < this->pointcloud_rect_box.size.height) ||
+            (constraint_width < constraint_height && this->pointcloud_rect_box.size.width > this->pointcloud_rect_box.size.height))
+        {
+            newSize = cv::Size2f(constraint_height, constraint_width);
+        }
+
+        int minLoss = INT_MAX;
+        cv::RotatedRect optimized_rect;
+
+        float angle_range = 2 * M_PI * angle_range_ratio;
+        float start_angle = this->pointcloud_rect_box.angle - angle_range / 2;
+        float end_angle = this->pointcloud_rect_box.angle + angle_range / 2;
+
+        for (float angle = start_angle; angle <= end_angle; angle += angle_precision)
+        {
+            cv::RotatedRect testRect(this->pointcloud_rect_box.center, newSize, angle);
+            cv::Point2f testCorners[4];
+            testRect.points(testCorners);
+
+            int loss = 0;
+            for (const auto& point : this->pca_points_)
+            {
+                if (!isPointInQuad(testCorners, point))
+                {
+                    loss++;
+                }
+            }
+
+            if (loss < minLoss)
+            {
+                minLoss = loss;
+                optimized_rect = testRect;
+            }
+        }
+
+        this->pointcloud_rect_box = optimized_rect;
+        this->pointcloud_rect_box.points(this->rect_corners_2d);
+    }
 
     void PointCloud2Proc::transformCornersTo3D()
     {
@@ -573,9 +619,9 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, bool optimizeRectangleCorners,
+    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, OptimizationMethod optimization_method,
                                                                                         float constraint_width, float constraint_height, 
-                                                                                        float optimize_offset_ratio, float optimize_precision)
+                                                                                        float optimize_range_ratio, float optimize_precision)
     {
         
         if(this->normalClusterExtraction().size() == 0)
@@ -601,9 +647,13 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pcaTransform();
         this->findRectangleCornersInPCAPlane();
 
-        if(optimizeRectangleCorners && constraint_width != 0.0 && constraint_width != 0.0)
+        if(optimization_method == OptimizationMethod::AdjustCentroid && constraint_width != 0.0 && constraint_height != 0.0)
         {
-            this->optimizeRectangleCornersInPCAPlane(constraint_width, constraint_height, optimize_offset_ratio, optimize_precision);
+            this->optimizeRectangleAdjustCentroid(constraint_width, constraint_height, optimize_range_ratio, optimize_precision);
+        }
+        if(optimization_method == OptimizationMethod::AngleAtCentroid && constraint_width != 0.0 && constraint_height != 0.0)
+        {
+            this->optimizeRectangleAngleAtCentroid(constraint_width, constraint_height, optimize_range_ratio, optimize_precision);
         }
         
         this->transformCornersTo3D();

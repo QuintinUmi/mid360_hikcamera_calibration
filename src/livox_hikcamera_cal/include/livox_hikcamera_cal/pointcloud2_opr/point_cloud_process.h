@@ -36,6 +36,15 @@ namespace livox_hikcamera_cal
         class PointCloud2Proc
         {
             public:
+
+                enum class OptimizationMethod
+                {
+                    None,
+                    AdjustCentroid,
+                    AngleAtCentroid
+                };
+
+            public:
                 PointCloud2Proc(bool remove_origin_point=false);
                 PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, bool remove_origin_point=false);
                 ~PointCloud2Proc();
@@ -85,13 +94,14 @@ namespace livox_hikcamera_cal
                 void transformWorldToImg();
                 void transformImgToWorld();
                 void findRectangleCornersInPCAPlane();
-                void optimizeRectangleCornersInPCAPlane(float constraint_width, float constraint_height, float optimize_offset_ratio = 0.05, float optimize_precision = 0.001);
+                void optimizeRectangleAdjustCentroid(float constraint_width, float constraint_height, float optimize_offset_ratio = 0.05, float optimize_precision = 0.001);
+                void optimizeRectangleAngleAtCentroid(float constraint_width, float constraint_height, float angle_range_ratio = 0.05, float angle_precision = 0.001);
                 void transformCornersTo3D();
                 void transformCornersTo3D(Eigen::Matrix4f transform_matrix);
 
-                pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, bool optimizeRectangleCorners=false,
+                pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, OptimizationMethod optimization_method=OptimizationMethod::AngleAtCentroid,
                                                                                     float constraint_width = 0.0, float constraint_height = 0.0, 
-                                                                                    float optimize_offset_ratio = (0.05F), float optimize_precision = (0.001F));
+                                                                                    float optimize_range_ratio = (0.05F), float optimize_precision = (0.001F));
 
 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr getFilterBoxCorners(Eigen::Vector4f min_point, Eigen::Vector4f max_point);
