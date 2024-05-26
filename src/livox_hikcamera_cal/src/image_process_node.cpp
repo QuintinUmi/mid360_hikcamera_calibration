@@ -116,8 +116,8 @@ int main(int argc, char *argv[])
     cv::Mat cameraMatrix, disCoffes, distortedCameraMatrix, distortedDisCoffes;
     fs["cameraMatrix"] >> cameraMatrix;
     fs["disCoffes"] >> disCoffes;
-    fs["newCameraMatrix"] >> distortedCameraMatrix;
-    fs["newDisCoffes"] >> distortedDisCoffes;
+    fs["newCameraMatrixAlpha0"] >> distortedCameraMatrix;
+    fs["newDisCoffesAlpha0"] >> distortedDisCoffes;
     fs.release();
     std::cout << cameraMatrix << std::endl;
     std::cout << disCoffes << std::endl;

@@ -33,6 +33,7 @@ find_package(PCL REQUIRED)
 generate_dynamic_reconfigure_options(
   cfg/OrthoFilter.cfg
   cfg/TransformFilter.cfg
+  cfg/CalibrationParam.cfg
 )
 
 ## System dependencies are found with CMake's conventions

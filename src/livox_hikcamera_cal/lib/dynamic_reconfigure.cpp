@@ -78,3 +78,30 @@ bool PointcloudFilterReconfigure::isUpdated()
     }
     return false;
 }
+
+
+
+
+
+CalibrationParamReconfigure::CalibrationParamReconfigure() :    calibration_param_server(ros::NodeHandle("CalibrationParamReconfigure"))
+{
+
+    this->calibration_param_f = boost::bind(&CalibrationParamReconfigure::CalibrationParamReconfigureCallBack, this, _1, _2);
+    this->calibration_param_server.setCallback(this->calibration_param_f);
+    
+}
+
+void CalibrationParamReconfigure::CalibrationParamReconfigureCallBack(livox_hikcamera_cal::CalibrationParamConfig &calibrationParamConfig, uint32_t level) 
+{
+    ROS_INFO("Calibration Parameters Reconfigure: concave_hull_alpha=%f\n",
+            calibrationParamConfig.concave_hull_alpha);
+    
+    this->CalibrationParamCfg.concave_hull_alpha = calibrationParamConfig.concave_hull_alpha;
+
+    this->is_updated_ = true;
+}
+
+RQTConfig::_CalibrationParamConfig_ CalibrationParamReconfigure::getCalibrationParamConfigure()
+{
+    return this->CalibrationParamCfg;
+}

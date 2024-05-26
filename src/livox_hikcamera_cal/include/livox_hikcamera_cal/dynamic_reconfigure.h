@@ -12,6 +12,7 @@
 #include <dynamic_reconfigure/server.h>
 #include <livox_hikcamera_cal/OrthoFilterConfig.h>
 #include <livox_hikcamera_cal/TransformFilterConfig.h>
+#include <livox_hikcamera_cal/CalibrationParamConfig.h>
 
 
 namespace livox_hikcamera_cal
@@ -40,6 +41,11 @@ namespace livox_hikcamera_cal
             float rotate_y;
             float rotate_z;
         }TransformFilterConfig;
+
+        struct _CalibrationParamConfig_
+        {
+            double concave_hull_alpha;
+        }CalibrationParam;
 
         // struct LidarConfig
         // {
@@ -72,6 +78,29 @@ namespace livox_hikcamera_cal
             dynamic_reconfigure::Server<livox_hikcamera_cal::OrthoFilterConfig>::CallbackType ortho_filter_f;
             dynamic_reconfigure::Server<livox_hikcamera_cal::TransformFilterConfig> transform_filter_server;
             dynamic_reconfigure::Server<livox_hikcamera_cal::TransformFilterConfig>::CallbackType transform_filter_f;
+
+            bool is_updated_ = false;
+            
+    };
+
+    class CalibrationParamReconfigure 
+    {
+        public:
+
+            CalibrationParamReconfigure();
+
+            RQTConfig::_CalibrationParamConfig_ getCalibrationParamConfigure();
+            bool isUpdated();
+
+        private:
+
+            void CalibrationParamReconfigureCallBack(livox_hikcamera_cal::CalibrationParamConfig& calibrationParamConfig, uint32_t level);
+
+        private:
+
+            RQTConfig::_CalibrationParamConfig_ CalibrationParamCfg;
+            dynamic_reconfigure::Server<livox_hikcamera_cal::CalibrationParamConfig> calibration_param_server;
+            dynamic_reconfigure::Server<livox_hikcamera_cal::CalibrationParamConfig>::CallbackType calibration_param_f;
 
             bool is_updated_ = false;
             

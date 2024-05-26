@@ -18,6 +18,7 @@
 #include <pcl/common/common.h>
 #include <pcl/common/pca.h>
 #include <pcl/common/transforms.h>
+#include <pcl/surface/concave_hull.h>
 
 #include <opencv2/opencv.hpp>
 
@@ -98,6 +99,8 @@ namespace livox_hikcamera_cal
                 void optimizeRectangleAngleAtCentroid(float constraint_width, float constraint_height, float angle_range_ratio = 0.05, float angle_precision = 0.001);
                 void transformCornersTo3D();
                 void transformCornersTo3D(Eigen::Matrix4f transform_matrix);
+                void extractConcaveHull(double alpha=0.1);
+                void extractConvexHull();
 
                 pcl::PointCloud<pcl::PointXYZI>::Ptr extractNearestRectangleCorners(bool useStatisticalOutlierFilter=false, OptimizationMethod optimization_method=OptimizationMethod::AngleAtCentroid,
                                                                                     float constraint_width = 0.0, float constraint_height = 0.0, 
@@ -115,6 +118,8 @@ namespace livox_hikcamera_cal
                 Eigen::Matrix4f computeTransformMatrixImgToWorld();
                 void sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal);
 
+                pcl::PointCloud<pcl::PointXYZI>::Ptr calculateConcaveHull(const pcl::PointCloud<pcl::PointXYZI>::Ptr &input_cloud, double alpha=0.1);
+                pcl::PointCloud<pcl::PointXYZI>::Ptr calculateConvexHull(const pcl::PointCloud<pcl::PointXYZI>::Ptr &input_cloud);
 
             
                 void rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud);

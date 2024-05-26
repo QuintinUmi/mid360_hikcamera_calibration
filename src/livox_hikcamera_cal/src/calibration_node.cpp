@@ -146,8 +146,8 @@ int main(int argc, char *argv[])
     cv::Mat cameraMatrix, disCoffes, newCameraMatrix, newDisCoffes;
     fs["cameraMatrix"] >> cameraMatrix;
     fs["disCoffes"] >> disCoffes;
-    fs["newCameraMatrix"] >> newCameraMatrix;
-    fs["newDisCoffes"] >> newDisCoffes;
+    fs["newCameraMatrixAlpha0"] >> newCameraMatrix;
+    fs["newDisCoffesAlpha0"] >> newDisCoffes;
     fs.release();
     std::cout << cameraMatrix << std::endl;
     std::cout << disCoffes << std::endl;
@@ -174,6 +174,10 @@ int main(int argc, char *argv[])
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 
+    RQTConfig rqtCfg;
+    PointcloudFilterReconfigure filterRecfg;
+    CalibrationParamReconfigure calParamRecfg;
+
     CsvOperator csv_operator(csv_path);
     YamlOperator yaml_operator(extrinsics_path);
 
@@ -184,8 +188,11 @@ int main(int argc, char *argv[])
 
 
     pcl::PointCloud<pcl::PointXYZI> originalCloud; 
+    
     Eigen::Matrix3f R = Eigen::Matrix3f::Identity(); 
     Eigen::Vector3f t(0.0f, 0.0f, 0.0f); 
+
+    yaml_operator.readExtrinsicsFromYaml(R, t);
 
     while(ros::ok())
     {
@@ -206,6 +213,26 @@ int main(int argc, char *argv[])
             // ROS_INFO("Waiting For Image Subscribe\n");
             continue;
         }
+
+
+
+        rqtCfg.TransformFilterConfig = filterRecfg.getTransformConfigure();
+		float center_x = rqtCfg.TransformFilterConfig.center_x;
+		float center_y = rqtCfg.TransformFilterConfig.center_y;
+		float center_z = rqtCfg.TransformFilterConfig.center_z;
+		float length_x = rqtCfg.TransformFilterConfig.length_x;
+		float length_y = rqtCfg.TransformFilterConfig.length_y;
+		float length_z = rqtCfg.TransformFilterConfig.length_z;
+		float rotate_x = rqtCfg.TransformFilterConfig.rotate_x;
+		float rotate_y = rqtCfg.TransformFilterConfig.rotate_y;
+		float rotate_z = rqtCfg.TransformFilterConfig.rotate_z;
+
+        rqtCfg.CalibrationParam = calParamRecfg.getCalibrationParamConfigure();
+        float concave_hull_alpha = rqtCfg.CalibrationParam.concave_hull_alpha;
+		
+
+
+
 
         pc_process.transform(R, t);
         pc_process.scaleTo(1000.0f);
@@ -266,6 +293,30 @@ int main(int argc, char *argv[])
 
             std::cout << R << std::endl << t << std::endl;
 
+            pc_process.setCloud(pc_SUB_PUB.getPointcloudXYZI());
+            pc_process.boxFilter(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
+            pc_process.normalClusterExtraction();
+            pc_process.extractNearestClusterCloud();
+            pc_process.planeSegmentation();
+            size_t plane_size = pc_process.getProcessedPointcloud()->size();
+            pc_process.extractConcaveHull(concave_hull_alpha);
+            // pc_process.extractConvexHull();
+            size_t hull_size = pc_process.getProcessedPointcloud()->size();
+            pc_process.transform(R, t);
+            pc_process.scaleTo(1000.0f);
+            pc_process.PassThroughFilter("z", 0, 4000);
+
+            ROS_INFO("hull_size / plane_size = %f", (float)hull_size / (float)plane_size);
+
+            auto img_hull = img_SUB_PUB.getImage();
+            std::vector<cv::Point2f> imagePoints;
+            d3d.projectPointsToImage(*pc_process.getProcessedPointcloud(), imagePoints);
+            d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img_hull);
+
+
+            cv::imshow("concave_hull_cloud", img_hull);
+
+
             command_handler.sendCommand("capture_complete");
             command_handler.resetReceivedStatus();
         }
@@ -312,7 +363,7 @@ int main(int argc, char *argv[])
 
             std::cout << R << std::endl << t << std::endl;
 
-            command_handler.sendCommand("undo_complete");
+            command_handler.sendCommand("delete_once_complete");
             command_handler.resetReceivedStatus();
         }
 
