@@ -33,6 +33,7 @@
 #include "livox_hikcamera_cal/calibration_tool.h"
 
 using namespace livox_hikcamera_cal;
+using namespace livox_hikcamera_cal::pointcloud2_opr;
 
 int main(int argc, char *argv[])
 {
@@ -128,7 +129,7 @@ int main(int argc, char *argv[])
 		
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
-		corners = pc_process.extractNearestRectangleCorners(false, true, caliboard_width, caliboard_height, 0.05);
+		corners = pc_process.extractNearestRectangleCorners(false, PointCloud2Proc::OptimizationMethod::AngleAtCentroid, caliboard_width, caliboard_height, 0.05);
 		CalTool::sortPointByNormalWorldFrame(corners, pc_process.getPlaneNormals());
 
 		std::vector<geometry_msgs::Point> ros_corners;

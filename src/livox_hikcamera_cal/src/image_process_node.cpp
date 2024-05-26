@@ -113,23 +113,25 @@ int main(int argc, char *argv[])
 
     cv::Size image_size = cv::Size(image_width, image_height);
 
-    cv::Mat cameraMatrix, disCoffes, newCameraMatrix, newDisCoffes;
+    cv::Mat cameraMatrix, disCoffes, distortedCameraMatrix, distortedDisCoffes;
     fs["cameraMatrix"] >> cameraMatrix;
     fs["disCoffes"] >> disCoffes;
-    fs["newCameraMatrix"] >> newCameraMatrix;
-    fs["newDisCoffes"] >> newDisCoffes;
+    fs["newCameraMatrix"] >> distortedCameraMatrix;
+    fs["newDisCoffes"] >> distortedDisCoffes;
     fs.release();
     std::cout << cameraMatrix << std::endl;
     std::cout << disCoffes << std::endl;
+    std::cout << distortedCameraMatrix << std::endl;
+    std::cout << distortedDisCoffes << std::endl;
     std::cout << image_size << std::endl;
 
     cv::aruco::DICT_6X6_1000;
-    ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, cameraMatrix, disCoffes);
+    ArucoM arucoMarker(dictionaryName, ids, arucoRealLength, distortedCameraMatrix, distortedDisCoffes);
     arucoMarker.setDetectionParameters();
     arucoMarker.create();
 
 
-    Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
+    Draw3D d3d(arucoRealLength[0], 1, 1, 1, distortedCameraMatrix, distortedDisCoffes);
 
     RvizDrawing rviz_drawing("image_process_node", "livox_frame");
     
