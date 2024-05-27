@@ -8,6 +8,8 @@
 #include <pcl_conversions/pcl_conversions.h>
 #include <pcl/point_types.h>
 #include <pcl/PCLPointCloud2.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/common/pca.h>
 
 #include <cv_bridge/cv_bridge.h>
 #include <opencv2/opencv.hpp>  
@@ -533,4 +535,223 @@ int CalTool::SolveSVD(pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud_point_list
 
     return 0; 
 
+}
+
+
+float CalTool::pointToLineDistance(const pcl::PointXYZI& point, const geometry_msgs::Point32& a, const geometry_msgs::Point32& b) 
+{
+    Eigen::Vector2f p(point.x, point.y);
+    Eigen::Vector2f pa(a.x, a.y);
+    Eigen::Vector2f ba(b.x - a.x, b.y - a.y);
+    Eigen::Vector2f pa_p = p - pa;
+    float t = pa_p.dot(ba) / ba.dot(ba);
+    t = std::max(0.0f, std::min(1.0f, t));
+    Eigen::Vector2f closest = pa + t * ba;
+    return (p - closest).norm();
+}
+float CalTool::triangleArea(const geometry_msgs::Point32& p1, const geometry_msgs::Point32& p2, const geometry_msgs::Point32& p3) 
+{
+    return 0.5 * std::abs(p1.x * (p2.y - p3.y) + p2.x * (p3.y - p1.y) + p3.x * (p1.y - p2.y));
+}
+float CalTool::quadrilateralArea(const geometry_msgs::Point32& p1, const geometry_msgs::Point32& p2, const geometry_msgs::Point32& p3, const geometry_msgs::Point32& p4) 
+{
+    float area1 = triangleArea(p1, p2, p3);
+    float area2 = triangleArea(p3, p4, p1);
+
+    return area1 + area2;
+}
+
+void CalTool::removeBoundingBoxOutliers(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, const std::vector<geometry_msgs::Point32>& corners) 
+{
+    pcl::PointCloud<pcl::PointXYZI>::Ptr pca_trans_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+
+    Eigen::Matrix3f eigen_vector;
+    Eigen::Vector4f mean_vector;
+
+    pcl::PCA<pcl::PointXYZI> pca;
+    pca.setInputCloud(cloud);
+    eigen_vector = pca.getEigenVectors();
+    mean_vector = pca.getMean();
+
+
+    Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
+    transform.block<3,3>(0, 0) = eigen_vector.transpose();  
+    transform.block<3,1>(0, 3) = -1.0 * (eigen_vector.transpose() * mean_vector.head<3>()); 
+
+    pcl::transformPointCloud(*cloud, *pca_trans_cloud, transform);
+
+    std::vector<cv::Point2f> pca_points;
+    for (const auto& point : *pca_trans_cloud) 
+    {
+        pca_points.emplace_back(point.x, point.y);
+    }
+    cv::RotatedRect pointcloud_rect_box = cv::minAreaRect(cv::Mat(pca_points));
+    cv::Point2f rect_corners_2d[4];
+    pointcloud_rect_box.points(rect_corners_2d);
+
+    std::vector<geometry_msgs::Point32> rect_corners_3d;
+    for (int i = 0; i < 4; i++) 
+    {
+        Eigen::Vector4f pt_2d(rect_corners_2d[i].x, rect_corners_2d[i].y, 0, 1);
+        Eigen::Vector4f pt_3d = transform.inverse() * pt_2d;
+        geometry_msgs::Point32 outer_corners;
+        outer_corners.x = pt_3d[0];
+        outer_corners.y = pt_3d[1];
+        outer_corners.z = pt_3d[2];
+        rect_corners_3d.push_back(outer_corners);
+    }
+
+    float del_area = std::abs(quadrilateralArea(rect_corners_3d[0], rect_corners_3d[1], rect_corners_3d[2], rect_corners_3d[3]) - 
+                                quadrilateralArea(corners[0], corners[1], corners[2], corners[3]));
+    float threshold = std::sqrt(del_area) / 16;
+    ROS_INFO("threshold = %f\n", threshold);
+
+
+
+    pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
+
+
+    for (size_t i = 0; i < cloud->points.size(); ++i) {
+        float min_distance = std::numeric_limits<float>::max();
+        for (size_t j = 0; j < corners.size(); ++j) {
+            size_t next = (j + 1) % corners.size();  
+            float distance = pointToLineDistance(cloud->points[i], corners[j], corners[next]);
+            if (distance < min_distance) {
+                min_distance = distance;
+            }
+        }
+        
+        if (min_distance <= threshold) {
+            inliers->indices.push_back(i);
+        }
+    }
+
+    pcl::ExtractIndices<pcl::PointXYZI> extract;
+    extract.setInputCloud(cloud);
+    extract.setIndices(inliers);
+    extract.setNegative(false);
+    extract.filter(*filtered_cloud);
+
+    pcl::copyPointCloud(*filtered_cloud, *cloud);
+}
+
+
+
+
+
+
+void CalTool::computeReprojectionErrorsInPixels(
+    const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+    const std::vector<geometry_msgs::Point32>& imageCorners,
+    const Eigen::Matrix3f& R,
+    const Eigen::Vector3f& t,
+    const cv::Mat& cameraMatrix,
+    const cv::Mat& distCoeffs,
+    double& meanError,  
+    double& stdDev)     
+{
+    std::vector<cv::Point3f> corners3D;
+    for (const auto& corner : imageCorners) {
+        corners3D.emplace_back(cv::Point3f(corner.x * 1000, corner.y * 1000, corner.z * 1000));
+    }
+
+    std::vector<cv::Point2f> projectedCorners;
+    cv::projectPoints(corners3D, cv::Vec3f(0,0,0), cv::Vec3f(0,0,0), cameraMatrix, distCoeffs, projectedCorners);
+
+    std::vector<Line> lines;
+    for (size_t i = 0; i < projectedCorners.size(); ++i) {
+        cv::Point2f start = projectedCorners[i];
+        cv::Point2f end = projectedCorners[(i + 1) % projectedCorners.size()];
+        lines.emplace_back(Line{start, end});
+    }
+
+    std::vector<double> errors;
+    for (const auto& point : *objectPoints) {
+        Eigen::Vector3f point3D(point.x * 1000, point.y * 1000, point.z * 1000);
+        Eigen::Vector3f cameraPoint = R * point3D + t * 1000;
+
+        std::vector<cv::Point2f> imagePoints;
+        std::vector<cv::Point3f> points = {{cameraPoint.x(), cameraPoint.y(), cameraPoint.z()}};
+        cv::projectPoints(points, cv::Vec3f(0,0,0), cv::Vec3f(0,0,0), cameraMatrix, distCoeffs, imagePoints);
+
+        double minDistance = std::numeric_limits<double>::max();
+        for (const auto& line : lines) {
+            double distance = line.distanceToPoint(imagePoints[0]);
+            minDistance = std::min(minDistance, distance);
+        }
+
+        errors.push_back(minDistance);
+    }
+
+    meanError = std::accumulate(errors.begin(), errors.end(), 0.0) / errors.size();
+
+    double sumSq = std::accumulate(errors.begin(), errors.end(), 0.0, [&](double acc, double e) {
+        return acc + (e - meanError) * (e - meanError);
+    });
+    stdDev = std::sqrt(sumSq / errors.size());
+}
+void CalTool::computeReprojectionErrorsInPixels(
+    const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+    const std::vector<std::vector<geometry_msgs::Point32>>& imageCorners_list,
+    const Eigen::Matrix3f& R,
+    const Eigen::Vector3f& t,
+    const cv::Mat& cameraMatrix,
+    const cv::Mat& distCoeffs,
+    double& meanError,  
+    double& stdDev)     
+{
+    size_t minSize = std::min(objectPoints->size(), imageCorners_list.size());
+    if(minSize == 0) return;
+    std::vector<geometry_msgs::Point32> last_corners;
+    std::vector<Line> lines;
+    std::vector<double> errors;
+    for(int p_index = 0; p_index < minSize; p_index ++) {
+
+        std::vector<geometry_msgs::Point32> imageCorners = imageCorners_list[p_index];
+
+        if (last_corners != imageCorners) {
+
+            std::vector<cv::Point3f> corners3D;
+            for (const auto& corner : imageCorners) {
+                corners3D.emplace_back(cv::Point3f(corner.x * 1000, corner.y * 1000, corner.z * 1000));
+            }
+            lines.clear();
+            std::vector<cv::Point2f> projectedCorners;
+            cv::projectPoints(corners3D, cv::Vec3f(0,0,0), cv::Vec3f(0,0,0), cameraMatrix, distCoeffs, projectedCorners);
+
+            
+            for (size_t i = 0; i < projectedCorners.size(); ++i) {
+                cv::Point2f start = projectedCorners[i];
+                cv::Point2f end = projectedCorners[(i + 1) % projectedCorners.size()];
+                lines.emplace_back(Line{start, end});
+            }
+        }
+        
+        for (const auto& point : *objectPoints) {
+            Eigen::Vector3f point3D(point.x * 1000, point.y * 1000, point.z * 1000);
+            Eigen::Vector3f cameraPoint = R * point3D + t * 1000;
+
+            std::vector<cv::Point2f> imagePoints;
+            std::vector<cv::Point3f> points = {{cameraPoint.x(), cameraPoint.y(), cameraPoint.z()}};
+            cv::projectPoints(points, cv::Vec3f(0,0,0), cv::Vec3f(0,0,0), cameraMatrix, distCoeffs, imagePoints);
+
+            double minDistance = std::numeric_limits<double>::max();
+            for (const auto& line : lines) {
+                double distance = line.distanceToPoint(imagePoints[0]);
+                minDistance = std::min(minDistance, distance);
+            }
+
+            errors.push_back(minDistance);
+        }
+
+    }
+
+    meanError = std::accumulate(errors.begin(), errors.end(), 0.0) / errors.size();
+
+    double sumSq = std::accumulate(errors.begin(), errors.end(), 0.0, [&](double acc, double e) {
+    return acc + (e - meanError) * (e - meanError);
+    });
+    stdDev = std::sqrt(sumSq / errors.size());
+    
 }

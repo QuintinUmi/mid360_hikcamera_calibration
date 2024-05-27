@@ -5,6 +5,9 @@
 #include <fstream>
 #include <geometry_msgs/Point.h>
 #include <geometry_msgs/Point32.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/PCLPointCloud2.h>
 
 #include <yaml-cpp/yaml.h>
 
@@ -13,19 +16,50 @@
 
 namespace livox_hikcamera_cal
 {
-    class CsvOperator
+    class CornerSetCsvOperator
     {
         public:
 
-            CsvOperator(std::string file_path);
-            ~CsvOperator();
+            CornerSetCsvOperator(std::string file_path);
+            ~CornerSetCsvOperator();
 
             void setPath(std::string file_path);
 
             void writePointsToCSVOverwrite(const std::vector<geometry_msgs::Point32>& group1, const std::vector<geometry_msgs::Point32>& group2);
+            void writePointsToCSVOverwrite(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, const std::vector<geometry_msgs::Point32>& group2);
+            
             void writePointsToCSVAppend(const std::vector<geometry_msgs::Point32>& group1, const std::vector<geometry_msgs::Point32>& group2);
+            void writePointsToCSVAppend(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, const std::vector<geometry_msgs::Point32>& group2);
+
             void deleteRowFromCSV(size_t rowIndex);
             void readPointsFromCSV(std::vector<geometry_msgs::Point32>& group1, std::vector<geometry_msgs::Point32>& group2);
+            void readPointsFromCSV(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, std::vector<geometry_msgs::Point32>& group2);
+
+        private:
+
+            std::string file_path_;
+    };
+
+    class BorderSetCsvOperator
+    {
+        public:
+
+            BorderSetCsvOperator(std::string file_path);
+            ~BorderSetCsvOperator();
+
+            void setPath(std::string file_path);
+
+            void writePointsToCSVOverwrite(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, const std::vector<geometry_msgs::Point32>& group2);
+            void writePointsToCSVOverwrite(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, const std::vector<std::vector<geometry_msgs::Point32>>& group2);
+            
+            void writePointsToCSVAppend(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, const std::vector<geometry_msgs::Point32>& group2);
+            void writePointsToCSVAppend(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, const std::vector<std::vector<geometry_msgs::Point32>>& group2);
+
+            void deleteRowFromCSV(size_t rowIndex);
+            void deleteLastSetFromCSV();
+            void readPointsFromCSV(const pcl::PointCloud<pcl::PointXYZI>::Ptr group1, std::vector<std::vector<geometry_msgs::Point32>>& group2);
+
+            int getBordersetSize();
 
         private:
 

@@ -35,6 +35,21 @@
 using namespace livox_hikcamera_cal;
 using namespace livox_hikcamera_cal::pointcloud2_opr;
 
+
+void setShareParam(ros::NodeHandle nh, RQTConfig rqt_config)
+{
+	nh.setParam("/shared_parameter/center_x", rqt_config.TransformFilterConfig.center_x);
+	nh.setParam("/shared_parameter/center_y", rqt_config.TransformFilterConfig.center_y);
+	nh.setParam("/shared_parameter/center_z", rqt_config.TransformFilterConfig.center_z);
+	nh.setParam("/shared_parameter/length_x", rqt_config.TransformFilterConfig.length_x);
+	nh.setParam("/shared_parameter/length_y", rqt_config.TransformFilterConfig.length_y);
+	nh.setParam("/shared_parameter/length_z", rqt_config.TransformFilterConfig.length_z);
+	nh.setParam("/shared_parameter/rotate_x", rqt_config.TransformFilterConfig.rotate_x);
+	nh.setParam("/shared_parameter/rotate_y", rqt_config.TransformFilterConfig.rotate_y);
+	nh.setParam("/shared_parameter/rotate_z", rqt_config.TransformFilterConfig.rotate_z);
+}
+
+
 int main(int argc, char *argv[])
 {
 	ros::init(argc, argv, "pointcloud_process_node");
@@ -94,6 +109,10 @@ int main(int argc, char *argv[])
 		float rotate_y = rqtCfg.TransformFilterConfig.rotate_y;
 		float rotate_z = rqtCfg.TransformFilterConfig.rotate_z;
 		pc_process.boxFilter(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
+
+		setShareParam(rosHandle, rqtCfg);
+
+
 
 		pointcloud_SUB_PUB.publish(pc_process.getProcessedPointcloud());
 

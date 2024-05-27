@@ -57,8 +57,6 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
     
     PointCloud2Proc::PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, bool remove_origin_point) :  
-                                    raw_cloud(cloud),
-                                    processed_cloud(cloud),
                                     tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
                                     normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
                                     pca_transform_matrix(Eigen::Matrix4f::Identity()),
@@ -72,6 +70,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
         // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
         this->remove_origin_point_ = remove_origin_point;
+        this->setCloud(cloud);
     }
 
     PointCloud2Proc::~PointCloud2Proc() {}
@@ -758,7 +757,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
-    pcl::PointCloud<pcl::Normal>::Ptr PointCloud2Proc::computeNormals(int k_search = 50)
+    pcl::PointCloud<pcl::Normal>::Ptr PointCloud2Proc::computeNormals(int k_search = 120)
     {
         // pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
         pcl::NormalEstimation<pcl::PointXYZI, pcl::Normal> normal_estimator;
@@ -808,7 +807,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     Eigen::Matrix4f PointCloud2Proc::computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix)
     {
         Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
-        transform.block<3,3>(0, 0) = rotation_matrix.transpose();  // 旋转
+        transform.block<3,3>(0, 0) = rotation_matrix.transpose();  
         transform.block<3,1>(0, 3) = -1.0 * (rotation_matrix.transpose() * translation_matrix.head<3>()); 
         
         return transform;
