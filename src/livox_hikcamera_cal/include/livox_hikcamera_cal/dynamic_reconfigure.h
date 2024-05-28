@@ -60,6 +60,7 @@ namespace livox_hikcamera_cal
         public:
 
             PointcloudFilterReconfigure();
+            PointcloudFilterReconfigure(ros::NodeHandle nh);
 
             RQTConfig::_OrthoFilterConfig_ getOrthoConfigure();
             RQTConfig::_TransformFilterConfig_ getTransformConfigure();
@@ -88,6 +89,7 @@ namespace livox_hikcamera_cal
         public:
 
             CalibrationParamReconfigure();
+            CalibrationParamReconfigure(ros::NodeHandle nh);
 
             RQTConfig::_CalibrationParamConfig_ getCalibrationParamConfigure();
             bool isUpdated();

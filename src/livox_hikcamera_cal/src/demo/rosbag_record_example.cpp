@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     Recorder::Topic lidar_msg("/livox/lidar", Recorder::MessageType::PointCloud2);
     Recorder::Topic camera_msg("/hikcamera/img_stream", Recorder::MessageType::Image);
-    Recorder rcd(std::string("src/livox_hikcamera_cal/bag"));
+    Recorder rcd(std::string("/home/quintinumi/project/ws_mid360_hikcamera_calibration/src/bag"));
     rcd.addTopic(lidar_msg);
     rcd.addTopic(camera_msg);
 

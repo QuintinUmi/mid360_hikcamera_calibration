@@ -58,6 +58,51 @@ namespace livox_hikcamera_cal
             static Eigen::Quaterniond averageQuaternions(const std::vector<Eigen::Quaterniond>& quaternions);
 
             
+            
+            static float pointToLineDistance(const pcl::PointXYZI& point, const geometry_msgs::Point32& a, const geometry_msgs::Point32& b); 
+            static float triangleArea(const geometry_msgs::Point32& p1, const geometry_msgs::Point32& p2, const geometry_msgs::Point32& p3);
+            static float quadrilateralArea(const geometry_msgs::Point32& p1, const geometry_msgs::Point32& p2, const geometry_msgs::Point32& p3, const geometry_msgs::Point32& p4);
+            static void removeBoundingBoxOutliers(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, const std::vector<geometry_msgs::Point32>& corners);
+
+
+
+
+            struct Line {
+                cv::Point2f start, end;
+
+                double distanceToPoint(cv::Point2f point) const{
+                    cv::Point2f lineVec = end - start;
+                    cv::Point2f pointVec = point - start;
+
+                    float lineLen = cv::norm(lineVec);
+                    cv::Point2f lineUnitVec = lineVec / lineLen;
+
+                    float projectedLength = pointVec.dot(lineUnitVec);
+                    projectedLength = std::max(0.0f, std::min(lineLen, projectedLength));
+                    cv::Point2f closestPoint = start + lineUnitVec * projectedLength;
+                    return cv::norm(point - closestPoint);
+                }
+            };
+
+            static void computeReprojectionErrorsInPixels(
+                                            const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+                                            const std::vector<geometry_msgs::Point32>& imageCorners,
+                                            const Eigen::Matrix3f& R,
+                                            const Eigen::Vector3f& t,
+                                            const cv::Mat& cameraMatrix,
+                                            const cv::Mat& distCoeffs,
+                                            double& meanError,  
+                                            double& stdDev);
+            static void computeReprojectionErrorsInPixels(
+                                            const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+                                            const std::vector<std::vector<geometry_msgs::Point32>>& imageCorners,
+                                            const Eigen::Matrix3f& R,
+                                            const Eigen::Vector3f& t,
+                                            const cv::Mat& cameraMatrix,
+                                            const cv::Mat& distCoeffs,
+                                            double& meanError,  
+                                            double& stdDev);
+            
         private:
         
             Eigen::Matrix3d R_;

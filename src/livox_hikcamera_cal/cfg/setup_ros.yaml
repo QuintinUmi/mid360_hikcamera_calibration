@@ -27,6 +27,7 @@ calibration_command_pub_topic: /livox_hikcamera_cal/command_cal_node
 
 
 pointset_save_path: data/point_set.csv
+error_analysis_save_path: data/border_error_anaylysis.csv
 extrinsics_save_path: cfg/extrinsics.yaml
 
 

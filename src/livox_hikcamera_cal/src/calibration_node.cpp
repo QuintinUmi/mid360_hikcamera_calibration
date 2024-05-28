@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
     std::string frame_id;
 
     std::string topic_pc_sub;
+    std::string topic_pc_proc_sub;
     std::string topic_pc_pub;
 
     std::string topic_img_sub;
@@ -78,6 +79,7 @@ int main(int argc, char *argv[])
     rosHandle.param("frame_id", frame_id, std::string("livox_frame"));
 
 	rosHandle.param("pointcloud_process_pc_sub_topic", topic_pc_sub, std::string("/livox/lidar"));
+    rosHandle.param("pointcloud_process_pc_pub_topic", topic_pc_proc_sub, std::string("/livox/lidar_proc"));
     rosHandle.param("calibration_pc_pub_topic", topic_pc_pub, std::string("/livox_hikcamera_cal/pointcloud"));
 
 	rosHandle.param("image_process_img_sub_topic", topic_img_sub, std::string("/hikcamera/img_stream"));
@@ -154,14 +156,17 @@ int main(int argc, char *argv[])
     std::cout << image_size << std::endl;
 
 
-    std::string csv_path;
+    std::string cornerset_csv_path;
+    std::string error_anaylysis_csv_path;
     std::string extrinsics_path;
-    rosHandle.param("pointset_save_path", csv_path, std::string("src/livox_hikcamera_cal/data/point_set.csv"));
+    rosHandle.param("pointset_save_path", cornerset_csv_path, std::string("src/livox_hikcamera_cal/data/point_set.csv"));
+    rosHandle.param("error_analysis_save_path", error_anaylysis_csv_path, std::string("src/livox_hikcamera_cal/data/border_error_anaylysis.csv"));
     rosHandle.param("extrinsics_save_path", extrinsics_path, std::string("src/livox_hikcamera_cal/cfg/extrinsics.yaml"));
     
 
 
     PointCloudSubscriberPublisher pc_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);
+    PointCloudSubscriberPublisher pc_proc_SUB_PUB(rosHandle, topic_pc_proc_sub, topic_pc_pub);
 
     ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub);
 
@@ -175,10 +180,13 @@ int main(int argc, char *argv[])
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 
     RQTConfig rqtCfg;
-    PointcloudFilterReconfigure filterRecfg;
-    CalibrationParamReconfigure calParamRecfg;
+    // PointcloudFilterReconfigure filterRecfg(rosHandle);
+    CalibrationParamReconfigure calParamRecfg(rosHandle);
 
-    CsvOperator csv_operator(csv_path);
+    CornerSetCsvOperator cornerset_csv_operator(cornerset_csv_path);
+    BorderSetCsvOperator boarderset_csv_operator(error_anaylysis_csv_path);
+    // boarderset_csv_operator.writePointsToCSVOverwrite(pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(new pcl::PointCloud<pcl::PointXYZI>), std::vector<std::vector<geometry_msgs::Point32>>());
+
     YamlOperator yaml_operator(extrinsics_path);
 
     CommandHandler command_handler(rosHandle, topic_command_sub, topic_command_pub);
@@ -215,17 +223,25 @@ int main(int argc, char *argv[])
         }
 
 
+		float center_x;
+		float center_y;
+		float center_z;
+		float length_x;
+		float length_y;
+		float length_z;
+		float rotate_x;
+		float rotate_y;
+		float rotate_z;
 
-        rqtCfg.TransformFilterConfig = filterRecfg.getTransformConfigure();
-		float center_x = rqtCfg.TransformFilterConfig.center_x;
-		float center_y = rqtCfg.TransformFilterConfig.center_y;
-		float center_z = rqtCfg.TransformFilterConfig.center_z;
-		float length_x = rqtCfg.TransformFilterConfig.length_x;
-		float length_y = rqtCfg.TransformFilterConfig.length_y;
-		float length_z = rqtCfg.TransformFilterConfig.length_z;
-		float rotate_x = rqtCfg.TransformFilterConfig.rotate_x;
-		float rotate_y = rqtCfg.TransformFilterConfig.rotate_y;
-		float rotate_z = rqtCfg.TransformFilterConfig.rotate_z;
+        rosHandle.getParam("/shared_parameter/center_x", center_x);
+		rosHandle.getParam("/shared_parameter/center_y", center_y);
+		rosHandle.getParam("/shared_parameter/center_z", center_z);
+		rosHandle.getParam("/shared_parameter/length_x", length_x);
+		rosHandle.getParam("/shared_parameter/length_y", length_y);
+		rosHandle.getParam("/shared_parameter/length_z", length_z);
+		rosHandle.getParam("/shared_parameter/rotate_x", rotate_x);
+		rosHandle.getParam("/shared_parameter/rotate_y", rotate_y);
+		rosHandle.getParam("/shared_parameter/rotate_z", rotate_z);
 
         rqtCfg.CalibrationParam = calParamRecfg.getCalibrationParamConfigure();
         float concave_hull_alpha = rqtCfg.CalibrationParam.concave_hull_alpha;
@@ -233,7 +249,10 @@ int main(int argc, char *argv[])
 
 
 
-
+        // pc_process.boxFilter(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
+        // pc_process.normalClusterExtraction();
+        // pc_process.extractNearestClusterCloud();
+        // pc_process.planeSegmentation();
         pc_process.transform(R, t);
         pc_process.scaleTo(1000.0f);
         pc_process.PassThroughFilter("z", 0, 4000);
@@ -245,20 +264,22 @@ int main(int argc, char *argv[])
         d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img);
 
 
+        cv::imshow("Projected Points", img);
+        int key = cv::waitKey(1); 
 
         std::string command_received = command_handler.getCommand();
 
-        if(command_received == "capture")
+        if(command_received == "capture" || key == 13)
         {
             std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
             std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
 
-            csv_operator.writePointsToCSVAppend(pc_corners_rcv, img_corners_rcv);
+            cornerset_csv_operator.writePointsToCSVAppend(pc_corners_rcv, img_corners_rcv);
 
             std::vector<geometry_msgs::Point32> pc_corners_raw;
             std::vector<geometry_msgs::Point32> img_corners_raw;
 
-            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+            cornerset_csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
 
             if(pc_corners_raw.empty() || img_corners_raw.empty())
             {
@@ -293,34 +314,60 @@ int main(int argc, char *argv[])
 
             std::cout << R << std::endl << t << std::endl;
 
+            pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
             pc_process.setCloud(pc_SUB_PUB.getPointcloudXYZI());
             pc_process.boxFilter(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
             pc_process.normalClusterExtraction();
             pc_process.extractNearestClusterCloud();
             pc_process.planeSegmentation();
-            size_t plane_size = pc_process.getProcessedPointcloud()->size();
-            pc_process.extractConcaveHull(concave_hull_alpha);
+
+            PointCloud2Proc caliboard_pc_proc(true);
+            caliboard_pc_proc.setCloud(pc_process.getProcessedPointcloud());
+            caliboard_pc_proc.transform(R, t);
+            caliboard_pc_proc.scaleTo(1000.0f);
+            caliboard_pc_proc.PassThroughFilter("z", 0, 4000);
+
+            std::vector<cv::Point2f> caliboard_pc;
+            auto img_caliboard_pc = img_SUB_PUB.getImage();
+            d3d.projectPointsToImage(*caliboard_pc_proc.getProcessedPointcloud(), caliboard_pc);
+            d3d.drawPointsOnImageZ(*caliboard_pc_proc.getProcessedPointcloud(), caliboard_pc, img_caliboard_pc);
+            cv::imshow("caliboard_pc", img_caliboard_pc);
+
+
+
+            pcl::PointCloud<pcl::PointXYZI>::Ptr hull_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            pcl::copyPointCloud(*pc_process.calculateConcaveHull(pc_process.getProcessedPointcloud(), concave_hull_alpha), *hull_cloud);
+            CalTool::removeBoundingBoxOutliers(hull_cloud, pc_corners_rcv);
+            pc_process.setCloud(hull_cloud);
+
             // pc_process.extractConvexHull();
-            size_t hull_size = pc_process.getProcessedPointcloud()->size();
             pc_process.transform(R, t);
             pc_process.scaleTo(1000.0f);
             pc_process.PassThroughFilter("z", 0, 4000);
 
-            ROS_INFO("hull_size / plane_size = %f", (float)hull_size / (float)plane_size);
-
-            auto img_hull = img_SUB_PUB.getImage();
             std::vector<cv::Point2f> imagePoints;
+            auto img_hull = img_SUB_PUB.getImage();
             d3d.projectPointsToImage(*pc_process.getProcessedPointcloud(), imagePoints);
             d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img_hull);
 
 
             cv::imshow("concave_hull_cloud", img_hull);
 
+            
+            // double reprojection_error = CalTool::computeReprojectionErrors(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes);
+            double pixel_mean_error, pixel_stddev_error;
+            CalTool::computeReprojectionErrorsInPixels(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes, pixel_mean_error, pixel_stddev_error);
+            
+
+            // std::cout << "Reprojection Errors = " << reprojection_error << " mm" << std::endl;
+            std::cout << "Reprojection Mean Errors In Pixels = " << pixel_mean_error << " pixels" << std::endl;
+            std::cout << "Reprojection Standard Deviation Errors In Pixels = " << pixel_stddev_error << " pixels" << std::endl;
+
 
             command_handler.sendCommand("capture_complete");
             command_handler.resetReceivedStatus();
         }
-        if(command_received == "undo" || command_received == "delete_once")
+        if(command_received == "undo" || command_received == "delete_once" || key == 8)
         {
             std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
             std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
@@ -328,7 +375,7 @@ int main(int argc, char *argv[])
             std::vector<geometry_msgs::Point32> pc_corners_raw;
             std::vector<geometry_msgs::Point32> img_corners_raw;
 
-            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+            cornerset_csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
 
             if(pc_corners_raw.empty() || img_corners_raw.empty())
             {
@@ -367,109 +414,76 @@ int main(int argc, char *argv[])
             command_handler.resetReceivedStatus();
         }
 
-
-        cv::imshow("Projected Points", img);
-        int key = cv::waitKey(1); 
-        if (key == 27) break;   // Press 'ESC' For Exit
-        if (key == 13)          // Press 'Enter' For Calibration
+        if(command_received == "capture_border")
         {
-            std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
+            
             std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
-
-            csv_operator.writePointsToCSVAppend(pc_corners_rcv, img_corners_rcv);
-
-            std::vector<geometry_msgs::Point32> pc_corners_raw;
-            std::vector<geometry_msgs::Point32> img_corners_raw;
-
-            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
-
-            if(pc_corners_raw.empty() || img_corners_raw.empty())
-            {
-                ROS_INFO("No Corners Found\n");
-                continue;
-            }
-
-            Eigen::Vector3f center_pc = CalTool::computeCentroid(pc_corners_raw);
-            Eigen::Vector3f center_img = CalTool::computeCentroid(img_corners_raw);
-
-            Eigen::MatrixXf pc_center_refer;
-            Eigen::MatrixXf img_center_refer;
-
-            CalTool::alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
-            CalTool::alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
-
-            R = CalTool::findRotationByICP(pc_center_refer, img_center_refer);
-            t = CalTool::findTranslation(center_pc, center_img, R);
-
-            yaml_operator.writeExtrinsicsToYaml(R, t);
-
-            for(auto& pc_corner: pc_corners_rcv)
-            {
-                Eigen::Vector3f corner_trans(pc_corner.x, pc_corner.y, pc_corner.z);
-                corner_trans = R * corner_trans + t;
-                pc_corner.x = corner_trans.x();
-                pc_corner.y = corner_trans.y();
-                pc_corner.z = corner_trans.z();
-            }
-
-            pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
-
-            std::cout << R << std::endl << t << std::endl;
-        }
-        if (key == 8)          // Press 'Enter' For Calibration
-        {
             std::vector<geometry_msgs::Point32> pc_corners_rcv = pc_corners_SUB_PUB.getCornersPoints32();
-            std::vector<geometry_msgs::Point32> img_corners_rcv = img_corners_SUB_PUB.getCornersPoints32();
+            pc_process.setCloud(pc_SUB_PUB.getPointcloudXYZI());
+            pc_process.boxFilter(Eigen::Vector3f(center_x, center_y, center_z), length_x, length_y, length_z, rotate_x, rotate_y, rotate_z);
+            pc_process.normalClusterExtraction();
+            pc_process.extractNearestClusterCloud();
+            pc_process.planeSegmentation();
 
-            std::vector<geometry_msgs::Point32> pc_corners_raw;
-            std::vector<geometry_msgs::Point32> img_corners_raw;
+            // test caliboard_pc
+            PointCloud2Proc caliboard_pc_proc(true);
+            caliboard_pc_proc.setCloud(pc_process.getProcessedPointcloud());
+            caliboard_pc_proc.transform(R, t);
+            caliboard_pc_proc.scaleTo(1000.0f);
+            caliboard_pc_proc.PassThroughFilter("z", 0, 4000);
 
-            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+            std::vector<cv::Point2f> caliboard_pc;
+            auto img_caliboard_pc = img_SUB_PUB.getImage();
+            d3d.projectPointsToImage(*caliboard_pc_proc.getProcessedPointcloud(), caliboard_pc);
+            d3d.drawPointsOnImageZ(*caliboard_pc_proc.getProcessedPointcloud(), caliboard_pc, img_caliboard_pc);
+            cv::imshow("caliboard_pc", img_caliboard_pc);
+            // test caliboard_pc //
 
-            if (!pc_corners_raw.empty()) {
-                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-0);
-                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-1);
-                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-2);
-                csv_operator.deleteRowFromCSV(pc_corners_raw.size()-3);
-            }
 
-            csv_operator.readPointsFromCSV(pc_corners_raw, img_corners_raw);
+            pcl::PointCloud<pcl::PointXYZI>::Ptr hull_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            pcl::copyPointCloud(*pc_process.calculateConcaveHull(pc_process.getProcessedPointcloud(), concave_hull_alpha), *hull_cloud);
+            CalTool::removeBoundingBoxOutliers(hull_cloud, pc_corners_rcv);
+            pc_process.setCloud(hull_cloud);
 
-            if(pc_corners_raw.empty() || img_corners_raw.empty())
-            {
-                ROS_INFO("No Corners Found\n");
-                continue;
-            }
+            boarderset_csv_operator.writePointsToCSVAppend(hull_cloud, img_corners_rcv);
 
-            Eigen::Vector3f center_pc = CalTool::computeCentroid(pc_corners_raw);
-            Eigen::Vector3f center_img = CalTool::computeCentroid(img_corners_raw);
 
-            Eigen::MatrixXf pc_center_refer;
-            Eigen::MatrixXf img_center_refer;
+            // pc_process.extractConvexHull();
+            pc_process.transform(R, t);
+            pc_process.scaleTo(1000.0f);
+            pc_process.PassThroughFilter("z", 0, 4000);
 
-            CalTool::alignPointsToCentroid(pc_corners_raw, center_pc, pc_center_refer);
-            CalTool::alignPointsToCentroid(img_corners_raw, center_img, img_center_refer);
+            std::vector<cv::Point2f> imagePoints;
+            auto img_hull = img_SUB_PUB.getImage();
+            d3d.projectPointsToImage(*pc_process.getProcessedPointcloud(), imagePoints);
+            d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img_hull);
 
-            R = CalTool::findRotationByICP(pc_center_refer, img_center_refer);
-            t = CalTool::findTranslation(center_pc, center_img, R);
 
-            yaml_operator.writeExtrinsicsToYaml(R, t);
+            cv::imshow("concave_hull_cloud", img_hull);
 
-            for(auto& pc_corner: pc_corners_rcv)
-            {
-                Eigen::Vector3f corner_trans(pc_corner.x, pc_corner.y, pc_corner.z);
-                corner_trans = R * corner_trans + t;
-                pc_corner.x = corner_trans.x();
-                pc_corner.y = corner_trans.y();
-                pc_corner.z = corner_trans.z();
-            }
+            
 
-            pc_corners_SUB_PUB.publish(pc_corners_rcv, pc_corners_SUB_PUB.nowHeader());
+            pcl::PointCloud<pcl::PointXYZI>::Ptr border_clouds(new pcl::PointCloud<pcl::PointXYZI>);
+            std::vector<std::vector<geometry_msgs::Point32>> image_corner_sets;
+            boarderset_csv_operator.readPointsFromCSV(border_clouds, image_corner_sets);
+            // double reprojection_error = CalTool::computeReprojectionErrors(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes);
+            double pixel_mean_error, pixel_stddev_error;
+            CalTool::computeReprojectionErrorsInPixels(border_clouds, image_corner_sets, R, t, newCameraMatrix, newDisCoffes, pixel_mean_error, pixel_stddev_error);
+            
 
-            std::cout << R << std::endl << t << std::endl;
+            // std::cout << "Reprojection Errors = " << reprojection_error << " mm" << std::endl;
+            std::cout << "Reprojection Mean Errors In Pixels = " << pixel_mean_error << " pixels" << std::endl;
+            std::cout << "Reprojection Standard Deviation Errors In Pixels = " << pixel_stddev_error << " pixels" << std::endl;
+
+
+            command_handler.sendCommand("capture_border_complete");
+            command_handler.resetReceivedStatus();
         }
 
 
+
+
+        if(key == 27) break;
         
         
 

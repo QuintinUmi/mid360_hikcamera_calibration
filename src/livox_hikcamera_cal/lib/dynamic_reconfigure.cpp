@@ -26,6 +26,18 @@ PointcloudFilterReconfigure::PointcloudFilterReconfigure() :    ortho_filter_ser
     
 }
 
+PointcloudFilterReconfigure::PointcloudFilterReconfigure(ros::NodeHandle nh) :  ortho_filter_server(ros::NodeHandle(nh.getNamespace() + "-OrthoFilterReconfigure")),
+                                                                                transform_filter_server(ros::NodeHandle(nh.getNamespace() + "-TransformFilterReconfigure"))
+{
+
+    this->ortho_filter_f = boost::bind(&PointcloudFilterReconfigure::OrthoFilterReconfigureCallBack, this, _1, _2);
+    this->ortho_filter_server.setCallback(this->ortho_filter_f);
+
+    this->transform_filter_f = boost::bind(&PointcloudFilterReconfigure::TransformFilterReconfigureCallBack, this, _1, _2);
+    this->transform_filter_server.setCallback(this->transform_filter_f);
+    
+}
+
 void PointcloudFilterReconfigure::OrthoFilterReconfigureCallBack(livox_hikcamera_cal::OrthoFilterConfig &pcOrthoFilterConfig, uint32_t level) 
 {
     ROS_INFO("Ortho Filter Reconfigure: x_min=%f, x_max=%f, y_min=%f, y_max=%f, z_min=%f, z_max=%f",
@@ -89,6 +101,11 @@ CalibrationParamReconfigure::CalibrationParamReconfigure() :    calibration_para
     this->calibration_param_f = boost::bind(&CalibrationParamReconfigure::CalibrationParamReconfigureCallBack, this, _1, _2);
     this->calibration_param_server.setCallback(this->calibration_param_f);
     
+}
+CalibrationParamReconfigure::CalibrationParamReconfigure(ros::NodeHandle nh) :    calibration_param_server(ros::NodeHandle(ros::NodeHandle(nh.getNamespace() + "CalibrationParamReconfigure")))
+{
+    this->calibration_param_f = boost::bind(&CalibrationParamReconfigure::CalibrationParamReconfigureCallBack, this, _1, _2);
+    this->calibration_param_server.setCallback(this->calibration_param_f);
 }
 
 void CalibrationParamReconfigure::CalibrationParamReconfigureCallBack(livox_hikcamera_cal::CalibrationParamConfig &calibrationParamConfig, uint32_t level) 
