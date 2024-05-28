@@ -11,7 +11,7 @@ use_center_id: false
 center_id: 12
 aruco_marker_size: 500
 
-aruco_real_length: [252, 252, 252, 252, 252]
+aruco_real_length: [252.5, 252.5, 252.5, 252.5, 252.5]
 
 caliboard_width: 1004
 caliboard_height: 804
