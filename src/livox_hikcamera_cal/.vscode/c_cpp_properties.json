@@ -1,0 +1,30 @@
+{
+  "configurations": [
+    {
+      "browse": {
+        "databaseFilename": "${default}",
+        "limitSymbolsToIncludedHeaders": false
+      },
+      "includePath": [
+        "/home/quintinumi/project/ws_mid360_hikcamera_calibration/devel/include/**",
+        "/home/quintinumi/git_package_src/wpr_simulation/devel/include/**",
+        "/opt/ros/noetic/include/**",
+        "/home/quintinumi/git_package_src/ws_livox/devel/include/**",
+        "/home/quintinumi/project/ws_hikcamera_ros_driver/src/hikcamera_ros_driver/src/hikcamera_opr/include/**",
+        "/home/quintinumi/project/ws_mid360_hikcamera_calibration/src/mid360_hikcamera_calibration/src/livox_hikcamera_cal/include/**",
+        "/home/quintinumi/git_package_src/wpr_simulation/src/waterplus_map_tools/include/**",
+        "/home/quintinumi/git_package_src/wpr_simulation/src/wpb_home/wpb_home_bringup/include/**",
+        "/home/quintinumi/git_package_src/wpr_simulation/src/wpb_home/wpb_home_tutorials/include/**",
+        "/home/quintinumi/git_package_src/wpr_simulation/src/wpb_home/wpbh_local_planner/include/**",
+        "/home/quintinumi/git_package_src/wpr_simulation/src/wpr_simulation/include/**",
+        "/usr/include/**"
+      ],
+      "name": "ROS",
+      "intelliSenseMode": "gcc-x64",
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "gnu11",
+      "cppStandard": "c++14"
+    }
+  ],
+  "version": 4
+}

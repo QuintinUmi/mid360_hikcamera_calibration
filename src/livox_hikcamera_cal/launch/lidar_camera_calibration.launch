@@ -17,4 +17,6 @@
     <node pkg="livox_hikcamera_cal" type="image_process_node" name="image_process_node" output="screen"/>
     <node pkg="livox_hikcamera_cal" type="calibration_node" name="calibration_node" output="screen"/>
 
+    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find livox_hikcamera_cal)/rviz/calibration.rviz" output="screen"/>
+    
 </launch>

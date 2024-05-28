@@ -7,13 +7,14 @@ yaml_save_path: cfg/
 
 dictionary_name: 11
 selected_ids: [12, 150, 364, 544, 712]
-centered_id: 12
-aruco_marker_size: 300
+use_center_id: false
+center_id: 12
+aruco_marker_size: 500
 
-aruco_real_length: [164, 164, 164, 164, 164]
+aruco_real_length: [252, 252, 252, 252, 252]
 
-caliboard_width: 800
-caliboard_hight: 600
+caliboard_width: 1004
+caliboard_height: 804
 
 # criteria_iter_times: 1000000
 # iter_difference: 0.00000001

@@ -86,21 +86,23 @@ int main(int argc, char *argv[])
 
     int dictionaryName;
     vector<int> ids;
-    int centered_id;
+    bool use_center_id;
+    int center_id;
     int markerSize;
     vector<float> arucoRealLength;
 
     rosHandle.param("dictionary_name", dictionaryName, 10);
     rosHandle.param("selected_ids", ids, vector<int>{});
-    rosHandle.param("centered_id", centered_id, 12);
+    rosHandle.param("use_center_id", use_center_id, false);
+    rosHandle.param("center_id", center_id, 12);
     rosHandle.param("aruco_marker_size", markerSize, 500);
     rosHandle.param("aruco_real_length", arucoRealLength, vector<float>{1.0});
 
     float caliboard_width;
-    float caliboard_hight;
+    float caliboard_height;
 
     rosHandle.param("caliboard_width", caliboard_width, (float)12.0);
-    rosHandle.param("caliboard_hight", caliboard_hight, (float)12.0);
+    rosHandle.param("caliboard_height", caliboard_height, (float)12.0);
 
     cv::String intrinsicsPath = yamlPath + "camera_intrinsics.yaml";
     boost::filesystem::path p = boost::filesystem::current_path();  
@@ -159,49 +161,88 @@ int main(int argc, char *argv[])
         std::vector<cv::Vec3d> tvecs;
         pcl::Indices detectedIds;
         arucoMarker.ext_calib_multipul_arucos(img, rvecs, tvecs, detectedIds);
+        if(detectedIds.size() == 0)
+        {
+            ROS_INFO("Not Marker Detected \n");
+            continue;
+        }
+
         cv::Vec3d rvec;
         cv::Vec3d tvec;
         ImageProc::estimate_average_pose(rvecs, tvecs, rvec, tvec);
 
-        int center_index = -1;
-        for(int i = 0; i < detectedIds.size(); i ++)
-        {
-            if(detectedIds[i] == centered_id)
-            {
-                center_index = i;
-            }
-        }
-        if(center_index == -1)
-        {
-            rviz_drawing.deleteObject("line1");
-            rviz_drawing.deleteObject("line2");
-            rviz_drawing.deleteObject("line3");
-            rviz_drawing.deleteObject("line4");
-            rviz_drawing.publish();
-            img_SUB_PUB.publish(img);
-            ROS_INFO("Not Detected Center Marker!\n");
-            continue;
-        }
-        
-        cv::Point3f center(tvecs[center_index][0], tvecs[center_index][1], tvecs[center_index][2]);
 
         std::vector<cv::Point3f> corners_plane;
         std::vector<cv::Point3f> corners_3d;
-        corners_plane.emplace_back(-caliboard_width/2, +caliboard_hight/2, 0);
-        corners_plane.emplace_back(+caliboard_width/2, +caliboard_hight/2, 0);
-        corners_plane.emplace_back(+caliboard_width/2, -caliboard_hight/2, 0);
-        corners_plane.emplace_back(-caliboard_width/2, -caliboard_hight/2, 0);
+        cv::Point3f center;
+        if(use_center_id)
+        {
+            
+            int center_index = -1;
+            for(int i = 0; i < detectedIds.size(); i ++)
+            {
+                if(detectedIds[i] == center_id)
+                {
+                    center_index = i;
+                }
+            }
+            if(center_index == -1)
+            {
+                rviz_drawing.deleteObject("line1");
+                rviz_drawing.deleteObject("line2");
+                rviz_drawing.deleteObject("line3");
+                rviz_drawing.deleteObject("line4");
+                rviz_drawing.publish();
+                img_SUB_PUB.publish(img);
+                ROS_INFO("Not Detected Center Marker!\n");
+                continue;
+            }
+            
+            center.x = tvecs[center_index][0];
+            center.y = tvecs[center_index][1];
+            center.z = tvecs[center_index][2];
 
-        // std::cout << caliboard_width << " " << caliboard_hight << std::endl;
+            
+            corners_plane.emplace_back(-caliboard_width/2, +caliboard_height/2, 0);
+            corners_plane.emplace_back(+caliboard_width/2, +caliboard_height/2, 0);
+            corners_plane.emplace_back(+caliboard_width/2, -caliboard_height/2, 0);
+            corners_plane.emplace_back(-caliboard_width/2, -caliboard_height/2, 0);
 
-        ImageProc::transform_3d_points(corners_plane, corners_3d, rvec, tvecs[center_index]);
-        // std::cout << corners_3d << std::endl;
+            ImageProc::transform_3d_points(corners_plane, corners_3d, rvec, tvec);
 
-        d3d.draw_ortho_coordinate_2d(img, ConversionBridge::rvecs3dToMat_d(rvecs), ConversionBridge::rvecs3dToMat_d(tvecs));
-        d3d.draw_line_2d(img, corners_plane[0], corners_plane[1], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
-        d3d.draw_line_2d(img, corners_plane[1], corners_plane[2], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
-        d3d.draw_line_2d(img, corners_plane[2], corners_plane[3], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
-        d3d.draw_line_2d(img, corners_plane[3], corners_plane[0], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+            d3d.draw_ortho_coordinate_2d(img, ConversionBridge::rvecs3dToMat_d(rvecs), ConversionBridge::rvecs3dToMat_d(tvecs));
+            d3d.draw_line_2d(img, corners_plane[0], corners_plane[1], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+            d3d.draw_line_2d(img, corners_plane[1], corners_plane[2], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+            d3d.draw_line_2d(img, corners_plane[2], corners_plane[3], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+            d3d.draw_line_2d(img, corners_plane[3], corners_plane[0], cv::Mat(rvec), cv::Mat(tvecs[center_index]), cv::Scalar(0, 0, 255));
+
+        }
+        else
+        {
+            
+            center.x = tvec[0];
+            center.y = tvec[1];
+            center.z = tvec[2];
+
+            
+            corners_plane.emplace_back(-caliboard_width/2, +caliboard_height/2, 0);
+            corners_plane.emplace_back(+caliboard_width/2, +caliboard_height/2, 0);
+            corners_plane.emplace_back(+caliboard_width/2, -caliboard_height/2, 0);
+            corners_plane.emplace_back(-caliboard_width/2, -caliboard_height/2, 0);
+
+            ImageProc::transform_3d_points(corners_plane, corners_3d, rvec, tvec);
+
+            d3d.draw_ortho_coordinate_2d(img, ConversionBridge::rvecs3dToMat_d(rvecs), ConversionBridge::rvecs3dToMat_d(tvecs));
+            d3d.draw_line_2d(img, corners_plane[0], corners_plane[1], cv::Mat(rvec), cv::Mat(tvec), cv::Scalar(0, 0, 255));
+            d3d.draw_line_2d(img, corners_plane[1], corners_plane[2], cv::Mat(rvec), cv::Mat(tvec), cv::Scalar(0, 0, 255));
+            d3d.draw_line_2d(img, corners_plane[2], corners_plane[3], cv::Mat(rvec), cv::Mat(tvec), cv::Scalar(0, 0, 255));
+            d3d.draw_line_2d(img, corners_plane[3], corners_plane[0], cv::Mat(rvec), cv::Mat(tvec), cv::Scalar(0, 0, 255));
+        
+        }
+
+        
+
+        
 
         rviz_drawing.addLine("line1", corners_3d[0].x /1000, corners_3d[0].y /1000, corners_3d[0].z /1000, corners_3d[1].x /1000, corners_3d[1].y /1000, corners_3d[1].z /1000, 0.01, 1.0, 0.0, 0.0);
         rviz_drawing.addLine("line2", corners_3d[1].x /1000, corners_3d[1].y /1000, corners_3d[1].z /1000, corners_3d[2].x /1000, corners_3d[2].y /1000, corners_3d[2].z /1000, 0.01, 1.0, 0.0, 0.0);
