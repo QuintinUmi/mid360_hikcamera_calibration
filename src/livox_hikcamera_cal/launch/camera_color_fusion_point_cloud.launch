@@ -12,11 +12,7 @@
     <param name="/shared_parameter/rotate_x" value="0" />
     <param name="/shared_parameter/rotate_y" value="0" />
     <param name="/shared_parameter/rotate_z" value="0" />
-    <param name="shared_parameter" value="value" />
-    <node pkg="livox_hikcamera_cal" type="pointcloud_process_node" name="pointcloud_process_node" output="screen"/>
-    <node pkg="livox_hikcamera_cal" type="image_process_node" name="image_process_node" output="screen"/>
-    <node pkg="livox_hikcamera_cal" type="calibration_node" name="calibration_node" output="screen"/>
 
-    <node name="rviz" pkg="rviz" type="rviz" args="-d $(find livox_hikcamera_cal)/rviz/calibration.rviz" output="screen"/>
+    <node pkg="livox_hikcamera_cal" type="camera_color_fusion_point_cloud" name="camera_color_fusion_point_cloud" output="screen"/>
     
 </launch>

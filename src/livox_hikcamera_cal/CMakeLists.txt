@@ -336,6 +336,7 @@ target_link_libraries(aruco_tool_lib
 add_executable(pointcloud_process_node src/pointcloud_process_node.cpp)
 add_executable(image_process_node src/image_process_node.cpp)
 add_executable(calibration_node src/calibration_node.cpp)
+add_executable(camera_color_fusion_point_cloud src/camera_color_fusion_point_cloud.cpp)
 
 add_executable(controller_menu src/controller_menu.cpp)
 
@@ -366,6 +367,23 @@ target_link_libraries(image_process_node
   recorder_lib
 )
 target_link_libraries(calibration_node
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  calibration_tool_lib
+  corners_subscriber_publisher_lib
+  point_cloud_subscriber_publisher_lib
+  image_subscriber_publisher_lib
+  point_cloud_process_lib
+  drawing_tool_lib
+  aruco_tool_lib
+  dynamic_reconfigure_lib
+  rviz_drawing_3d_lib
+  recorder_lib
+  CommandHandle_lib
+  file_operator_lib
+)
+target_link_libraries(camera_color_fusion_point_cloud
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}

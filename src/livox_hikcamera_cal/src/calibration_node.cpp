@@ -255,13 +255,13 @@ int main(int argc, char *argv[])
         // pc_process.planeSegmentation();
         pc_process.transform(R, t);
         pc_process.scaleTo(1000.0f);
-        pc_process.PassThroughFilter("z", 0, 4000);
+        pc_process.PassThroughFilter("z", 700, 4000);
 
         std::vector<cv::Point2f> imagePoints;
 
         d3d.projectPointsToImage(*pc_process.getProcessedPointcloud(), imagePoints);
 
-        d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img);
+        d3d.drawPointsOnImageIntensity(*pc_process.getProcessedPointcloud(), imagePoints, img);
 
 
         cv::imshow("Projected Points", img);
