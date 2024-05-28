@@ -323,7 +323,7 @@ int main(int argc, char *argv[])
         // pc_process.planeSegmentation();
         pc_process.transform(R, t);
         pc_process.scaleTo(1000.0f);
-        pc_process.PassThroughFilter("z", 700, 40000);
+        pc_process.PassThroughFilter("z", 100, 40000);
 
         std::vector<cv::Point2f> imagePoints;
 
