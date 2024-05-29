@@ -81,22 +81,20 @@ void colorPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud,
                      cv::Mat& image,
                      pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredCloud) {
 
-    assert(image.type() == CV_8UC3);
 
-    // 对图像进行色彩增强
     enhanceImage(image);
 
     coloredCloud->width = inputCloud->width;
     coloredCloud->height = inputCloud->height;
     coloredCloud->is_dense = inputCloud->is_dense;
-    coloredCloud->points.reserve(inputCloud->points.size());  // 预分配内存
+    coloredCloud->points.resize(inputCloud->points.size());  
 
     for (size_t i = 0; i < inputCloud->points.size(); ++i) {
         auto& pt = inputCloud->points[i];
         auto& proj = projectedPoints[i];
 
         if (proj.x >= 0 && proj.x < image.cols && proj.y >= 0 && proj.y < image.rows) {
-            pcl::PointXYZRGB coloredPoint;
+            pcl::PointXYZRGB& coloredPoint = coloredCloud->points[i];
             coloredPoint.x = pt.x;
             coloredPoint.y = pt.y;
             coloredPoint.z = pt.z;
@@ -105,10 +103,9 @@ void colorPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud,
             coloredPoint.b = color[0];   // Blue channel
             coloredPoint.g = color[1];   // Green channel
             coloredPoint.r = color[2];   // Red channel
-
-            coloredCloud->points.push_back(coloredPoint);
         }
     }
+
     downscalePointCloud(coloredCloud); 
 }
 
@@ -351,6 +348,7 @@ int main(int argc, char *argv[])
         output.header.frame_id = "livox_frame";  
         // output.header.stamp = ros::Time::now();
         output.width = rgb_cloud->points.size(); 
+        output.height = 1; 
         
         for (auto& point : rgb_cloud->points) {
             // ROS_INFO("x: %f, y: %f, z: %f\n", point.x, point.y, point.z);
