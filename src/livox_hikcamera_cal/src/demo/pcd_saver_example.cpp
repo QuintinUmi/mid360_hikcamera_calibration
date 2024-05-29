@@ -26,7 +26,7 @@ void KeyInput_CallBack(std_msgs::Int8::ConstPtr key_ascii, pointcloud2_opr::Poin
         // ROS_INFO("Test------------------------------------------------------------------------");
         std::cout << pcSP.getPointcloudXYZI() << std::endl;
         pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud = pcSP.getPointcloudXYZI();
-        pcdsaver.save(pclCloud);
+        pcdsaver.save<pcl::PointXYZI>(pclCloud);
     }
     // printf("test-----------------------------------\n");
 }

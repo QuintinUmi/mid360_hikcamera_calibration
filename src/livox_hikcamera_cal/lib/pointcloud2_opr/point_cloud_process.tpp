@@ -23,8 +23,6 @@
 
 #include <pcl/surface/mls.h>
 
-
-
 #include <opencv2/opencv.hpp>
 
 #include <Eigen/Core>
@@ -1086,5 +1084,3 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 }
-
-
