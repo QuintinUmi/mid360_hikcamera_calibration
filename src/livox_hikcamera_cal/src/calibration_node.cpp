@@ -337,7 +337,7 @@ int main(int argc, char *argv[])
 
             pcl::PointCloud<pcl::PointXYZI>::Ptr hull_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*pc_process.calculateConcaveHull(pc_process.getProcessedPointcloud(), concave_hull_alpha), *hull_cloud);
-            CalTool::removeBoundingBoxOutliers(hull_cloud, pc_corners_rcv);
+            CalTool::removeBoundingBoxOutliers<pcl::PointXYZI>(hull_cloud, pc_corners_rcv);
             pc_process.setCloud(hull_cloud);
 
             // pc_process.extractConvexHull();
@@ -356,7 +356,7 @@ int main(int argc, char *argv[])
             
             // double reprojection_error = CalTool::computeReprojectionErrors(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes);
             double pixel_mean_error, pixel_stddev_error;
-            CalTool::computeReprojectionErrorsInPixels(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes, pixel_mean_error, pixel_stddev_error);
+            CalTool::computeReprojectionErrorsInPixels<pcl::PointXYZI>(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes, pixel_mean_error, pixel_stddev_error);
             
 
             // std::cout << "Reprojection Errors = " << reprojection_error << " mm" << std::endl;
@@ -442,7 +442,7 @@ int main(int argc, char *argv[])
 
             pcl::PointCloud<pcl::PointXYZI>::Ptr hull_cloud(new pcl::PointCloud<pcl::PointXYZI>);
             pcl::copyPointCloud(*pc_process.calculateConcaveHull(pc_process.getProcessedPointcloud(), concave_hull_alpha), *hull_cloud);
-            CalTool::removeBoundingBoxOutliers(hull_cloud, pc_corners_rcv);
+            CalTool::removeBoundingBoxOutliers<pcl::PointXYZI>(hull_cloud, pc_corners_rcv);
             pc_process.setCloud(hull_cloud);
 
             boarderset_csv_operator.writePointsToCSVAppend(hull_cloud, img_corners_rcv);
@@ -468,7 +468,7 @@ int main(int argc, char *argv[])
             boarderset_csv_operator.readPointsFromCSV(border_clouds, image_corner_sets);
             // double reprojection_error = CalTool::computeReprojectionErrors(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes);
             double pixel_mean_error, pixel_stddev_error;
-            CalTool::computeReprojectionErrorsInPixels(border_clouds, image_corner_sets, R, t, newCameraMatrix, newDisCoffes, pixel_mean_error, pixel_stddev_error);
+            CalTool::computeReprojectionErrorsInPixels<pcl::PointXYZI>(border_clouds, image_corner_sets, R, t, newCameraMatrix, newDisCoffes, pixel_mean_error, pixel_stddev_error);
             
 
             // std::cout << "Reprojection Errors = " << reprojection_error << " mm" << std::endl;

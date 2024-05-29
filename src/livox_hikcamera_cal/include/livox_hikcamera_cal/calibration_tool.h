@@ -29,12 +29,13 @@ namespace livox_hikcamera_cal
             CalTool();
             ~CalTool();
 
-
-            static void sortPointByNormalWorldFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal,
+            template<typename PointT>
+            static void sortPointByNormalWorldFrame(typename pcl::PointCloud<PointT>::Ptr points, const Eigen::Vector3f& normal,
                                             bool negetive=false, const Eigen::Vector3f& ref_point=Eigen::Vector3f(0.0, 0.0, 0.0));
             static void sortPointByNormalWorldFrame(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
                                             bool negetive=false, const Eigen::Vector3f& ref_point=Eigen::Vector3f(0.0, 0.0, 0.0));
-            static void sortPointByNormalImgFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal,
+            template<typename PointT>
+            static void sortPointByNormalImgFrame(typename pcl::PointCloud<PointT>::Ptr points, const Eigen::Vector3f& normal,
                                             bool negetive=false, const Eigen::Vector3f& ref_point=Eigen::Vector3f(0.0, 0.0, 0.0));
             static void sortPointByNormalImgFrame(std::vector<cv::Point3f>& points, const Eigen::Vector3f& normal, 
                                             bool negetive=false, const Eigen::Vector3f& ref_point=Eigen::Vector3f(0.0, 0.0, 0.0));
@@ -50,19 +51,20 @@ namespace livox_hikcamera_cal
             static Eigen::Vector3f findTranslation(const Eigen::Vector3f& centroidX, const Eigen::Vector3f& centroidY, const Eigen::Matrix3f& R);
 
 
-
-            static int SolveSVD(pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud_point_list, vector<cv::Point3f> image_points_list,
+            template<typename PointT>
+            static int SolveSVD(typename pcl::PointCloud<PointT>::Ptr pointcloud_point_list, vector<cv::Point3f> image_points_list,
                         Eigen::Matrix3d &R_output, Eigen::Vector3d &t_output);
 
 
             static Eigen::Quaterniond averageQuaternions(const std::vector<Eigen::Quaterniond>& quaternions);
 
             
-            
-            static float pointToLineDistance(const pcl::PointXYZI& point, const geometry_msgs::Point32& a, const geometry_msgs::Point32& b); 
+            template<typename PointT>
+            static float pointToLineDistance(const PointT& point, const geometry_msgs::Point32& a, const geometry_msgs::Point32& b); 
             static float triangleArea(const geometry_msgs::Point32& p1, const geometry_msgs::Point32& p2, const geometry_msgs::Point32& p3);
             static float quadrilateralArea(const geometry_msgs::Point32& p1, const geometry_msgs::Point32& p2, const geometry_msgs::Point32& p3, const geometry_msgs::Point32& p4);
-            static void removeBoundingBoxOutliers(const pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, const std::vector<geometry_msgs::Point32>& corners);
+            template<typename PointT>
+            static void removeBoundingBoxOutliers(const typename pcl::PointCloud<PointT>::Ptr cloud, const std::vector<geometry_msgs::Point32>& corners);
 
 
 
@@ -84,8 +86,9 @@ namespace livox_hikcamera_cal
                 }
             };
 
+            template<typename PointT>
             static void computeReprojectionErrorsInPixels(
-                                            const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+                                            const typename pcl::PointCloud<PointT>::Ptr objectPoints,
                                             const std::vector<geometry_msgs::Point32>& imageCorners,
                                             const Eigen::Matrix3f& R,
                                             const Eigen::Vector3f& t,
@@ -93,8 +96,9 @@ namespace livox_hikcamera_cal
                                             const cv::Mat& distCoeffs,
                                             double& meanError,  
                                             double& stdDev);
+            template<typename PointT>                             
             static void computeReprojectionErrorsInPixels(
-                                            const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+                                            const typename pcl::PointCloud<PointT>::Ptr objectPoints,
                                             const std::vector<std::vector<geometry_msgs::Point32>>& imageCorners,
                                             const Eigen::Matrix3f& R,
                                             const Eigen::Vector3f& t,
@@ -111,5 +115,7 @@ namespace livox_hikcamera_cal
 }
 
 
+
+#include "../lib/calibration_tool.tpp"
 
 #endif

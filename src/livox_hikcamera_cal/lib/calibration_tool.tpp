@@ -36,8 +36,8 @@ CalTool::~CalTool()
 
 
 
-
-void CalTool::sortPointByNormalWorldFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, 
+template<typename PointT>
+void CalTool::sortPointByNormalWorldFrame(typename pcl::PointCloud<PointT>::Ptr points, const Eigen::Vector3f& normal, 
                                 bool negetive, const Eigen::Vector3f& ref_point)
 {
     if(points->empty())
@@ -72,7 +72,7 @@ void CalTool::sortPointByNormalWorldFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr p
         normal_ = -normal_;
     }
 
-    pcl::PointXYZI center;
+    PointT center;
     for (const auto& p : points->points) {
         center.x += p.x;
         center.y += p.y;
@@ -118,7 +118,7 @@ void CalTool::sortPointByNormalWorldFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr p
         std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
     }
 
-    pcl::PointCloud<pcl::PointXYZI> sorted_cloud;
+    pcl::PointCloud<PointT> sorted_cloud;
     for (const auto& angle_index : angle_indices) {
         sorted_cloud.push_back(points->points[angle_index.second]);
     }
@@ -210,7 +210,8 @@ void CalTool::sortPointByNormalWorldFrame(std::vector<cv::Point3f>& points, cons
     points = sorted_points;
 
 }
-void CalTool::sortPointByNormalImgFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal, 
+template<typename PointT>
+void CalTool::sortPointByNormalImgFrame(typename pcl::PointCloud<PointT>::Ptr points, const Eigen::Vector3f& normal, 
                                 bool negetive, const Eigen::Vector3f& ref_point)
 {
     if(points->empty())
@@ -245,7 +246,7 @@ void CalTool::sortPointByNormalImgFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr poi
         normal_ = -normal_;
     }
 
-    pcl::PointXYZI center;
+    PointT center;
     for (const auto& p : points->points) {
         center.x += p.x;
         center.y += p.y;
@@ -291,7 +292,7 @@ void CalTool::sortPointByNormalImgFrame(pcl::PointCloud<pcl::PointXYZI>::Ptr poi
         std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
     }
 
-    pcl::PointCloud<pcl::PointXYZI> sorted_cloud;
+    pcl::PointCloud<PointT> sorted_cloud;
     for (const auto& angle_index : angle_indices) {
         sorted_cloud.push_back(points->points[angle_index.second]);
     }
@@ -487,8 +488,8 @@ Eigen::Vector3f CalTool::findTranslation(const Eigen::Vector3f& centroidX, const
 
 
 
-
-int CalTool::SolveSVD(pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud_point_list, vector<cv::Point3f> image_points_list,
+template<typename PointT>
+int CalTool::SolveSVD(typename pcl::PointCloud<PointT>::Ptr pointcloud_point_list, vector<cv::Point3f> image_points_list,
                         Eigen::Matrix3d &R_output, Eigen::Vector3d &t_output)
 {
     if (pointcloud_point_list->points.size() != image_points_list.size()) {
@@ -538,7 +539,8 @@ int CalTool::SolveSVD(pcl::PointCloud<pcl::PointXYZI>::Ptr pointcloud_point_list
 }
 
 
-float CalTool::pointToLineDistance(const pcl::PointXYZI& point, const geometry_msgs::Point32& a, const geometry_msgs::Point32& b) 
+template<typename PointT>
+float CalTool::pointToLineDistance(const PointT& point, const geometry_msgs::Point32& a, const geometry_msgs::Point32& b) 
 {
     Eigen::Vector2f p(point.x, point.y);
     Eigen::Vector2f pa(a.x, a.y);
@@ -561,14 +563,15 @@ float CalTool::quadrilateralArea(const geometry_msgs::Point32& p1, const geometr
     return area1 + area2;
 }
 
-void CalTool::removeBoundingBoxOutliers(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, const std::vector<geometry_msgs::Point32>& corners) 
+template<typename PointT>
+void CalTool::removeBoundingBoxOutliers(typename pcl::PointCloud<PointT>::Ptr cloud, const std::vector<geometry_msgs::Point32>& corners) 
 {
-    pcl::PointCloud<pcl::PointXYZI>::Ptr pca_trans_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    typename pcl::PointCloud<PointT>::Ptr pca_trans_cloud(new pcl::PointCloud<PointT>);
 
     Eigen::Matrix3f eigen_vector;
     Eigen::Vector4f mean_vector;
 
-    pcl::PCA<pcl::PointXYZI> pca;
+    pcl::PCA<PointT> pca;
     pca.setInputCloud(cloud);
     eigen_vector = pca.getEigenVectors();
     mean_vector = pca.getMean();
@@ -608,7 +611,7 @@ void CalTool::removeBoundingBoxOutliers(pcl::PointCloud<pcl::PointXYZI>::Ptr clo
 
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr filtered_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+    typename pcl::PointCloud<PointT>::Ptr filtered_cloud(new pcl::PointCloud<PointT>);
     pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
 
 
@@ -627,7 +630,7 @@ void CalTool::removeBoundingBoxOutliers(pcl::PointCloud<pcl::PointXYZI>::Ptr clo
         }
     }
 
-    pcl::ExtractIndices<pcl::PointXYZI> extract;
+    pcl::ExtractIndices<PointT> extract;
     extract.setInputCloud(cloud);
     extract.setIndices(inliers);
     extract.setNegative(false);
@@ -640,9 +643,9 @@ void CalTool::removeBoundingBoxOutliers(pcl::PointCloud<pcl::PointXYZI>::Ptr clo
 
 
 
-
+template<typename PointT>
 void CalTool::computeReprojectionErrorsInPixels(
-    const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+    const typename pcl::PointCloud<PointT>::Ptr objectPoints,
     const std::vector<geometry_msgs::Point32>& imageCorners,
     const Eigen::Matrix3f& R,
     const Eigen::Vector3f& t,
@@ -691,8 +694,9 @@ void CalTool::computeReprojectionErrorsInPixels(
     });
     stdDev = std::sqrt(sumSq / errors.size());
 }
+template<typename PointT>
 void CalTool::computeReprojectionErrorsInPixels(
-    const pcl::PointCloud<pcl::PointXYZI>::Ptr objectPoints,
+    const typename pcl::PointCloud<PointT>::Ptr objectPoints,
     const std::vector<std::vector<geometry_msgs::Point32>>& imageCorners_list,
     const Eigen::Matrix3f& R,
     const Eigen::Vector3f& t,
