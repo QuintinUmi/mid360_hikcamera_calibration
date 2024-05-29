@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     
     livox_hikcamera_cal::pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(ros_handle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));
 
-    livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc processed_pointcloud;
+    livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> processed_pointcloud;
 
     livox_hikcamera_cal::PointcloudFilterReconfigure box_filter_reconfigure;
     livox_hikcamera_cal::RQTConfig rqtCfg;

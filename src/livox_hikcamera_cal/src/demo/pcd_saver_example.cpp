@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     
     pointcloud2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar_proc"), std::string("/livox/lidar_proc"));
 
-    pointcloud2_opr::PointCloud2Proc pcProc;
+    pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> pcProc;
 
     PointcloudFilterReconfigure filterRecfg();
     RQTConfig rqtCfg;

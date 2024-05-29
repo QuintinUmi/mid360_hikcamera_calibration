@@ -38,46 +38,38 @@
 
 namespace livox_hikcamera_cal::pointcloud2_opr
 {
-    PointCloud2Proc::PointCloud2Proc(bool remove_origin_point) :    
-                                    raw_cloud(new pcl::PointCloud<pcl::PointXYZI>),
-                                    processed_cloud(new pcl::PointCloud<pcl::PointXYZI>),
-                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
+    template<typename PointT>
+    PointCloud2Proc<PointT>::PointCloud2Proc(bool remove_origin_point) :    
+                                    raw_cloud(new pcl::PointCloud<PointT>),
+                                    processed_cloud(new pcl::PointCloud<PointT>),
+                                    tree(boost::shared_ptr<pcl::search::Search<PointT>>(new pcl::search::KdTree<PointT>)),
                                     normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
                                     pca_transform_matrix(Eigen::Matrix4f::Identity()),
                                     plane_coefficients(new pcl::ModelCoefficients),
-                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>),
-                                    no_cloud(new pcl::PointCloud<pcl::PointXYZI>)
-    {
-        // this->raw_cloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
-        // this->processed_cloud = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
-        // this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
-        // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
-        // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
-        this->remove_origin_point_ = remove_origin_point;
-    }
+                                    rect_corners_3d(new pcl::PointCloud<PointT>),
+                                    no_cloud(new pcl::PointCloud<PointT>),
+                                    remove_origin_point_(remove_origin_point) {}
     
-    PointCloud2Proc::PointCloud2Proc(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, bool remove_origin_point) :  
-                                    tree(boost::shared_ptr<pcl::search::Search<pcl::PointXYZI>>(new pcl::search::KdTree<pcl::PointXYZI>)),
+    template<typename PointT>
+    PointCloud2Proc<PointT>::PointCloud2Proc(typename pcl::PointCloud<PointT>::Ptr cloud, bool remove_origin_point) :  
+                                    tree(boost::shared_ptr<pcl::search::Search<PointT>>(new pcl::search::KdTree<PointT>)),
                                     normals(boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>)),
                                     pca_transform_matrix(Eigen::Matrix4f::Identity()),
                                     plane_coefficients(new pcl::ModelCoefficients),
-                                    rect_corners_3d(new pcl::PointCloud<pcl::PointXYZI>),
-                                    no_cloud(new pcl::PointCloud<pcl::PointXYZI>)
+                                    rect_corners_3d(new pcl::PointCloud<PointT>),
+                                    no_cloud(new pcl::PointCloud<PointT>),
+                                    remove_origin_point_(remove_origin_point)
     {
-        // this->raw_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(cloud);
-        // this->processed_cloud = pcl::shared_ptr<pcl::PointCloud<pcl::PointXYZI>>(cloud),
-        // this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
-        // this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
-        // this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
-        this->remove_origin_point_ = remove_origin_point;
         this->setCloud(cloud);
     }
 
-    PointCloud2Proc::~PointCloud2Proc() {}
+    template<typename PointT>
+    PointCloud2Proc<PointT>::~PointCloud2Proc() {}
 
-    int PointCloud2Proc::loadPointCloudFile(std::string file_name)
+    template<typename PointT>
+    int PointCloud2Proc<PointT>::loadPointCloudFile(std::string file_name)
     {
-        // pcl::PointCloud<pcl::PointXYZI>::Ptr rawCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        // typename pcl::PointCloud<PointT>::Ptr rawCloud(new typename pcl::PointCloud<PointT>);
         this->raw_cloud->clear();
         if (pcl::io::loadPCDFile(file_name, *this->raw_cloud) < 0)
         {
@@ -89,7 +81,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return 0;
     }
 
-    void PointCloud2Proc::resetCloud()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::resetCloud()
     {
         if(!this->raw_cloud){
             printf("Point Cloud Re-setting Failed! Not allow empty point cloud reset\n");
@@ -101,61 +94,71 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->tree = pcl::search::Search<pcl::PointXYZI>::Ptr(new pcl::search::KdTree<pcl::PointXYZI>);
         this->normals = boost::shared_ptr<pcl::PointCloud<pcl::Normal>>(new pcl::PointCloud<pcl::Normal>),
         this->plane_coefficients = pcl::ModelCoefficients::Ptr(new pcl::ModelCoefficients);
-        this->rect_corners_3d = pcl::PointCloud<pcl::PointXYZI>::Ptr(new pcl::PointCloud<pcl::PointXYZI>);
+        this->rect_corners_3d = typename pcl::PointCloud<PointT>::Ptr(new typename pcl::PointCloud<PointT>);
         this->pca_transform_matrix = Eigen::Matrix4f::Identity();
         this->clusters.clear();
         this->rect_corners_3d->clear();
     }
-    void PointCloud2Proc::setCloud(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::setCloud(typename pcl::PointCloud<PointT>::Ptr cloud)
     {
         this->rawCloudUpdate(cloud);
         this->resetCloud();
     }
-    void PointCloud2Proc::setRemoveOriginPoint(bool remove_origin_point)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::setRemoveOriginPoint(bool remove_origin_point)
     {
         this->remove_origin_point_ = remove_origin_point;
     }
 
-
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getRawPointcloud()
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::getRawPointcloud()
     {
         return this->raw_cloud;
     }
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getProcessedPointcloud()
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::getProcessedPointcloud()
     {
         return this->processed_cloud;
     }
-    std::vector<pcl::PointIndices> PointCloud2Proc::getClastersIndices()
+    template<typename PointT>
+    std::vector<pcl::PointIndices> PointCloud2Proc<PointT>::getClastersIndices()
     {
         return this->clusters;
     }
-    pcl::PointIndices PointCloud2Proc::getClusterIndices(int index_of_cluster_indices)
+    template<typename PointT>
+    pcl::PointIndices PointCloud2Proc<PointT>::getClusterIndices(int index_of_cluster_indices)
     {
         return this->clusters[index_of_cluster_indices];
     }
-    pcl::ModelCoefficients PointCloud2Proc::getPlaneCoefficients()
+    template<typename PointT>
+    pcl::ModelCoefficients PointCloud2Proc<PointT>::getPlaneCoefficients()
     {
         return *this->plane_coefficients;
     }
-    Eigen::Vector3f PointCloud2Proc::getPlaneNormals()
+    template<typename PointT>
+    Eigen::Vector3f PointCloud2Proc<PointT>::getPlaneNormals()
     {
         return this->plane_normals;
     }
-    Eigen::Matrix4f PointCloud2Proc::getPCATransformMatrix()
+    template<typename PointT>
+    Eigen::Matrix4f PointCloud2Proc<PointT>::getPCATransformMatrix()
     {
         return this->pca_transform_matrix;
     }
-    cv::Point2f* PointCloud2Proc::getPCAPlaneRectCorners()
+    template<typename PointT>
+    cv::Point2f* PointCloud2Proc<PointT>::getPCAPlaneRectCorners()
     {
         return this->rect_corners_2d;
     }
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::get3DRectCorners()
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::get3DRectCorners()
     {
         return this->rect_corners_3d;
     }
 
-
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr PointCloud2Proc::getColorPointCloudIntensity() 
+    template<typename PointT>
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr PointCloud2Proc<PointT>::getColorPointCloudIntensity() 
     {
         pcl::PointCloud<pcl::PointXYZRGB>::Ptr colored_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
         if (this->processed_cloud->empty())
@@ -188,24 +191,25 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
-
-    void PointCloud2Proc::PassThroughFilter(std::string axis, float min, float max)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::PassThroughFilter(std::string axis, float min, float max)
     {
         pcl::PassThrough<pcl::PointXYZI> pass;
         pass.setInputCloud(this->processed_cloud);          
         pass.setFilterFieldName(axis);      
         pass.setFilterLimits(0.0, FLT_MAX); 
 
-        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr tempCloud(new typename pcl::PointCloud<PointT>);
         pass.filter(*tempCloud);
         this->processedCloudUpdate(tempCloud);
 
         return;
     }
-    void PointCloud2Proc::boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::boxFilter(Eigen::Vector4f min_point, Eigen::Vector4f max_point, bool negetive)
     {
         pcl::CropBox<pcl::PointXYZI> boxFilter;
-        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr tempCloud(new typename pcl::PointCloud<PointT>);
         boxFilter.setInputCloud(this->processed_cloud);
         boxFilter.setMin(min_point);
         boxFilter.setMax(max_point);
@@ -216,7 +220,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         
         return;
     }
-    void PointCloud2Proc::boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::boxFilter(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
                                     float angle_x, float angle_y, float angle_z, bool negetive)
     {
         pcl::CropBox<pcl::PointXYZI> boxFilter;
@@ -236,7 +241,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         boxFilter.setNegative(negetive);
 
-        pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr tempCloud(new typename pcl::PointCloud<PointT>);
         boxFilter.setInputCloud(this->processed_cloud);
         boxFilter.filter(*tempCloud);
         this->processedCloudUpdate(tempCloud);
@@ -244,7 +249,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
-    std::vector<pcl::PointIndices> PointCloud2Proc::normalClusterExtraction(float smoothness, float curvature, int number_of_neighbours, int k_search, 
+    template<typename PointT>
+    std::vector<pcl::PointIndices> PointCloud2Proc<PointT>::normalClusterExtraction(float smoothness, float curvature, int number_of_neighbours, int k_search, 
                                                             int min_cluster_size, int max_cluster_size)
     {
         this->computeNormals(k_search);
@@ -264,7 +270,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return this->clusters;
     }
-    std::vector<pcl::PointIndices> PointCloud2Proc::normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), float smoothness, float curvature, int k_search, 
+    template<typename PointT>
+    std::vector<pcl::PointIndices> PointCloud2Proc<PointT>::normalClusterExtraction(int (*ClustersIndexSelectorFunction)(std::vector<pcl::PointIndices>), float smoothness, float curvature, int k_search, 
                                                             int number_of_neighbours, int min_cluster_size, int max_cluster_size)
     {
         this->computeNormals(k_search);
@@ -285,7 +292,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return this->clusters;
     }
 
-    pcl::PointIndices PointCloud2Proc::extractNearestClusterCloud(Eigen::Vector4f referencePoint)
+    template<typename PointT>
+    pcl::PointIndices PointCloud2Proc<PointT>::extractNearestClusterCloud(Eigen::Vector4f referencePoint)
     {
         pcl::PointIndices cluster = this->computeNearestClusterIndices(this->processed_cloud, this->clusters, referencePoint);   
 
@@ -294,9 +302,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return cluster;
     }
 
-    int PointCloud2Proc::statisticalOutlierFilter(int mean_k, float stddev_mul)
+    template<typename PointT>
+    int PointCloud2Proc<PointT>::statisticalOutlierFilter(int mean_k, float stddev_mul)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_filtered(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_filtered(new typename pcl::PointCloud<PointT>);
         pcl::StatisticalOutlierRemoval<pcl::PointXYZI> sor;
         pcl::Indices indices;
         
@@ -318,7 +327,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return cloud_filtered->size();
     }
 
-    pcl::PointIndices PointCloud2Proc::planeSegmentation(float distance_threshold, int max_iterations)
+    template<typename PointT>
+    pcl::PointIndices PointCloud2Proc<PointT>::planeSegmentation(float distance_threshold, int max_iterations)
     {
         pcl::SACSegmentation<pcl::PointXYZI> seg;
         seg.setOptimizeCoefficients(true); 
@@ -328,7 +338,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         seg.setDistanceThreshold(distance_threshold);    
 
         pcl::ExtractIndices<pcl::PointXYZI> extract;
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_plane(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_plane(new typename pcl::PointCloud<PointT>);
 
         pcl::PointIndices inliers_;
         pcl::PointIndices::Ptr inliers(new pcl::PointIndices);
@@ -368,9 +378,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return inliers_;
     }
 
-    void PointCloud2Proc::planeProjection()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::planeProjection()
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_projected(new typename pcl::PointCloud<PointT>);
 
         pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
@@ -382,9 +393,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return;
     }
-    void PointCloud2Proc::planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::planeProjection(pcl::ModelCoefficients::Ptr plane_coefficients)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_projected(new typename pcl::PointCloud<PointT>);
 
         pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
@@ -396,7 +408,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return;
     }
-    void PointCloud2Proc::planeProjection(Eigen::Vector4f coefficient)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::planeProjection(Eigen::Vector4f coefficient)
     {
         pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients);
 
@@ -406,7 +419,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         coefficients->values[2] = coefficient[2];
         coefficients->values[3] = coefficient[3];
 
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_projected(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_projected(new typename pcl::PointCloud<PointT>);
 
         pcl::ProjectInliers<pcl::PointXYZI> proj;
         proj.setModelType(pcl::SACMODEL_PLANE);
@@ -419,7 +432,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
-    void PointCloud2Proc::pcaTransform()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::pcaTransform()
     {
         Eigen::Matrix3f eigen_vector;
         Eigen::Vector4f mean_vector;
@@ -431,7 +445,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
-    void PointCloud2Proc::scaleTo(float scale)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::scaleTo(float scale)
     {
         Eigen::Matrix4f scaleMatrix = Eigen::Matrix4f::Zero(); 
         scaleMatrix(0,0) = scale;     
@@ -442,13 +457,15 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->processedCloudTransform(this->processed_cloud, scaleMatrix);
     }
 
-    void PointCloud2Proc::transform(Eigen::Matrix4f transform_matrix)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transform(Eigen::Matrix4f transform_matrix)
     {
         this->processedCloudTransform(this->processed_cloud, transform_matrix);
 
         return;
     }
-    void PointCloud2Proc::transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector3f translation_vector)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector3f translation_vector)
     {
         Eigen::Affine3f transform = Eigen::Affine3f::Identity();
         transform.linear() = rotation_matrix;
@@ -459,7 +476,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return;
     }
-    void PointCloud2Proc::transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transform(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix)
     {
         Eigen::Matrix4f transform_matrix = this->computeTransformMatrix(rotation_matrix, translation_matrix);
         
@@ -469,16 +487,19 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
     
 
-    void PointCloud2Proc::transformWorldToImg()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transformWorldToImg()
     {
         this->processedCloudTransform(this->processed_cloud, this->computeTransformMatrixWorldToImg());
     }
-    void PointCloud2Proc::transformImgToWorld()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transformImgToWorld()
     {
         this->processedCloudTransform(this->processed_cloud, this->computeTransformMatrixImgToWorld());
     }
 
-    void PointCloud2Proc::findRectangleCornersInPCAPlane()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::findRectangleCornersInPCAPlane()
     {
         this->pca_points_.clear();
         for (const auto& point : *this->processed_cloud) {
@@ -491,7 +512,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
-    void PointCloud2Proc::optimizeRectangleAdjustCentroid(float constraint_width, float constraint_height, float optimize_offset_ratio, float optimize_precision)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::optimizeRectangleAdjustCentroid(float constraint_width, float constraint_height, float optimize_offset_ratio, float optimize_precision)
     {
         if (this->pointcloud_rect_box.size.area() == 0 || this->pca_points_.empty())
         {
@@ -538,7 +560,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pointcloud_rect_box = optimized_rect;
         this->pointcloud_rect_box.points(this->rect_corners_2d);
     }
-    void PointCloud2Proc::optimizeRectangleAngleAtCentroid(float constraint_width, float constraint_height, float angle_range_ratio, float angle_precision)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::optimizeRectangleAngleAtCentroid(float constraint_width, float constraint_height, float angle_range_ratio, float angle_precision)
     {
         if (this->pointcloud_rect_box.size.area() == 0 || this->pca_points_.empty())
         {
@@ -585,7 +608,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         this->pointcloud_rect_box.points(this->rect_corners_2d);
     }
 
-    void PointCloud2Proc::transformCornersTo3D()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transformCornersTo3D()
     {
         for (int i = 0; i < 4; i++) {
             Eigen::Vector4f pt_2d(this->rect_corners_2d[i].x, this->rect_corners_2d[i].y, 0, 1);
@@ -600,7 +624,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return;
     }
-    void PointCloud2Proc::transformCornersTo3D(Eigen::Matrix4f transform_matrix)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::transformCornersTo3D(Eigen::Matrix4f transform_matrix)
     {
         for (int i = 0; i < 4; i++) {
             Eigen::Vector4f pt_2d(this->rect_corners_2d[i].x, this->rect_corners_2d[i].y, 0, 1);
@@ -616,9 +641,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return;
     }
 
-    void PointCloud2Proc::extractConcaveHull(double alpha)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::extractConcaveHull(double alpha)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_hull(new typename pcl::PointCloud<PointT>);
 
         cloud_hull = this->calculateConcaveHull(this->processed_cloud, alpha);
 
@@ -626,9 +652,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return;
     }
-    void PointCloud2Proc::extractConvexHull()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::extractConvexHull()
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_hull(new typename pcl::PointCloud<PointT>);
 
         cloud_hull = this->calculateConvexHull(this->processed_cloud);
 
@@ -640,7 +667,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, OptimizationMethod optimization_method,
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::extractNearestRectangleCorners(bool useStatisticalOutlierFilter, OptimizationMethod optimization_method,
                                                                                         float constraint_width, float constraint_height, 
                                                                                         float optimize_range_ratio, float optimize_precision)
     {
@@ -688,9 +716,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getFilterBoxCorners(Eigen::Vector4f min_point, Eigen::Vector4f max_point)
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::getFilterBoxCorners(Eigen::Vector4f min_point, Eigen::Vector4f max_point)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr corners(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr corners(new typename pcl::PointCloud<PointT>);
 
         pcl::PointXYZI point;
 
@@ -722,7 +751,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         
         return corners;
     }
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::getFilterBoxCorners(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::getFilterBoxCorners(Eigen::Vector3f box_center, float length_x, float length_y, float length_z,
                                                                                 float angle_x, float angle_y, float angle_z)
     {
         Eigen::Quaternionf q;
@@ -745,7 +775,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         corners_at_origin.push_back(Eigen::Vector3f(length_x/2, length_y/2, length_z/2));
         corners_at_origin.push_back(Eigen::Vector3f(-length_x/2, length_y/2, length_z/2));
 
-        pcl::PointCloud<pcl::PointXYZI>::Ptr corners(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr corners(new typename pcl::PointCloud<PointT>);
         for (const auto& corner_at_origin : corners_at_origin) 
         {
             Eigen::Vector3f transformed_corner = transform * corner_at_origin; 
@@ -757,7 +787,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
-    pcl::PointCloud<pcl::Normal>::Ptr PointCloud2Proc::computeNormals(int k_search = 120)
+    template<typename PointT>
+    pcl::PointCloud<pcl::Normal>::Ptr PointCloud2Proc<PointT>::computeNormals(int k_search)
     {
         // pcl::PointCloud<pcl::Normal>::Ptr normals(new pcl::PointCloud<pcl::Normal>);
         pcl::NormalEstimation<pcl::PointXYZI, pcl::Normal> normal_estimator;
@@ -769,7 +800,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return this->normals;
     }
 
-    pcl::PointIndices PointCloud2Proc::computeNearestClusterIndices(pcl::PointCloud<pcl::PointXYZI>::Ptr input_cloud, std::vector<pcl::PointIndices> input_clusters, 
+    template<typename PointT>
+    pcl::PointIndices PointCloud2Proc<PointT>::computeNearestClusterIndices(typename pcl::PointCloud<PointT>::Ptr input_cloud, std::vector<pcl::PointIndices> input_clusters, 
                                                         Eigen::Vector4f referencePoint)
     {
         float minDistance = std::numeric_limits<float>::max();
@@ -782,7 +814,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         }
 
         for (size_t i = 0; i < input_clusters.size(); ++i) {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr cluster(new pcl::PointCloud<pcl::PointXYZI>);
+            typename pcl::PointCloud<PointT>::Ptr cluster(new typename pcl::PointCloud<PointT>);
             pcl::copyPointCloud(*input_cloud, input_clusters[i], *cluster);
             Eigen::Vector4f centroid;
             pcl::compute3DCentroid(*cluster, centroid);
@@ -796,7 +828,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return input_clusters[nearestPlaneIndex];
     }
 
-    void PointCloud2Proc::computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::computePCAMatrix(Eigen::Matrix3f& eigen_vector, Eigen::Vector4f& mean_vector)
     {
         pcl::PCA<pcl::PointXYZI> pca;
         pca.setInputCloud(this->processed_cloud);
@@ -804,7 +837,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         mean_vector = pca.getMean();
     }
 
-    Eigen::Matrix4f PointCloud2Proc::computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix)
+    template<typename PointT>
+    Eigen::Matrix4f PointCloud2Proc<PointT>::computeTransformMatrix(Eigen::Matrix3f rotation_matrix, Eigen::Vector4f translation_matrix)
     {
         Eigen::Matrix4f transform = Eigen::Matrix4f::Identity();
         transform.block<3,3>(0, 0) = rotation_matrix.transpose();  
@@ -813,7 +847,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return transform;
     }
 
-    Eigen::Matrix4f PointCloud2Proc::computeTransformMatrixWorldToImg()
+    template<typename PointT>
+    Eigen::Matrix4f PointCloud2Proc<PointT>::computeTransformMatrixWorldToImg()
     {
         float scale = 1000.0f;
 
@@ -829,7 +864,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         transform(2, 2) = 0;
         return transform;
     }
-    Eigen::Matrix4f PointCloud2Proc::computeTransformMatrixImgToWorld()
+    template<typename PointT>
+    Eigen::Matrix4f PointCloud2Proc<PointT>::computeTransformMatrixImgToWorld()
     {
         float scale = 1 / 1000.0f;
 
@@ -842,7 +878,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return transform;
     }
 
-    void PointCloud2Proc::sortPointByNormal(pcl::PointCloud<pcl::PointXYZI>::Ptr points, const Eigen::Vector3f& normal)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::sortPointByNormal(typename pcl::PointCloud<PointT>::Ptr points, const Eigen::Vector3f& normal)
     {
         pcl::PointXYZI center;
         for (const auto& p : points->points) {
@@ -890,7 +927,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             std::rotate(angle_indices.begin(), angle_indices.begin() + 1, angle_indices.end());
         }
 
-        pcl::PointCloud<pcl::PointXYZI> sorted_cloud;
+        typename pcl::PointCloud<PointT> sorted_cloud;
         for (const auto& angle_index : angle_indices) {
             sorted_cloud.push_back(points->points[angle_index.second]);
         }
@@ -900,9 +937,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     }
 
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::calculateConcaveHull(const pcl::PointCloud<pcl::PointXYZI>::Ptr &input_cloud, double alpha)
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::calculateConcaveHull(const typename pcl::PointCloud<PointT>::Ptr &input_cloud, double alpha)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_hull(new typename pcl::PointCloud<PointT>);
 
         pcl::ConcaveHull<pcl::PointXYZI> concave_hull;
         concave_hull.setInputCloud(input_cloud);
@@ -911,9 +949,10 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
         return cloud_hull;
     }
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::calculateConvexHull(const pcl::PointCloud<pcl::PointXYZI>::Ptr &input_cloud)
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::calculateConvexHull(const typename pcl::PointCloud<PointT>::Ptr &input_cloud)
     {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr cloud_hull(new pcl::PointCloud<pcl::PointXYZI>);
+        typename pcl::PointCloud<PointT>::Ptr cloud_hull(new typename pcl::PointCloud<PointT>);
         pcl::ConvexHull<pcl::PointXYZI> convex_hull;
         convex_hull.setInputCloud(input_cloud);
         convex_hull.reconstruct(*cloud_hull);
@@ -925,17 +964,18 @@ namespace livox_hikcamera_cal::pointcloud2_opr
 
 
 
-
-    void PointCloud2Proc::rawCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::rawCloudUpdate(typename pcl::PointCloud<PointT>::Ptr cloud)
     {
         this->raw_cloud->clear();
         pcl::copyPointCloud(*cloud, *this->raw_cloud);
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::processedCloudUpdate(typename pcl::PointCloud<PointT>::Ptr cloud)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            typename pcl::PointCloud<PointT>::Ptr write_in_cloud(new typename pcl::PointCloud<PointT>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, *this->processed_cloud);
@@ -946,11 +986,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             pcl::copyPointCloud(*cloud, *this->processed_cloud);
         }
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::PointIndices cluster_indices)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::processedCloudUpdate(typename pcl::PointCloud<PointT>::Ptr cloud, pcl::PointIndices cluster_indices)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            typename pcl::PointCloud<PointT>::Ptr write_in_cloud(new typename pcl::PointCloud<PointT>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, cluster_indices, *this->processed_cloud);
@@ -961,11 +1002,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             pcl::copyPointCloud(*cloud, cluster_indices, *this->processed_cloud);
         }
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::processedCloudUpdate(typename pcl::PointCloud<PointT>::Ptr cloud, std::vector<pcl::PointIndices> clusters_indices)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            typename pcl::PointCloud<PointT>::Ptr write_in_cloud(new typename pcl::PointCloud<PointT>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, clusters_indices, *this->processed_cloud);
@@ -976,11 +1018,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
             pcl::copyPointCloud(*cloud, clusters_indices, *this->processed_cloud);
         }
     }
-    void PointCloud2Proc::processedCloudUpdate(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, pcl::Indices indices)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::processedCloudUpdate(typename pcl::PointCloud<PointT>::Ptr cloud, pcl::Indices indices)
     {
         if(cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            typename pcl::PointCloud<PointT>::Ptr write_in_cloud(new typename pcl::PointCloud<PointT>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             this->processed_cloud->clear();
             pcl::copyPointCloud(*write_in_cloud, indices, *this->processed_cloud);
@@ -992,11 +1035,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         }
     }
 
-    void PointCloud2Proc::processedCloudTransform(pcl::PointCloud<pcl::PointXYZI>::Ptr cloud, Eigen::Matrix4f transform_matrix)
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::processedCloudTransform(typename pcl::PointCloud<PointT>::Ptr cloud, Eigen::Matrix4f transform_matrix)
     {
         if (cloud == this->processed_cloud)
         {
-            pcl::PointCloud<pcl::PointXYZI>::Ptr write_in_cloud(new pcl::PointCloud<pcl::PointXYZI>);
+            typename pcl::PointCloud<PointT>::Ptr write_in_cloud(new typename pcl::PointCloud<PointT>);
             pcl::copyPointCloud(*cloud, *write_in_cloud);
             pcl::transformPointCloud(*write_in_cloud, *this->processed_cloud, transform_matrix);
         }
@@ -1007,7 +1051,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         }
     }
 
-    std::vector<std::string> PointCloud2Proc::iterateFilesFromPath(std::string folderPath)
+    template<typename PointT>
+    std::vector<std::string> PointCloud2Proc<PointT>::iterateFilesFromPath(std::string folderPath)
     { 
 
         std::vector<std::string> file_names;
@@ -1025,7 +1070,8 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         return file_names;
     }
 
-    void PointCloud2Proc::removeOriginPoint()
+    template<typename PointT>
+    void PointCloud2Proc<PointT>::removeOriginPoint()
     {
         if(this->remove_origin_point_)
         {
@@ -1033,9 +1079,12 @@ namespace livox_hikcamera_cal::pointcloud2_opr
         }
     }
 
-    pcl::PointCloud<pcl::PointXYZI>::Ptr PointCloud2Proc::NOCLOUD()
+    template<typename PointT>
+    typename pcl::PointCloud<PointT>::Ptr PointCloud2Proc<PointT>::NOCLOUD()
     {
         return no_cloud;
     }
 
 }
+
+

@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
 
 
 	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);		
-	pointcloud2_opr::PointCloud2Proc pc_process(true); // Remove Origin Point Published by livox_ros_driver2
+	pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> pc_process(true); // Remove Origin Point Published by livox_ros_driver2
 	PointcloudFilterReconfigure filterRecfg;
     RQTConfig rqtCfg;
 	RvizDrawing rviz_drawing;
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 		
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
-		corners = pc_process.extractNearestRectangleCorners(false, PointCloud2Proc::OptimizationMethod::AngleAtCentroid, caliboard_width, caliboard_height, 0.05);
+		corners = pc_process.extractNearestRectangleCorners(false, PointCloud2Proc<pcl::PointXYZI>::OptimizationMethod::AngleAtCentroid, caliboard_width, caliboard_height, 0.05);
 		CalTool::sortPointByNormalWorldFrame(corners, pc_process.getPlaneNormals());
 
 		std::vector<geometry_msgs::Point> ros_corners;

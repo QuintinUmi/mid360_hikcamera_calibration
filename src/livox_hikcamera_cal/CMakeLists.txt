@@ -249,11 +249,11 @@ add_library(point_cloud_subscriber_publisher_lib
   lib/pointcloud2_opr/point_cloud_subscriber_publisher.cpp
 )
 
-add_library(point_cloud_process_lib
-  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
-  include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h
-  lib/pointcloud2_opr/point_cloud_process.cpp
-)
+# add_library(point_cloud_process_lib
+#   include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h
+#   include include/livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h
+#   # lib/pointcloud2_opr/point_cloud_process.cpp
+# )
 
 add_library(pcd_saver_lib
   include include/livox_hikcamera_cal/pointcloud2_opr/pcd_saver.h
@@ -263,19 +263,19 @@ add_library(pcd_saver_lib
 
 
 add_dependencies(point_cloud_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(point_cloud_process_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(pcd_saver_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 
 target_link_libraries(point_cloud_subscriber_publisher_lib
   ${catkin_LIBRARIES}
 )
-target_link_libraries(point_cloud_process_lib
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-  point_cloud_subscriber_publisher_lib
-)
+# target_link_libraries(point_cloud_process_lib
+#   ${catkin_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+#   point_cloud_subscriber_publisher_lib
+# )
 target_link_libraries(pcd_saver_lib
   ${catkin_LIBRARIES}
 )
@@ -348,7 +348,7 @@ target_link_libraries(pointcloud_process_node
   calibration_tool_lib
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   dynamic_reconfigure_lib
   rviz_drawing_3d_lib
   recorder_lib
@@ -374,7 +374,7 @@ target_link_libraries(calibration_node
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   image_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   drawing_tool_lib
   aruco_tool_lib
   dynamic_reconfigure_lib
@@ -391,7 +391,7 @@ target_link_libraries(camera_color_fusion_point_cloud
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   image_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   drawing_tool_lib
   aruco_tool_lib
   dynamic_reconfigure_lib
@@ -465,7 +465,7 @@ target_link_libraries(caliboard_cloud_detection_dynamic
   ${OpenCV_LIBRARIES}
   calibration_tool_lib
   point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   dynamic_reconfigure_lib
   rviz_drawing_3d_lib
   recorder_lib
@@ -473,14 +473,14 @@ target_link_libraries(caliboard_cloud_detection_dynamic
 target_link_libraries(point_cloud_filter
   ${catkin_LIBRARIES}
   point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   dynamic_reconfigure_lib
   recorder_lib
 )
 target_link_libraries(rosbag_record_example
   ${catkin_LIBRARIES}
   point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   dynamic_reconfigure_lib
   recorder_lib
 )
@@ -488,7 +488,7 @@ target_link_libraries(pcd_saver_example
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
   point_cloud_subscriber_publisher_lib
-  point_cloud_process_lib
+  # point_cloud_process_lib
   dynamic_reconfigure_lib
   recorder_lib
   pcd_saver_lib

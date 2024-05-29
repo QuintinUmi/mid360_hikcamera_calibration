@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
     CornersPublisherSubscriber img_corners_SUB_PUB(rosHandle, frame_id, topic_img_corners_sub, topic_corners_pub);
 
 
-    PointCloud2Proc pc_process(true);
+    PointCloud2Proc<pcl::PointXYZI> pc_process(true);
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 
@@ -321,7 +321,7 @@ int main(int argc, char *argv[])
             pc_process.extractNearestClusterCloud();
             pc_process.planeSegmentation();
 
-            PointCloud2Proc caliboard_pc_proc(true);
+            PointCloud2Proc<pcl::PointXYZI> caliboard_pc_proc(true);
             caliboard_pc_proc.setCloud(pc_process.getProcessedPointcloud());
             caliboard_pc_proc.transform(R, t);
             caliboard_pc_proc.scaleTo(1000.0f);
@@ -426,7 +426,7 @@ int main(int argc, char *argv[])
             pc_process.planeSegmentation();
 
             // test caliboard_pc
-            PointCloud2Proc caliboard_pc_proc(true);
+            PointCloud2Proc<pcl::PointXYZI> caliboard_pc_proc(true);
             caliboard_pc_proc.setCloud(pc_process.getProcessedPointcloud());
             caliboard_pc_proc.transform(R, t);
             caliboard_pc_proc.scaleTo(1000.0f);
