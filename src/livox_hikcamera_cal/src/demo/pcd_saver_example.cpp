@@ -26,7 +26,7 @@ void KeyInput_CallBack(std_msgs::Int8::ConstPtr key_ascii, pointcloud2_opr::Poin
         // ROS_INFO("Test------------------------------------------------------------------------");
         std::cout << pcSP.getPointcloudXYZI() << std::endl;
         pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud = pcSP.getPointcloudXYZI();
-        pcdsaver.save(pclCloud);
+        pcdsaver.save<pcl::PointXYZI>(pclCloud);
     }
     // printf("test-----------------------------------\n");
 }
@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
     
     pointcloud2_opr::PointCloudSubscriberPublisher pcSP(rosHandle, std::string("/livox/lidar_proc"), std::string("/livox/lidar_proc"));
 
-    pointcloud2_opr::PointCloud2Proc pcProc;
+    pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> pcProc;
 
     PointcloudFilterReconfigure filterRecfg();
     RQTConfig rqtCfg;

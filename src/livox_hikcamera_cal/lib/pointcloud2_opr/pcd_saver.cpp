@@ -23,26 +23,7 @@ namespace livox_hikcamera_cal::pointcloud2_opr
     {
         this->save_path = save_path;
     }
-
-    void PCDSaver::save(sensor_msgs::PointCloud2ConstPtr cloud)
-    {
-        pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud(new pcl::PointCloud<pcl::PointXYZI>);
-        pcl::fromROSMsg(*cloud, *pclCloud);
-
-        pcl::io::savePCDFileASCII(this->fileNameGenerator(cloud), *pclCloud);
-        ROS_INFO("Saved cloud with %ld points", pclCloud->points.size());
-    }
-    void PCDSaver::save(pcl::PointCloud<pcl::PointXYZI>::Ptr pclCloud)
-    {
-        
-        sensor_msgs::PointCloud2 rosCloud;
-        
-        pcl::toROSMsg(*pclCloud, rosCloud);   
-        pcl::io::savePCDFileASCII(this->fileNameGenerator(rosCloud), *pclCloud);
-        
-        ROS_INFO("Saved cloud with %ld points", pclCloud->points.size());
-    }
-
+    
 
 
 

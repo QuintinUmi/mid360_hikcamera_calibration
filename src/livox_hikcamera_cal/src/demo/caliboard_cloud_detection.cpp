@@ -30,7 +30,7 @@
 int main()
 {
 
-	livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc pc_process;
+	livox_hikcamera_cal::pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> pc_process;
 	std::vector<std::string> file_paths;
 	file_paths = pc_process.iterateFilesFromPath("src/livox_hikcamera_cal/pcd");
 

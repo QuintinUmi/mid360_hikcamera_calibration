@@ -242,7 +242,7 @@ int main(int argc, char *argv[])
     CornersPublisherSubscriber img_corners_SUB_PUB(rosHandle, frame_id, topic_img_corners_sub, topic_corners_pub);
 
 
-    PointCloud2Proc pc_process(true);
+    PointCloud2Proc<pcl::PointXYZI> pc_process(true);
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, cameraMatrix, disCoffes);
 

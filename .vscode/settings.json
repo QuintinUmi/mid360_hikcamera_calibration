@@ -92,6 +92,7 @@
         "random": "cpp",
         "dense": "cpp",
         "svd": "cpp",
-        "geometry": "cpp"
+        "geometry": "cpp",
+        "*.tpp": "cpp"
     }
 }

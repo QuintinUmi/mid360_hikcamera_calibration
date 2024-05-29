@@ -40,7 +40,7 @@ int main(int argc, char *argv[])
 	ros::NodeHandle rosHandle;
 
 	pointcloud2_opr::PointCloudSubscriberPublisher pointcloud_SUB_PUB(rosHandle, std::string("/livox/lidar"), std::string("/livox/lidar_proc"));		
-	pointcloud2_opr::PointCloud2Proc pc_process(true); // Remove Origin Point Published by livox_ros_driver2
+	pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> pc_process(true); // Remove Origin Point Published by livox_ros_driver2
 	PointcloudFilterReconfigure filterRecfg;
     RQTConfig rqtCfg;
 	RvizDrawing rviz_drawing;
@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 		// Detect caliboard corners
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
 		// corners = pc_process.extractNearestRectangleCorners(true, 50, 1.5);
-		corners = pc_process.extractNearestRectangleCorners(false, PointCloud2Proc::OptimizationMethod::AngleAtCentroid, 0.6, 0.8, 0.01);
+		corners = pc_process.extractNearestRectangleCorners(false, PointCloud2Proc<pcl::PointXYZI>::OptimizationMethod::AngleAtCentroid, 0.6, 0.8, 0.01);
 		CalTool::sortPointByNormalWorldFrame(corners, pc_process.getPlaneNormals());
 		// if(pc_process.normalClusterExtraction(0.05235988, 0.1F, 90, 30, 200, 250000).size() == 0)
         // {
