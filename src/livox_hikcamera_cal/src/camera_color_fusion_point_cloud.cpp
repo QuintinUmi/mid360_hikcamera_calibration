@@ -81,20 +81,21 @@ void colorPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud,
                      cv::Mat& image,
                      pcl::PointCloud<pcl::PointXYZRGB>::Ptr coloredCloud) {
 
+    assert(image.type() == CV_8UC3);
 
     enhanceImage(image);
 
-    coloredCloud->width = inputCloud->width;
+    coloredCloud->width = inputCloud->width; 
     coloredCloud->height = inputCloud->height;
     coloredCloud->is_dense = inputCloud->is_dense;
-    coloredCloud->points.resize(inputCloud->points.size());  
+    coloredCloud->points.clear();  
 
     for (size_t i = 0; i < inputCloud->points.size(); ++i) {
         auto& pt = inputCloud->points[i];
         auto& proj = projectedPoints[i];
 
         if (proj.x >= 0 && proj.x < image.cols && proj.y >= 0 && proj.y < image.rows) {
-            pcl::PointXYZRGB& coloredPoint = coloredCloud->points[i];
+            pcl::PointXYZRGB coloredPoint;
             coloredPoint.x = pt.x;
             coloredPoint.y = pt.y;
             coloredPoint.z = pt.z;
@@ -103,8 +104,15 @@ void colorPointCloud(const pcl::PointCloud<pcl::PointXYZI>::Ptr inputCloud,
             coloredPoint.b = color[0];   // Blue channel
             coloredPoint.g = color[1];   // Green channel
             coloredPoint.r = color[2];   // Red channel
+
+            coloredCloud->points.push_back(coloredPoint);
         }
     }
+
+    
+    coloredCloud->width = coloredCloud->points.size();
+    coloredCloud->height = 1; 
+    coloredCloud->is_dense = false;
 
     downscalePointCloud(coloredCloud); 
 }
