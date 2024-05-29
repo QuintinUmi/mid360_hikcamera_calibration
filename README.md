@@ -6,15 +6,15 @@
 ### Color Cloud Demo
 
 <p align="center">
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_2hz_demo.gif" alt="Lidar_Camera_Joint_cal_2hz_demo.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/color_cloud1.gif" alt="color_cloud1.gif"/>
 </p>
 
 <p align="center">
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_2hz_demo.gif" alt="Lidar_Camera_Joint_cal_2hz_demo.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/color_cloud2.gif" alt="color_cloud2.gif"/>
 </p>
 
 <p align="center">
-        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/Lidar_Camera_Joint_cal_2hz_demo.gif" alt="Lidar_Camera_Joint_cal_2hz_demo.gif"/>
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/color_cloud3.gif" alt="color_cloud3.gif"/>
 </p>
 
 
