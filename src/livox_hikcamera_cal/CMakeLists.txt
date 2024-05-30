@@ -183,10 +183,10 @@ add_library(corners_subscriber_publisher_lib
   lib/corners_subscriber_publisher.cpp
 )
 
-add_library(calibration_tool_lib
-  include include/livox_hikcamera_cal/calibration_tool.h
-  lib/calibration_tool.cpp
-)
+# add_library(calibration_tool_lib
+#   include include/livox_hikcamera_cal/calibration_tool.h
+#   lib/calibration_tool.cpp
+# )
 
 add_library(CommandHandle_lib
   include include/livox_hikcamera_cal/CommandHandler.h
@@ -205,7 +205,7 @@ add_dependencies(recorder_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPOR
 add_dependencies(rviz_drawing_3d_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(conversion_bridge_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(corners_subscriber_publisher_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-add_dependencies(calibration_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+# add_dependencies(calibration_tool_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(CommandHandle_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 add_dependencies(file_operator_lib ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
@@ -227,11 +227,11 @@ target_link_libraries(conversion_bridge_lib
 target_link_libraries(corners_subscriber_publisher_lib
   ${catkin_LIBRARIES}
 )
-target_link_libraries(calibration_tool_lib
-  ${catkin_LIBRARIES}
-  ${PCL_LIBRARIES}
-  ${OpenCV_LIBRARIES}
-)
+# target_link_libraries(calibration_tool_lib
+#   ${catkin_LIBRARIES}
+#   ${PCL_LIBRARIES}
+#   ${OpenCV_LIBRARIES}
+# )
 target_link_libraries(CommandHandle_lib
   ${catkin_LIBRARIES}
 )
@@ -345,7 +345,7 @@ target_link_libraries(pointcloud_process_node
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  calibration_tool_lib
+  # calibration_tool_lib
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   # point_cloud_process_lib
@@ -356,7 +356,7 @@ target_link_libraries(pointcloud_process_node
 target_link_libraries(image_process_node
   ${catkin_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  calibration_tool_lib
+  # calibration_tool_lib
   corners_subscriber_publisher_lib
   image_subscriber_publisher_lib
   image_process_lib
@@ -370,7 +370,7 @@ target_link_libraries(calibration_node
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  calibration_tool_lib
+  # calibration_tool_lib
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   image_subscriber_publisher_lib
@@ -387,7 +387,7 @@ target_link_libraries(camera_color_fusion_point_cloud
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  calibration_tool_lib
+  # calibration_tool_lib
   corners_subscriber_publisher_lib
   point_cloud_subscriber_publisher_lib
   image_subscriber_publisher_lib
@@ -463,7 +463,7 @@ target_link_libraries(caliboard_cloud_detection_dynamic
   ${catkin_LIBRARIES}
   ${PCL_LIBRARIES}
   ${OpenCV_LIBRARIES}
-  calibration_tool_lib
+  # calibration_tool_lib
   point_cloud_subscriber_publisher_lib
   # point_cloud_process_lib
   dynamic_reconfigure_lib

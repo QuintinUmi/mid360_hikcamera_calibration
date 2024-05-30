@@ -105,7 +105,7 @@ int main(int argc, char *argv[])
 		pcl::PointCloud<pcl::PointXYZI>::Ptr corners;
 		// corners = pc_process.extractNearestRectangleCorners(true, 50, 1.5);
 		corners = pc_process.extractNearestRectangleCorners(false, PointCloud2Proc<pcl::PointXYZI>::OptimizationMethod::AngleAtCentroid, 0.6, 0.8, 0.01);
-		CalTool::sortPointByNormalWorldFrame(corners, pc_process.getPlaneNormals());
+		CalTool::sortPointByNormalWorldFrame<pcl::PointXYZI>(corners, pc_process.getPlaneNormals());
 		// if(pc_process.normalClusterExtraction(0.05235988, 0.1F, 90, 30, 200, 250000).size() == 0)
         // {
         //     continue;
