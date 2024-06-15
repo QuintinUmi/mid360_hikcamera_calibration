@@ -411,7 +411,7 @@ target_link_libraries(controller_menu
 
 
 
-# add_executable(test1 src/test.cpp)
+add_executable(test1 src/demo/test.cpp)
 # add_executable(test_outer src/test_outer.cpp)
 # add_executable(caliboard_cloud_detection src/demo/caliboard_cloud_detection.cpp)
 add_executable(caliboard_cloud_detection_dynamic src/demo/caliboard_cloud_detection_dynamic.cpp)
@@ -432,15 +432,17 @@ add_executable(pcd_saver_example src/demo/pcd_saver_example.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(test1
-#   ${catkin_LIBRARIES}
-#   ${OpenCV_LIBRARIES}
-#   point_cloud_subscriber_publisher_lib
-#   point_cloud_process_lib
-#   dynamic_reconfigure_lib
-#   recorder_lib
-#   pcd_saver_lib
-# )
+target_link_libraries(test1
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+  # calibration_tool_lib
+  point_cloud_subscriber_publisher_lib
+  # point_cloud_process_lib
+  dynamic_reconfigure_lib
+  rviz_drawing_3d_lib
+  recorder_lib
+)
 # target_link_libraries(test_outer
 #   ${catkin_LIBRARIES}
 #   ${PCL_LIBRARIES}

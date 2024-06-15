@@ -15,12 +15,12 @@ int main(int argc, char *argv[])
     ros::NodeHandle rosHandle;
 
     Recorder::Topic lidar_msg("/livox/lidar", Recorder::MessageType::PointCloud2);
-    Recorder::Topic camera_msg("/hikcamera/img_stream", Recorder::MessageType::Image);
+    Recorder::Topic camera_msg("/hikcamera/img_stream/compressed", Recorder::MessageType::Image);
     Recorder rcd(std::string("/home/quintinumi/project/ws_mid360_hikcamera_calibration/src/bag"));
     rcd.addTopic(lidar_msg);
     rcd.addTopic(camera_msg);
 
-    int record_frame_rate = 2;
+    int record_frame_rate = 30;
     ros::Rate frame_rate(record_frame_rate);
 
     ROS_INFO("Start Recording\n");
