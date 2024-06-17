@@ -3,6 +3,13 @@
 ## This pack is still constructing...
 
 
+### Fast-Livo Demo
+
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/fast-livo-demo.gif" alt="color_cloud1.gif"/>
+</p>
+
+
 ### Color Cloud Demo
 
 <p align="center">
