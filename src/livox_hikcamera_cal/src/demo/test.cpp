@@ -1,69 +1,43 @@
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
-#include <pcl/PCLPointCloud2.h>
-#include <pcl/conversions.h>
-#include <pcl/filters/crop_box.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl_ros/transforms.h>
+#include <Eigen/Geometry>
 
-#include <pcl/search/impl/search.hpp>
-#include <pcl/search/kdtree.h>
-#include <pcl/features/normal_3d.h>
-#include <pcl/segmentation/region_growing.h>
-#include <pcl/segmentation/sac_segmentation.h>
-#include <pcl/filters/extract_indices.h>
-#include <pcl/filters/project_inliers.h>
-#include <pcl/features/feature.h>
-#include <pcl/common/common.h>
-#include <pcl/common/pca.h>
-#include <pcl/common/transforms.h>
+int main(int argc, char** argv) {
+    ros::init(argc, argv, "pcl_to_rviz_publisher");
+    ros::NodeHandle nh;
+    ros::Publisher pcl_pub = nh.advertise<sensor_msgs::PointCloud2>("pcl_output", 1);
 
-#include <opencv2/opencv.hpp>
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-#include <Eigen/Core>
+    if (pcl::io::loadPCDFile<pcl::PointXYZRGB>("/home/quintinumi/git_package_src/FAST-LIVO_ws/src/PCD/scans2.pcd", *cloud) == -1) {
+        PCL_ERROR("Couldn't read file sample_rgb.pcd \n");
+        return (-1);
+    }
 
-#include <pcl/visualization/cloud_viewer.h> 
+    // 创建旋转矩阵
+    Eigen::Affine3f transform = Eigen::Affine3f::Identity();
+    float theta = 16.5 * M_PI / 180.0; // 顺时针转 23.5 度
+    transform.rotate(Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitY()));
 
-#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_subscriber_publisher.h"
-#include "livox_hikcamera_cal/pointcloud2_opr/point_cloud_process.h"
-#include "livox_hikcamera_cal/dynamic_reconfigure.h"
-#include "livox_hikcamera_cal/rviz_drawing.h"
+    // 应用旋转
+    pcl::transformPointCloud(*cloud, *transformed_cloud, transform);
 
-#include "livox_hikcamera_cal/calibration_tool.h"
+    sensor_msgs::PointCloud2 output;
+    pcl::toROSMsg(*transformed_cloud, output);
+    output.header.frame_id = "map";
 
-using namespace livox_hikcamera_cal;
-using namespace livox_hikcamera_cal::pointcloud2_opr;
+    ros::Rate loop_rate(0.01);
+    while (ros::ok()) {
+        pcl_pub.publish(output);
+        ros::spinOnce();
+        loop_rate.sleep();
+    }
 
-
-
-void PC2SubCallBack(const sensor_msgs::PointCloud2ConstPtr &rcvCloud)
-{
-	pcl::PointCloud<pcl::PointXYZI>::Ptr tempCloud(new pcl::PointCloud<pcl::PointXYZI>);
-	pcl::fromROSMsg(*rcvCloud, *tempCloud);
-
-	ROS_INFO("msg_timestamp: %u.%u, pcl_timestamp: %lu, point_size: %09ld\n", rcvCloud->header.stamp.sec, rcvCloud->header.stamp.nsec, tempCloud->header.stamp, tempCloud->points.size());
-
-
-}
-
-int main(int argc, char *argv[])
-{
-	ros::init(argc, argv, "caliboard_cloud_detection_dynamic");
-	ros::NodeHandle rosHandle;
-
-
-	ros::Subscriber pointcloud2_SUB = rosHandle.subscribe<sensor_msgs::PointCloud2>("/livox/lidar", 10, PC2SubCallBack);
-
-
-	ros::Rate rate(30);
-
-	while(ros::ok())
-	{	
-		ros::spinOnce();
-
-
-		rate.sleep();
-	}
-	
-	return 0;
+    return 0;
 }

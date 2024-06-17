@@ -421,6 +421,9 @@ add_executable(pcd_saver_example src/demo/pcd_saver_example.cpp)
 
 # add_executable(aruco_detection_example src/demo/aruco_detection_example.cpp)
 
+add_executable(pointcloud_meshing src/demo/pointcloud_meshing.cpp)
+
+
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
 ## target back to the shorter version for ease of user use
@@ -504,6 +507,10 @@ target_link_libraries(pcd_saver_example
 #   aruco_tool_lib
 # )
 
+target_link_libraries(pointcloud_meshing
+  ${catkin_LIBRARIES}
+  ${PCL_LIBRARIES}
+)
 
 #############
 ## Install ##
