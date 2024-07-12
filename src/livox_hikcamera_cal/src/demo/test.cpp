@@ -15,14 +15,14 @@ int main(int argc, char** argv) {
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr transformed_cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
 
-    if (pcl::io::loadPCDFile<pcl::PointXYZRGB>("/home/quintinumi/git_package_src/FAST-LIVO_ws/src/PCD/scans2.pcd", *cloud) == -1) {
+    if (pcl::io::loadPCDFile<pcl::PointXYZRGB>("/home/quintinumi/data/PCD/scans12.pcd", *cloud) == -1) {
         PCL_ERROR("Couldn't read file sample_rgb.pcd \n");
         return (-1);
     }
 
     // 创建旋转矩阵
     Eigen::Affine3f transform = Eigen::Affine3f::Identity();
-    float theta = 16.5 * M_PI / 180.0; // 顺时针转 23.5 度
+    float theta = 0 * M_PI / 180.0; // 顺时针转 23.5 度
     transform.rotate(Eigen::AngleAxisf(theta, Eigen::Vector3f::UnitY()));
 
     // 应用旋转
@@ -32,7 +32,7 @@ int main(int argc, char** argv) {
     pcl::toROSMsg(*transformed_cloud, output);
     output.header.frame_id = "map";
 
-    ros::Rate loop_rate(0.01);
+    ros::Rate loop_rate(0.05);
     while (ros::ok()) {
         pcl_pub.publish(output);
         ros::spinOnce();
