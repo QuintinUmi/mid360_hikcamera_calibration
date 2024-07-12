@@ -6,6 +6,18 @@
         <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/fast-livo-demo.gif" alt="fast-livo-demo.gif"/>
 </p>
 
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/fast-livo-demo1.png" alt="fast-livo-demo1.png"/>
+</p>
+
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/fast-livo-demo2.png" alt="fast-livo-demo2.png"/>
+</p>
+
+<p align="center">
+        <img src="https://github.com/QuintinUmi/mid360_hikcamera_calibration/blob/main/doc/img/fast-livo-demo3.png" alt="fast-livo-demo3.png"/>
+</p>
+
 
 ### Color Cloud Demo
 
