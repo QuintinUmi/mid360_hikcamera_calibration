@@ -26,7 +26,7 @@ ImageSubscriberPublisher::ImageSubscriberPublisher() : node_handle(ros::NodeHand
     init_subscribers();
     init_publishers(); 
 }
-ImageSubscriberPublisher::ImageSubscriberPublisher(ros::NodeHandle node_handle, std::string subscribe_topic, std::string publish_topic) : img_it(node_handle) 
+ImageSubscriberPublisher::ImageSubscriberPublisher(ros::NodeHandle node_handle, std::string subscribe_topic, std::string publish_topic, const std::string& transport_type) : img_it(node_handle), transport_type(transport_type)
 {
     this->node_handle = node_handle;
     this->subscribe_topic = subscribe_topic;
@@ -46,7 +46,7 @@ ImageSubscriberPublisher::~ImageSubscriberPublisher()
 
 void ImageSubscriberPublisher::init_subscribers() 
 {
-    this->image_SUB = this->img_it.subscribe(this->subscribe_topic, 1,  &ImageSubscriberPublisher::ImageSubCallBack, this);
+    this->image_SUB = this->img_it.subscribe(this->subscribe_topic, 1,  &ImageSubscriberPublisher::ImageSubCallBack, this, image_transport::TransportHints(transport_type));
     printf("Init Image Subscriber Success!\n");
 }
 

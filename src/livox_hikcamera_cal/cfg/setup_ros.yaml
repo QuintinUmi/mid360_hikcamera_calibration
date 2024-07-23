@@ -1,17 +1,21 @@
 
-frame_id: livox_frame
+frame_id: velodyne
 
-
-pointcloud_process_pc_sub_topic: /livox/lidar
-pointcloud_process_pc_pub_topic: /livox/lidar_proc
+# pointcloud_process_pc_sub_topic: /livox/lidar
+# pointcloud_process_pc_pub_topic: /livox/lidar_proc
+pointcloud_process_pc_sub_topic: /velodyne_points
+pointcloud_process_pc_pub_topic: /velodyne_points_proc
 
 pointcloud_process_corners_sub_topic: /livox_hikcamera_cal/calibration_corners
 pointcloud_process_corners_pub_topic: /livox_hikcamera_cal/pointcloud_corners
 
 
 
-image_process_img_sub_topic: /hikcamera/img_stream
-image_process_img_pub_topic: /hikcamera/img_stream_proc
+# image_process_img_sub_topic: /hikcamera/img_stream
+# image_process_img_pub_topic: /hikcamera/img_stream_proc
+image_process_img_sub_topic: /pointgrey/left_camera/image_color
+image_process_img_pub_topic: /pointgrey/left_camera/image_color_proc
+
 
 image_process_corners_sub_topic: /livox_hikcamera_cal/calibration_corners
 image_process_corners_pub_topic: /livox_hikcamera_cal/image_corners
@@ -31,6 +35,7 @@ error_analysis_save_path: data/border_error_anaylysis.csv
 extrinsics_save_path: cfg/extrinsics.yaml
 
 
-topic_image_stream: /hikcamera/img_stream
+# topic_image_stream: /hikcamera/img_stream
+topic_image_stream: /pointgrey/left_camera/image_color
 
 assets_path: /home/quintinumi/project/ws_mid360_hikcamera_calibration/src/mid360_hikcamera_calibration/src/livox_hikcamera_cal/miscellaneous/

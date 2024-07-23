@@ -22,7 +22,10 @@ namespace livox_hikcamera_cal
 
             public:
                 ImageSubscriberPublisher();
-                ImageSubscriberPublisher(ros::NodeHandle node_handle, std::string subscribe_topic=std::string("/hikcamera/img_stream"), std::string publish_topic=std::string("/hikcamera/img_stream_proc"));
+                ImageSubscriberPublisher(ros::NodeHandle node_handle, 
+                                        std::string subscribe_topic=std::string("/hikcamera/img_stream"), 
+                                        std::string publish_topic=std::string("/hikcamera/img_stream_proc"),
+                                        const std::string& transport_type = "raw");
                 ~ImageSubscriberPublisher();
 
                 cv::Mat getImage() const;
@@ -35,6 +38,7 @@ namespace livox_hikcamera_cal
                 image_transport::ImageTransport img_it;
                 image_transport::Subscriber image_SUB;
                 image_transport::Publisher image_PUB;
+                std::string transport_type;
 
                 std::string subscribe_topic;
                 std::string publish_topic;

@@ -135,9 +135,9 @@ int main(int argc, char *argv[])
 
     Draw3D d3d(arucoRealLength[0], 1, 1, 1, distortedCameraMatrix, distortedDisCoffes);
 
-    RvizDrawing rviz_drawing("image_process_node", "livox_frame");
+    RvizDrawing rviz_drawing("/rviz_drawing/image_process_node", frame_id);
     
-    ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub);
+    ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub, "compressed");
 
     CornersPublisherSubscriber corners_SUB_PUB(rosHandle, frame_id, topic_corners_sub, topic_corners_pub);
     
@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
         ros::spinOnce();
 
         auto img = img_SUB_PUB.getImage();
+        
 
         if(img.empty())
         {

@@ -62,16 +62,16 @@ int main(int argc, char *argv[])
 	std::string topic_corners_sub;
     std::string topic_corners_pub;
 	rosHandle.param("frame_id", frame_id, std::string("livox_frame"));
-	rosHandle.param("pointcloud_process_pc_sub_topic", topic_pc_sub, std::string("/livox/lidar"));
-    rosHandle.param("pointcloud_process_pc_pub_topic", topic_pc_pub, std::string("/livox/lidar_proc"));
+	rosHandle.param("pointcloud_process_pc_sub_topic", topic_pc_sub, std::string("/velodyne_points"));
+    rosHandle.param("pointcloud_process_pc_pub_topic", topic_pc_pub, std::string("/velodyne_points_proc"));
 	rosHandle.param("pointcloud_process_corners_sub_topic", topic_corners_sub, std::string("/livox_hikcamera_cal/calibration_corners"));
     rosHandle.param("pointcloud_process_corners_pub_topic", topic_corners_pub, std::string("/livox_hikcamera_cal/pointcloud_corners"));
 
 
 	float caliboard_width;
 	float caliboard_height;
-	rosHandle.param("caliboard_width", caliboard_width, 800.0f);
-	rosHandle.param("caliboard_height", caliboard_height, 600.0f);
+	rosHandle.param("caliboard_width", caliboard_width, 1004.0f);
+	rosHandle.param("caliboard_height", caliboard_height, 804.0f);
 	caliboard_width /= 1000;
 	caliboard_height /= 1000;
 
@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 	pointcloud2_opr::PointCloud2Proc<pcl::PointXYZI> pc_process(true); // Remove Origin Point Published by livox_ros_driver2
 	PointcloudFilterReconfigure filterRecfg;
     RQTConfig rqtCfg;
-	RvizDrawing rviz_drawing;
+	RvizDrawing rviz_drawing("/rviz_drawing/pointcloud_process_node", frame_id);
 
 	CornersPublisherSubscriber corners_SUB_PUB(rosHandle, frame_id, topic_corners_sub, topic_corners_pub);
 

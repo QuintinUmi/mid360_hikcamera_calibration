@@ -168,7 +168,7 @@ int main(int argc, char *argv[])
     PointCloudSubscriberPublisher pc_SUB_PUB(rosHandle, topic_pc_sub, topic_pc_pub);
     PointCloudSubscriberPublisher pc_proc_SUB_PUB(rosHandle, topic_pc_proc_sub, topic_pc_pub);
 
-    ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub);
+    ImageSubscriberPublisher img_SUB_PUB(rosHandle, topic_img_sub, topic_img_pub, "compressed");
 
     CornersPublisherSubscriber pc_corners_SUB_PUB(rosHandle, frame_id, topic_pc_corners_sub, topic_corners_pub);
 
@@ -201,6 +201,9 @@ int main(int argc, char *argv[])
     Eigen::Vector3f t(0.0f, 0.0f, 0.0f); 
 
     yaml_operator.readExtrinsicsFromYaml(R, t);
+
+    cv::namedWindow("Projected Points", cv::WINDOW_NORMAL);
+    cv::resizeWindow("Projected Points", 640, 480);
 
     while(ros::ok())
     {
@@ -255,7 +258,7 @@ int main(int argc, char *argv[])
         // pc_process.planeSegmentation();
         pc_process.transform(R, t);
         pc_process.scaleTo(1000.0f);
-        pc_process.PassThroughFilter("z", 700, 4000);
+        pc_process.PassThroughFilter("z", 2000, 20000);
 
         std::vector<cv::Point2f> imagePoints;
 
@@ -351,7 +354,7 @@ int main(int argc, char *argv[])
             d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img_hull);
 
 
-            cv::imshow("concave_hull_cloud", img_hull);
+            // cv::imshow("concave_hull_cloud", img_hull);
 
             
             // double reprojection_error = CalTool::computeReprojectionErrors(hull_cloud, img_corners_raw, R, t, newCameraMatrix, newDisCoffes);
@@ -459,7 +462,7 @@ int main(int argc, char *argv[])
             d3d.drawPointsOnImageZ(*pc_process.getProcessedPointcloud(), imagePoints, img_hull);
 
 
-            cv::imshow("concave_hull_cloud", img_hull);
+            // cv::imshow("concave_hull_cloud", img_hull);
 
             
 
